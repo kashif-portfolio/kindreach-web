@@ -4,9 +4,9 @@ import logoWhite from '../assets/logo-white.png'; // Make sure file name in src/
 
 export default function AuthLayout() {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#FAFAFA]">
+    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50">
       {/* Left Column - Branding Banner */}
-      <div className="md:w-1/2 bg-gradient-to-br from-[#059669] to-[#0D9488] p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+      <div className="md:w-1/2 bg-linear-to-br from-primary to-secondary p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
         {/* Top Logo */}
         <div className="relative z-10">
           <img src={logoWhite} alt="KindReach Logo" className="h-10 w-auto object-contain" />
