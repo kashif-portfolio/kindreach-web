@@ -52,10 +52,10 @@ export default function VerifyOtp() {
                                 setOtp(newOtp);
                             }}
                             className={`w-13.75 h-13.75 text-center text-[20px] font-bold rounded-xl outline-none transition-all duration-200 ${otp[index] !== ''
-                                ? 'bg-[#ECFDF5] border-2 border-primary text-primary' // Jab number likha ho
+                                ? 'bg-[#ECFDF5] border-2 border-primary text-primary'
                                 : activeBox === index
-                                    ? 'bg-white border-2 border-primary text-slate-800'     // Jab sirf click/focus ho
-                                    : 'bg-white border border-slate-200 text-slate-800'        // Normal unselected state
+                                    ? 'bg-white border-2 border-primary text-slate-800'   
+                                    : 'bg-white border border-slate-200 text-slate-800'  
                                 }`}
                         />
                     ))}

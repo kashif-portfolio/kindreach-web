@@ -4,6 +4,7 @@ import AuthLayout from '../layouts/AuthLayout';
 import Login from "../pages/auth/Login";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import VerifyOtp from "../pages/auth/VerifyOTP";
+import PasswordSuccess from "../pages/auth/PasswordSuccess";
 
 
 export default function AppRoutes() {
@@ -14,6 +15,7 @@ export default function AppRoutes() {
         <Route path="login" element={<Login />}></Route>
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="verify-otp" element={<VerifyOtp />} />
+        <Route path="/password-success" element={<PasswordSuccess />} />
       </Route>
       <Route path="*" element={<Navigate to={"/login"} replace />}>
       </Route>
