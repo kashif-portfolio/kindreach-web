@@ -39,7 +39,7 @@ export default function ForgotPassword() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full h-[43.99px] px-3.5 text-[14px] bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                        className="w-full h-[43.99px] px-3.5 text-[14px] bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-[#009689] transition-all"
                     >
                     </input>
                 </div>
@@ -47,7 +47,7 @@ export default function ForgotPassword() {
                 {/* Send OTP Button */}
                 <button
                     type="submit"
-                    className="w-full h-[43.99px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[14px] rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                    className="w-full h-[43.99px] bg-[#009689] hover:bg-[#007F75] text-white font-semibold text-[14px] rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm"
                 >
                     Send OTP Code
                 </button>

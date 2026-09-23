@@ -44,7 +44,7 @@ export default function Login() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full h-[43.99px] px-3.5 text-[14px] bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                        className="w-full h-[43.99px] px-3.5 text-[14px] bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-[#009689] transition-all"
                     />
                 </div>
 
@@ -61,7 +61,7 @@ export default function Login() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
-                            className="w-full h-full px-3.5 pr-10 text-[14px] bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                            className="w-full h-full px-3.5 pr-10 text-[14px] bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-[#009689] transition-all"
                         />
                         <button
                             type="button"
@@ -90,7 +90,7 @@ export default function Login() {
 
                             <Link
                                 to="/forgot-password"
-                                className="text-[12px] font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+                                className="text-[12px] font-medium text-[#009689] hover:text-[#007F75] transition-colors"
                             >
                                 Forgot Password ?
                             </Link>
@@ -102,7 +102,7 @@ export default function Login() {
                 {/* Sign In Button */}
                 <button
                     type="submit"
-                    className="w-full h-[43.99px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[14px] rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                    className="w-full h-[43.99px] bg-[#009689] hover:bg-[#007F75] text-white font-semibold text-[14px] rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm"
                 >
                     Sign In to KindReach
                 </button>
@@ -110,7 +110,7 @@ export default function Login() {
             <div className="text-center mt-6">
                 <p className="text-[14px] text-slate-500 font-normal">
                     Don't have an account?{" "}
-                    <Link to="/signup" className="text-emerald-600 font-semibold hover:underline">
+                    <Link to="/signup" className="text-[#009689] font-semibold hover:underline">
                         Register Now
                     </Link>
                 </p>
