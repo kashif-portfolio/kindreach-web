@@ -8,21 +8,33 @@ import PasswordSuccess from "../pages/auth/PasswordSuccess";
 import ResetPassword from "../pages/auth/ResetPassword";
 import SignUp from "../pages/auth/SignUp";
 
+// Naya Dashboard Layout import kiya hai
+import DashboardLayout from "../layouts/DashboardLayout";
+// (Jab aap DonorDashboard ki file banayenge toh usko bhi yahan import karenge)
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />}></Route>
+      {/* Root path par user ko login par redirect karne ke liye */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* 1. Authentication Routes (Login, Signup, etc.) */}
       <Route element={<AuthLayout />}>
-        <Route path="login" element={<Login />}></Route>
+        <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="verify-otp" element={<VerifyOtp />} />
-        <Route path="/password-success" element={<PasswordSuccess />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path="password-success" element={<PasswordSuccess />} />
+        <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="signup" element={<SignUp />} />
       </Route>
-      <Route path="*" element={<Navigate to={"/login"} replace />}>
+
+      {/* 2. Dashboard Layout Route (Sidebar aur Topbar wala main shell) */}
+      <Route path="/dashboard" element={<DashboardLayout />}>
+        {/* Yahan baad mein hum andar ke specific pages (jaise DonorDashboard) nested routes ke taur par lagayenge */}
       </Route>
+
+      {/* Agar koi galat URL enter kare toh wapas login par bhej de */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
