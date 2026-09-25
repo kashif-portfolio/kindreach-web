@@ -1,9 +1,26 @@
 import React from "react";
 import logoGreen from '../assets/logo-green.png';
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Bell, ChevronDown } from "lucide-react";
 
 export default function DashboardLayout() {
+
+    const location = useLocation();
+
+    const getPageTitle = () => {
+        const path = location.pathname;
+        if (path.includes('/donations')) return 'Donations';
+        if (path.includes('/requests')) return 'Requests';
+        if (path.includes('settings')) return 'settings';
+        return 'Dashboard' //By Defult
+    }
+
+
+
+    const currentTitle = getPageTitle();
+
+
+
     return (
         // Main screen 
         <div className="flex w-full h-screen bg-white overflow-hidden">
@@ -29,7 +46,7 @@ export default function DashboardLayout() {
                     <div className="flex items-center text-sm font-medium text-slate-700">
                         <span>Home</span>
                         <span className="mx-2 text-slate-400">/</span>
-                        <span className="text-slate-900 font-semibold">Dashboard</span>
+                        <span className="text-slate-900 font-semibold">{currentTitle}</span>
                     </div>
 
                     {/* Right: Actions */}
