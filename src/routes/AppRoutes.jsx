@@ -11,6 +11,7 @@ import DonorDashboard from "../pages/donor/DonorDashboard";
 import PostDonation from "../pages/donor/AddDonation";
 import MyDonations from "../pages/donor/MyDonations";
 import DonationRequests from "../pages/donor/DonationRequests";
+import DonationHistory from "../pages/donor/DonationHistory";
 
 // Naya Dashboard Layout import kiya hai
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -40,6 +41,7 @@ export default function AppRoutes() {
         <Route path="my-donations" element={<MyDonations />} />
         {/* Donation Requests route (Yeh wali nayi screen) */}
         <Route path="donation-requests" element={<DonationRequests />} />
+        <Route path="history" element={<DonationHistory />} />
 
       </Route>
       <Route path="/add-donation" element={<PostDonation />} />
