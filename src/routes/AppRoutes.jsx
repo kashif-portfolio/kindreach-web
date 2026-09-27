@@ -15,17 +15,16 @@ import DonationHistory from "../pages/donor/DonationHistory";
 import Feedback from "../pages/donor/Feedback";
 import MyProfile from "../pages/donor/DonorProfile";
 
-// Naya Dashboard Layout import kiya hai
+// Main layout for dashboard sidebar and topbar
 import DashboardLayout from "../layouts/DashboardLayout";
-// (Jab aap DonorDashboard ki file banayenge toh usko bhi yahan import karenge)
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Root path par user ko login par redirect karne ke liye */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Redirect root URL (/) to the login page by default */}
+      <Route path="/" element={<Navigate to="/donor" replace />} />
 
-      {/* 1. Authentication Routes (Login, Signup, etc.) */}
+      {/* 1. Authentication Routes Group (Login, Signup, Recovery screens) wrapped inside AuthLayout */}
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
@@ -35,20 +34,28 @@ export default function AppRoutes() {
         <Route path="signup" element={<SignUp />} />
       </Route>
 
-      {/* 2. Dashboard Layout Route (Sidebar aur Topbar wala main shell) */}
+      {/* 2. Donor Dashboard Routes Group wrapped inside DashboardLayout (Sidebar/Topbar shell) */}
       <Route path="/donor" element={<DashboardLayout />}>
+        {/* Default index route rendering the main donor dashboard */}
         <Route index element={<DonorDashboard />} />
+        {/* Route for adding a new donation */}
         <Route path="add-donation" element={<PostDonation />} />
-        {/* My Donations route */}
+        {/* Route for viewing user's submitted donations */}
         <Route path="my-donations" element={<MyDonations />} />
-        {/* Donation Requests route (Yeh wali nayi screen) */}
+        {/* Route for checking active donation requests */}
         <Route path="donation-requests" element={<DonationRequests />} />
+        {/* Route for past donation history records */}
         <Route path="history" element={<DonationHistory />} />
+        {/* Route for submitting and viewing feedback */}
         <Route path="feedback" element={<Feedback />} />
+        {/* Route for managing donor profile details */}
         <Route path="profile" element={<MyProfile />} />
       </Route>
+
+      {/* Standalone route for add-donation outside nested dashboard if accessed directly */}
       <Route path="/add-donation" element={<PostDonation />} />
-      {/* Agar koi galat URL enter kare toh wapas login par bhej de */}
+
+      {/* Catch-all route: redirects any invalid or unknown URL back to the login page */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

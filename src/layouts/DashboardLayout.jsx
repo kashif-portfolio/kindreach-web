@@ -10,7 +10,8 @@ import {
     History,
     MessageSquare,
     User,
-    Clock
+    Clock,
+    LogOut
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -36,6 +37,10 @@ export default function DashboardLayout() {
     const isDonor = path.startsWith('/donor');
 
 
+    const handleLogout = () => {
+        localStorage.clear();
+        window.location.href = "/login";
+    };
 
     return (
         // Main screen 
@@ -184,6 +189,33 @@ export default function DashboardLayout() {
                         </>
                     )}
 
+                </div>
+
+                {/* 3. Bottom Profile & Logout Section */}
+                <div className="p-4 border-t border-border-subtle flex flex-col gap-3 bg-slate-50/50">
+                    {/* User Info Box */}
+                    <div className="flex items-center gap-3 px-2 py-1.5">
+                        <div className="w-9 h-9 bg-[#009689] text-white font-bold text-[13px] rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                            AK
+                        </div>
+                        <div className="flex flex-col overflow-hidden">
+                            <span className="text-[13px] font-semibold text-slate-800 truncate">
+                                Ahmed Khan
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-medium truncate">
+                                Donor Account
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Logout Button */}
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 w-full py-2 px-3 text-[13px] font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
+                    >
+                        <LogOut className="w-4 h-4 shrink-0" />
+                        <span>Logout</span>
+                    </button>
                 </div>
             </aside >
 
