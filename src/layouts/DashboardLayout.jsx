@@ -20,11 +20,14 @@ export default function DashboardLayout() {
 
     const getPageTitle = () => {
         const path = location.pathname;
-        if (path.includes('/donations')) return 'Donations';
-        if (path.includes('/requests')) return 'Requests';
-        if (path.includes('settings')) return 'settings';
-        return 'Dashboard' //By Defult
-    }
+        if (path.includes('/add-donation')) return 'Add Donation';
+        if (path.includes('/my-donations')) return 'My Donations';
+        if (path.includes('/donation-requests')) return 'Donation Requests';
+        if (path.includes('/history')) return 'Donation History';
+        if (path.includes('/feedback')) return 'Feedback';
+        if (path.includes('/profile')) return 'My Profile';
+        return 'Dashboard'; // By Default agar kuch na mile
+    };
 
 
 
@@ -108,7 +111,7 @@ export default function DashboardLayout() {
                             </NavLink>
 
                             <NavLink
-                                to="/donor/requests"
+                                to="/donor/donation-requests"
                                 className={({ isActive }) => `relative flex items-center w-[226.77px] h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive
                                     ? 'bg-[#ECFDF5] text-[#009689]'
                                     : 'text-text-muted hover:bg-slate-50'
