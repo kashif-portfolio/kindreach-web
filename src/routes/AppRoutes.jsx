@@ -8,6 +8,7 @@ import PasswordSuccess from "../pages/auth/PasswordSuccess";
 import ResetPassword from "../pages/auth/ResetPassword";
 import SignUp from "../pages/auth/SignUp";
 import DonorDashboard from "../pages/donor/DonorDashboard";
+import PostDonation from "../pages/donor/AddDonation";
 
 // Naya Dashboard Layout import kiya hai
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -32,9 +33,10 @@ export default function AppRoutes() {
       {/* 2. Dashboard Layout Route (Sidebar aur Topbar wala main shell) */}
       <Route path="/donor" element={<DashboardLayout />}>
         <Route index element={<DonorDashboard />} />
+        <Route path="add-donation" element={<PostDonation />} />
         {/* Yahan baad mein hum andar ke specific pages (jaise DonorDashboard) nested routes ke taur par lagayenge */}
       </Route>
-
+      <Route path="/add-donation" element={<PostDonation />} />
       {/* Agar koi galat URL enter kare toh wapas login par bhej de */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
