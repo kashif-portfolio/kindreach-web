@@ -13,6 +13,7 @@ import MyDonations from "../pages/donor/MyDonations";
 import DonationRequests from "../pages/donor/DonationRequests";
 import DonationHistory from "../pages/donor/DonationHistory";
 import Feedback from "../pages/donor/Feedback";
+import MyProfile from "../pages/donor/DonorProfile";
 
 // Naya Dashboard Layout import kiya hai
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -44,7 +45,7 @@ export default function AppRoutes() {
         <Route path="donation-requests" element={<DonationRequests />} />
         <Route path="history" element={<DonationHistory />} />
         <Route path="feedback" element={<Feedback />} />
-
+        <Route path="profile" element={<MyProfile />} />
       </Route>
       <Route path="/add-donation" element={<PostDonation />} />
       {/* Agar koi galat URL enter kare toh wapas login par bhej de */}
