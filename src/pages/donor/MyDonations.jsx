@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, Pencil, Trash2, Plus, Package } from 'lucide-react';
 import DonationDetails from '../../components/donor/DonationDetailsModal';
 import EditDonationModal from '../../components/donor/EditDonationModal';
+import DeleteDonationModal from '../../components/donor/DeleteDonationModal';
 
 export default function MyDonations() {
     // Dummy state for donations
@@ -60,6 +61,20 @@ export default function MyDonations() {
     const handleSaveDonation = (updatedItem) => {
         setDonations(donations.map(d => d.id === updatedItem.id ? updatedItem : d));
     };
+
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    // Jab user trash/delete icon par click kare
+    const handleDeleteClick = (item) => {
+        setSelectedDonation(item);
+        setIsDeleteModalOpen(true);
+    };
+
+    // Jab modal ke andar "Delete" button par click ho
+    const handleDeleteConfirm = (id) => {
+        setDonations(donations.filter(d => d.id !== id));
+    };
+
 
     return (
         <div className="max-w-6xl mx-auto p-6 bg-slate-50 min-h-screen">
@@ -137,6 +152,7 @@ export default function MyDonations() {
                                                         <Pencil className="w-3.5 h-3.5" />
                                                     </button>
                                                     <button
+                                                        onClick={() => handleDeleteClick(item)}
                                                         title="Delete"
                                                         className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-colors cursor-pointer"
                                                     >
@@ -170,7 +186,12 @@ export default function MyDonations() {
                 onSave={handleSaveDonation}
             />
 
-
+            <DeleteDonationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                donation={selectedDonation}
+                onDelete={handleDeleteConfirm}
+            />
 
         </div>
     );
