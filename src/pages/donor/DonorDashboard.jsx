@@ -254,7 +254,7 @@ export default function DonorDashboard() {
                     <h3 className="text-[15px] font-bold text-slate-900 mb-1">Quick Actions</h3>
                     {/* Button 1: Add New Donation (Primary Green Filled) */}
                     <Link
-                        to="/add-donation"
+                        to="/donor/add-donation"
                         className="w-full px-4 py-3 bg-[#009689] hover:bg-[#007b70] text-white text-[14px] font-semibold rounded-xl flex items-center justify-between transition-colors shadow-sm"
                     >
                         <div className="flex items-center gap-3">
@@ -266,7 +266,7 @@ export default function DonorDashboard() {
 
                     {/* Button 2: View My Donations */}
                     <Link
-                        to="/my-donations"
+                        to="/donor/my-donations"
                         className="w-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 text-[14px] font-semibold rounded-xl border border-slate-200 flex items-center justify-between transition-colors"
                     >
                         <div className="flex items-center gap-3 text-[#009689]">
@@ -278,7 +278,7 @@ export default function DonorDashboard() {
 
                     {/* Button 3: Check Requests */}
                     <Link
-                        to="/requests"
+                        to="/donor/donation-requests"
                         className="w-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 text-[14px] font-semibold rounded-xl border border-slate-200 flex items-center justify-between transition-colors"
                     >
                         <div className="flex items-center gap-3 text-[#E17100]">
@@ -290,7 +290,7 @@ export default function DonorDashboard() {
 
                     {/* Button 4: Donation History */}
                     <Link
-                        to="/history"
+                        to="/donor/history"
                         className="w-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 text-[14px] font-semibold rounded-xl border border-slate-200 flex items-center justify-between transition-colors"
                     >
                         <div className="flex items-center gap-3 text-[#009689]">
@@ -302,7 +302,7 @@ export default function DonorDashboard() {
 
                     {/* Button 5: Give Feedback */}
                     <Link
-                        to="/feedback"
+                        to="/donor/feedback"
                         className="w-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 text-[14px] font-semibold rounded-xl border border-slate-200 flex items-center justify-between transition-colors"
                     >
                         <div className="flex items-center gap-3 text-[#155DFC]">
