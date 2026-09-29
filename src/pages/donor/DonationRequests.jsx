@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Check, X, Eye } from "lucide-react";
+import AcceptRequestModal from "../../components/donor/AcceptRequestModal";
 
 export default function DonationRequests() {
     // Sample requests data - baad mein yeh backend API se aayega
@@ -20,7 +21,7 @@ export default function DonationRequests() {
             name: "Muhammad Ramzan",
             initials: "MR",
             avatarBg: "bg-teal-100 text-teal-700",
-            itemRequested: "Children's Clothing (ages 5–10)",
+            itemRequested: "Children's Clothing (ages 5-10)",
             date: "2024-03-09",
             message: "I have 4 young children who need winter clothes as we approach the cold season in our area.",
             status: "Pending",
@@ -38,6 +39,22 @@ export default function DonationRequests() {
             statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
         },
     ]);
+
+
+    const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null);
+
+
+    const handleAcceptClick = (req) => {
+        setSelectedRequest(req);
+        setIsAcceptModalOpen(true);
+    };
+
+    const handleAcceptConfirm = (id) => {
+        // Request ka status update karne ke liye
+        setRequests(requests.map(r => r.id === id ? { ...r, status: 'Accepted' } : r));
+    };
+
 
     return (
         <div className="flex flex-col gap-6 p-2">
@@ -84,7 +101,9 @@ export default function DonationRequests() {
                         {/* Action Buttons (Visible only if Pending) */}
                         {req.status === "Pending" && (
                             <div className="flex items-center gap-3 pt-1">
-                                <button className="px-4 py-2 bg-[#009689] hover:bg-[#007b70] text-white text-[12px] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5">
+                                <button 
+                                onClick={() => handleAcceptClick(req)}
+                                className="px-4 py-2 bg-[#009689] hover:bg-[#007b70] text-white text-[12px] font-semibold rounded-xl transition-colors  cursor-pointer shadow-sm flex items-center gap-1.5">
                                     <Check className="w-3.5 h-3.5" />
                                     <span>Accept Request</span>
                                 </button>
@@ -101,6 +120,15 @@ export default function DonationRequests() {
                     </div>
                 ))}
             </div>
+
+            <AcceptRequestModal
+                isOpen={isAcceptModalOpen}
+                onClose={() => setIsAcceptModalOpen(false)}
+                onAccept={handleAcceptConfirm}
+                request={selectedRequest}
+            />
+
+
         </div>
     );
 }
