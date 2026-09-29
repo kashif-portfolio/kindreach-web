@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Check, X, Eye } from "lucide-react";
 import AcceptRequestModal from "../../components/donor/AcceptRequestModal";
+import DeclineRequestModal from "../../components/donor/DeclineRequestModal";
 
 export default function DonationRequests() {
     // Sample requests data - baad mein yeh backend API se aayega
@@ -55,6 +56,17 @@ export default function DonationRequests() {
         setRequests(requests.map(r => r.id === id ? { ...r, status: 'Accepted' } : r));
     };
 
+    const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
+
+    const handleDeclineClick = (req) => {
+        setSelectedRequest(req);
+        setIsDeclineModalOpen(true);
+    };
+
+    const handleDeclineConfirm = (id) => {
+        setRequests(requests.map(r => r.id === id ? { ...r, status: 'Declined' } : r));
+    };
+
 
     return (
         <div className="flex flex-col gap-6 p-2">
@@ -101,13 +113,15 @@ export default function DonationRequests() {
                         {/* Action Buttons (Visible only if Pending) */}
                         {req.status === "Pending" && (
                             <div className="flex items-center gap-3 pt-1">
-                                <button 
-                                onClick={() => handleAcceptClick(req)}
-                                className="px-4 py-2 bg-[#009689] hover:bg-[#007b70] text-white text-[12px] font-semibold rounded-xl transition-colors  cursor-pointer shadow-sm flex items-center gap-1.5">
+                                <button
+                                    onClick={() => handleAcceptClick(req)}
+                                    className="px-4 py-2 bg-[#009689] hover:bg-[#007b70] text-white text-[12px] font-semibold rounded-xl transition-colors  cursor-pointer shadow-sm flex items-center gap-1.5">
                                     <Check className="w-3.5 h-3.5" />
                                     <span>Accept Request</span>
                                 </button>
-                                <button className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-[12px] font-semibold rounded-xl border border-red-200 transition-colors flex items-center gap-1.5">
+                                <button
+                                    onClick={() => handleDeclineClick(req)}
+                                    className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-[12px] font-semibold rounded-xl border border-red-200 transition-colors flex items-center gap-1.5">
                                     <X className="w-3.5 h-3.5" />
                                     <span>Decline</span>
                                 </button>
@@ -128,6 +142,12 @@ export default function DonationRequests() {
                 request={selectedRequest}
             />
 
+            <DeclineRequestModal
+                isOpen={isDeclineModalOpen}
+                onClose={() => setIsDeclineModalOpen(false)}
+                onDecline={handleDeclineConfirm}
+                request={selectedRequest}
+            />
 
         </div>
     );
