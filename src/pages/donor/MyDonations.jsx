@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Pencil, Trash2, Plus, Package } from 'lucide-react';
 import DonationDetails from '../../components/donor/DonationDetailsModal';
+import EditDonationModal from '../../components/donor/EditDonationModal';
 
 export default function MyDonations() {
     // Dummy state for donations
@@ -49,6 +50,17 @@ export default function MyDonations() {
         setIsViewModalOpen(true);
     };
 
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+    const handleEditClick = (item) => {
+        setSelectedDonation(item);
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveDonation = (updatedItem) => {
+        setDonations(donations.map(d => d.id === updatedItem.id ? updatedItem : d));
+    };
+
     return (
         <div className="max-w-6xl mx-auto p-6 bg-slate-50 min-h-screen">
             {/* Header Section */}
@@ -93,10 +105,10 @@ export default function MyDonations() {
                                     <td className="py-4 px-5 font-semibold text-slate-800">{item.quantity}</td>
                                     <td className="py-4 px-5">
                                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'Available'
-                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                : item.status === 'Delivered'
-                                                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                            : item.status === 'Delivered'
+                                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                                : 'bg-amber-50 text-amber-700 border border-amber-200'
                                             }`}>
                                             {item.status}
                                         </span>
@@ -118,6 +130,7 @@ export default function MyDonations() {
                                             {item.status === "Available" && (
                                                 <>
                                                     <button
+                                                        onClick={() => handleEditClick(item)}
                                                         title="Edit"
                                                         className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
                                                     >
@@ -149,6 +162,16 @@ export default function MyDonations() {
                     setIsViewModalOpen(false);
                 }}
             />
+
+            <EditDonationModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                donation={selectedDonation}
+                onSave={handleSaveDonation}
+            />
+
+
+
         </div>
     );
 }

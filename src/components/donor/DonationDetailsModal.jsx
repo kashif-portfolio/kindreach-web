@@ -19,7 +19,7 @@ export default function DonationDetails({ isOpen, onClose, donation, onEdit }) {
                     </button>
                 </div>
 
-                {/* Modal Body (Details list jaisa aapke design mein hai) */}
+                {/* Modal Body */}
                 <div className="p-6 space-y-4 text-sm">
                     {/* Type / Category */}
                     <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
