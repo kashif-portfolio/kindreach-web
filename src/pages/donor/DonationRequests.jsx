@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Check, X, Eye } from "lucide-react";
 import AcceptRequestModal from "../../components/donor/AcceptRequestModal";
 import DeclineRequestModal from "../../components/donor/DeclineRequestModal";
+import ViewRequestModal from "../../components/donor/ViewRequestModal";
 
 export default function DonationRequests() {
     // Sample requests data - baad mein yeh backend API se aayega
@@ -68,6 +69,13 @@ export default function DonationRequests() {
     };
 
 
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+    const handleViewClick = (req) => {
+        setSelectedRequest(req);
+        setIsViewModalOpen(true);
+    };
+
     return (
         <div className="flex flex-col gap-6 p-2">
             {/* Page Header */}
@@ -121,11 +129,13 @@ export default function DonationRequests() {
                                 </button>
                                 <button
                                     onClick={() => handleDeclineClick(req)}
-                                    className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-[12px] font-semibold rounded-xl border border-red-200 transition-colors flex items-center gap-1.5">
+                                    className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-[12px] font-semibold rounded-xl border border-red-200 transition-colors cursor-pointer flex items-center gap-1.5">
                                     <X className="w-3.5 h-3.5" />
                                     <span>Decline</span>
                                 </button>
-                                <button className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[12px] font-semibold rounded-xl border border-slate-200 transition-colors flex items-center gap-1.5">
+                                <button
+                                    onClick={() => handleViewClick(req)}
+                                    className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[12px] font-semibold rounded-xl border border-slate-200 transition-colors cursor-pointer flex items-center gap-1.5">
                                     <Eye className="w-3.5 h-3.5" />
                                     <span>View Details</span>
                                 </button>
@@ -147,6 +157,14 @@ export default function DonationRequests() {
                 onClose={() => setIsDeclineModalOpen(false)}
                 onDecline={handleDeclineConfirm}
                 request={selectedRequest}
+            />
+
+            <ViewRequestModal
+                isOpen={isViewModalOpen}
+                onClose={() => setIsViewModalOpen(false)}
+                request={selectedRequest}
+                onAccept={handleAcceptConfirm}
+                onDecline={handleDeclineConfirm}
             />
 
         </div>
