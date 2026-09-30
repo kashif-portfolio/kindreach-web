@@ -18,6 +18,7 @@ import NeedyDashboard from "../pages/needy/NeedyDashboard";
 import BrowseDonations from "../pages/needy/BrowseDonations";
 import NeedyRequests from "../pages/needy/MyRequests";
 import NeedyFeedback from "../pages/needy/NeedyFeedback";
+import NeedyProfile from "../pages/needy/NeedyProfile";
 
 // Main layout for dashboard sidebar and topbar
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -64,7 +65,7 @@ export default function AppRoutes() {
         <Route path="browse-donations" element={<BrowseDonations />} />
         <Route path="requests" element={<NeedyRequests />} />
         <Route path="feedback" element={<NeedyFeedback />} />
-        {/* <Route path="profile" element={<NeedyProfile />} /> */}
+        <Route path="profile" element={<NeedyProfile />} />
       </Route>
 
       {/* Standalone route for add-donation outside nested dashboard if accessed directly */}
