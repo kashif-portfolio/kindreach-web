@@ -1,15 +1,19 @@
 import React, { useState } from "react";
-import { 
-    Utensils, 
-    Shirt, 
-    DollarSign, 
-    Package, 
-    Search, 
-    MapPin 
+import SendRequestModal from "../../components/needy/SendRequestModal";
+import {
+    Utensils,
+    Shirt,
+    DollarSign,
+    Package,
+    Search,
+    MapPin
 } from 'lucide-react';
 
 export default function BrowseDonations() {
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDonation, setSelectedDonation] = useState(null);
+
 
     const donations = [
         {
@@ -84,7 +88,7 @@ export default function BrowseDonations() {
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
-            
+
             {/* Header Section */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2 text-[13px] text-slate-400">
@@ -104,9 +108,9 @@ export default function BrowseDonations() {
             <div className="flex flex-col gap-4">
                 <div className="relative w-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input 
-                        type="text" 
-                        placeholder="Search by description, donor or location..." 
+                    <input
+                        type="text"
+                        placeholder="Search by description, donor or location..."
                         className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200/80 rounded-xl text-[13px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#009689] shadow-sm"
                     />
                 </div>
@@ -116,11 +120,10 @@ export default function BrowseDonations() {
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
-                            className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all cursor-pointer ${
-                                selectedCategory === cat 
-                                    ? "bg-[#009689] text-white shadow-sm" 
-                                    : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50"
-                            }`}
+                            className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all cursor-pointer ${selectedCategory === cat
+                                ? "bg-[#009689] text-white shadow-sm"
+                                : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50"
+                                }`}
                         >
                             {cat}
                         </button>
@@ -131,8 +134,8 @@ export default function BrowseDonations() {
             {/* Donations Grid */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-6">
                 {donations.map((item) => (
-                    <div 
-                        key={item.id} 
+                    <div
+                        key={item.id}
                         className="w-[550.03px] h-[221.62px] bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between"
                     >
                         {/* Top Section: Icon, Title, Badge */}
@@ -163,12 +166,25 @@ export default function BrowseDonations() {
                         </div>
 
                         {/* Bottom Button */}
-                        <button className="w-full h-10 bg-[#009689] hover:bg-[#007A6F] text-white rounded-xl text-[13px] font-semibold transition-all shadow-sm flex items-center justify-center cursor-pointer">
+                        <button
+                            onClick={() => {
+                                setSelectedDonation(item);
+                                setIsModalOpen(true);
+                            }}
+
+                            className="w-full h-10 bg-[#009689] hover:bg-[#007A6F] text-white rounded-xl text-[13px] font-semibold transition-all shadow-sm flex items-center justify-center cursor-pointer">
                             Send Request
                         </button>
                     </div>
                 ))}
             </div>
+            {/* Send Request Modal Component */}
+            <SendRequestModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                donation={selectedDonation}
+            />
+
         </div>
     );
 }
