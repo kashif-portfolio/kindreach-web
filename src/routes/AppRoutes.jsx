@@ -1,12 +1,19 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
+// Layouts imports
 import AuthLayout from '../layouts/AuthLayout';
+import DashboardLayout from "../layouts/DashboardLayout";
+
+// Authentication screens
 import Login from "../pages/auth/Login";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import VerifyOtp from "../pages/auth/VerifyOTP";
 import PasswordSuccess from "../pages/auth/PasswordSuccess";
 import ResetPassword from "../pages/auth/ResetPassword";
 import SignUp from "../pages/auth/SignUp";
+
+// Donor portal screens
 import DonorDashboard from "../pages/donor/DonorDashboard";
 import PostDonation from "../pages/donor/AddDonation";
 import MyDonations from "../pages/donor/MyDonations";
@@ -14,22 +21,33 @@ import DonationRequests from "../pages/donor/DonationRequests";
 import DonationHistory from "../pages/donor/DonationHistory";
 import Feedback from "../pages/donor/Feedback";
 import MyProfile from "../pages/donor/DonorProfile";
+
+// Needy person portal screens
 import NeedyDashboard from "../pages/needy/NeedyDashboard";
 import BrowseDonations from "../pages/needy/BrowseDonations";
 import NeedyRequests from "../pages/needy/MyRequests";
 import NeedyFeedback from "../pages/needy/NeedyFeedback";
 import NeedyProfile from "../pages/needy/NeedyProfile";
 
-// Main layout for dashboard sidebar and topbar
-import DashboardLayout from "../layouts/DashboardLayout";
+// Admin portal screens
+import AdminDashboard from "../pages/admin/AdminDashboard";
+// import ManageDonors from "../pages/admin/ManageDonors";
+// import ManageNeedy from "../pages/admin/ManageNeedy";
+// import DonationTypes from "../pages/admin/DonationTypes";
+// import AdminDonationRequests from "../pages/admin/AdminDonationRequests";
+// import MonitorDonations from "../pages/admin/MonitorDonations";
+// import GenerateReports from "../pages/admin/GenerateReports";
+// import SendNotifications from "../pages/admin/SendNotifications";
+// import ResolveComplaints from "../pages/admin/ResolveComplaints";
+// import AdminProfileSettings from "../pages/admin/AdminProfileSettings";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Redirect root URL (/) to the login page by default */}
+      {/* Redirect root URL to donor dashboard by default */}
       <Route path="/" element={<Navigate to="/donor" replace />} />
 
-      {/* 1. Authentication Routes Group (Login, Signup, Recovery screens) wrapped inside AuthLayout */}
+      {/* 1. Authentication routes group wrapped inside AuthLayout */}
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
@@ -39,27 +57,18 @@ export default function AppRoutes() {
         <Route path="signup" element={<SignUp />} />
       </Route>
 
-      {/* 2. Donor Dashboard Routes Group wrapped inside DashboardLayout (Sidebar/Topbar shell) */}
+      {/* 2. Donor portal routes group wrapped inside DashboardLayout */}
       <Route path="/donor" element={<DashboardLayout />}>
-        {/* Default index route rendering the main donor dashboard */}
         <Route index element={<DonorDashboard />} />
-        {/* Route for adding a new donation */}
         <Route path="add-donation" element={<PostDonation />} />
-        {/* Route for viewing user's submitted donations */}
         <Route path="my-donations" element={<MyDonations />} />
-        {/* Route for checking active donation requests */}
         <Route path="donation-requests" element={<DonationRequests />} />
-        {/* Route for past donation history records */}
         <Route path="history" element={<DonationHistory />} />
-        {/* Route for submitting and viewing feedback */}
         <Route path="feedback" element={<Feedback />} />
-        {/* Route for managing donor profile details */}
         <Route path="profile" element={<MyProfile />} />
       </Route>
 
-
-
-      {/* Needy Person Dashboard Routes Group */}
+      {/* 3. Needy person portal routes group wrapped inside DashboardLayout */}
       <Route path="/needy" element={<DashboardLayout />}>
         <Route index element={<NeedyDashboard />} />
         <Route path="browse-donations" element={<BrowseDonations />} />
@@ -68,10 +77,21 @@ export default function AppRoutes() {
         <Route path="profile" element={<NeedyProfile />} />
       </Route>
 
-      {/* Standalone route for add-donation outside nested dashboard if accessed directly */}
-      <Route path="/add-donation" element={<PostDonation />} />
+      {/* 4. Admin portal routes group wrapped inside DashboardLayout */}
+      <Route path="/admin" element={<DashboardLayout />}>
+        <Route index element={<AdminDashboard />} />
+        {/* <Route path="manage-donors" element={<ManageDonors />} />
+        <Route path="manage-needy" element={<ManageNeedy />} />
+        <Route path="donation-types" element={<DonationTypes />} />
+        <Route path="donation-requests" element={<AdminDonationRequests />} />
+        <Route path="monitor-donations" element={<MonitorDonations />} />
+        <Route path="generate-reports" element={<GenerateReports />} />
+        <Route path="send-notifications" element={<SendNotifications />} />
+        <Route path="resolve-complaints" element={<ResolveComplaints />} />
+        <Route path="profile" element={<AdminProfileSettings />} /> */}
+      </Route>
 
-      {/* Catch-all route: redirects any invalid or unknown URL back to the login page */}
+      {/* Fallback route for any unknown URL */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
