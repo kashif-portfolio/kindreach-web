@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import BlockDonorModal from "../../components/admin/BlockDonorModal";
 import {
     Search,
     Phone,
@@ -44,6 +45,15 @@ export default function ManageDonors() {
         const matchesStatus = statusFilter === "All" || donor.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDonorId, setSelectedDonorId] = useState(null);
+
+    const handleBlock = (id) => {
+        setDonors(donors.map(donor =>
+            donor.id === id ? { ...donor, status: "Blocked" } : donor
+        ));
+    };
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
@@ -168,7 +178,10 @@ export default function ManageDonors() {
                                         <div className="flex items-center justify-end gap-2">
                                             {donor.status === "Approved" && (
                                                 <button
-                                                    onClick={() => handleStatusToggle(donor.id)}
+                                                    onClick={() => {
+                                                        setSelectedDonorId(donor.id);
+                                                        setIsModalOpen(true);
+                                                    }}
                                                     className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                                                 >
                                                     <Ban className="w-3 h-3" />
@@ -237,6 +250,17 @@ export default function ManageDonors() {
 
             </div>
 
+            <BlockDonorModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={() => {
+                    // Yahan par aap apni block hone wali logic ya state update likhein ge
+                    handleBlock(selectedDonorId);
+                    setIsModalOpen(false); // Modal band kar dein
+                }}
+            />
+
         </div>
+
     );
 }
