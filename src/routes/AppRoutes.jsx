@@ -85,6 +85,7 @@ export default function AppRoutes() {
         <Route path="donation-types" element={<DonationTypes />} />
         <Route path="donation-requests" element={<AdminDonationRequests />} />
         <Route path="monitor-donations" element={<MonitorDonations />} />
+        <Route path="/admin/assign-donations" element={<AssignDonations />} />
         {/* <Route path="generate-reports" element={<GenerateReports />} />
         <Route path="send-notifications" element={<SendNotifications />} />
         <Route path="resolve-complaints" element={<ResolveComplaints />} />

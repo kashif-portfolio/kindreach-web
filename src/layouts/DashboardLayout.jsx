@@ -17,7 +17,8 @@ import {
     FileText,
     Send,
     AlertTriangle,
-    Heart
+    Heart,
+    UserCheck
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -314,6 +315,18 @@ export default function DashboardLayout() {
                                     </>
                                 )}
                             </NavLink>
+
+                            <NavLink
+                                to="/admin/assign-donations"
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors ${location.pathname === "/admin/assign-donations"
+                                        ? "bg-teal-50 text-[#009689] font-semibold"
+                                        : "text-slate-600 hover:bg-slate-50"
+                                    }`}
+                            >
+                                <UserCheck className="w-4 h-4" />
+                                Assign Donations
+                            </NavLink>
+
                             <NavLink
                                 to="/admin/generate-reports"
                                 className={({ isActive }) => `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive ? 'bg-[#ECFDF5] text-[#009689]' : 'text-slate-600 hover:bg-slate-50'}`}
