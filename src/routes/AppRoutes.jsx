@@ -39,7 +39,7 @@ import MonitorDonations from "../pages/admin/MonitorDonations";
 import AssignDonations from "../pages/admin/AssignDonations";
 import GenerateReports from "../pages/admin/GenerateReports";
 import SendNotifications from "../pages/admin/SendNotifications";
-// import ResolveComplaints from "../pages/admin/ResolveComplaints";
+import ResolveComplaints from "../pages/admin/ResolveComplaints";
 // import AdminProfileSettings from "../pages/admin/AdminProfileSettings";
 
 export default function AppRoutes() {
@@ -89,8 +89,8 @@ export default function AppRoutes() {
         <Route path="/admin/assign-donations" element={<AssignDonations />} />
         <Route path="generate-reports" element={<GenerateReports />} />
         <Route path="send-notifications" element={<SendNotifications />} />
-        {/* <Route path="resolve-complaints" element={<ResolveComplaints />} />
-        <Route path="profile" element={<AdminProfileSettings />} /> */}
+        <Route path="resolve-complaints" element={<ResolveComplaints />} />
+        {/* <Route path="profile" element={<AdminProfileSettings />} /> */}
       </Route>
 
       {/* Fallback route for any unknown URL */}
