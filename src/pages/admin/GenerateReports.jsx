@@ -44,7 +44,7 @@ export default function GenerateReports() {
                     Generate Reports
                 </h1>
                 <p className="text-[13px] text-slate-500">
-                    Generate the three reports defined in the project requirements[cite: 8]
+                    Generate the three reports defined in the project requirements
                 </p>
             </div>
 
@@ -111,7 +111,7 @@ export default function GenerateReports() {
 
                 {/* Subtitle helper description */}
                 <p className="text-[12px] text-slate-400 mt-1">
-                    Available reports: total donations, active donors, and completed charity requests.[cite: 8]
+                    Available reports: total donations, active donors, and completed charity requests.
                 </p>
             </div>
 
@@ -122,7 +122,7 @@ export default function GenerateReports() {
                         <FileText className="w-6 h-6" />
                     </div>
                     <p className="text-[13px] text-slate-500 font-medium">
-                        Choose a report type and date range, then generate the report.[cite: 8]
+                        Choose a report type and date range, then generate the report.
                     </p>
                 </div>
             ) : (
