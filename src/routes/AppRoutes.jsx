@@ -31,7 +31,7 @@ import NeedyProfile from "../pages/needy/NeedyProfile";
 
 // Admin portal screens
 import AdminDashboard from "../pages/admin/AdminDashboard";
-// import ManageDonors from "../pages/admin/ManageDonors";
+import ManageDonors from "../pages/admin/ManageDonors";
 // import ManageNeedy from "../pages/admin/ManageNeedy";
 // import DonationTypes from "../pages/admin/DonationTypes";
 // import AdminDonationRequests from "../pages/admin/AdminDonationRequests";
@@ -80,8 +80,8 @@ export default function AppRoutes() {
       {/* 4. Admin portal routes group wrapped inside DashboardLayout */}
       <Route path="/admin" element={<DashboardLayout />}>
         <Route index element={<AdminDashboard />} />
-        {/* <Route path="manage-donors" element={<ManageDonors />} />
-        <Route path="manage-needy" element={<ManageNeedy />} />
+        <Route path="manage-donors" element={<ManageDonors />} />
+        {/* <Route path="manage-needy" element={<ManageNeedy />} />
         <Route path="donation-types" element={<DonationTypes />} />
         <Route path="donation-requests" element={<AdminDonationRequests />} />
         <Route path="monitor-donations" element={<MonitorDonations />} />
