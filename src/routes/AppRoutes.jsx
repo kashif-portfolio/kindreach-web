@@ -36,6 +36,7 @@ import ManageNeedy from "../pages/admin/ManageNeedy";
 import DonationTypes from "../pages/admin/DonationTypes";
 import AdminDonationRequests from "../pages/admin/AdminDonationRequests";
 import MonitorDonations from "../pages/admin/MonitorDonations";
+import AssignDonations from "../pages/admin/AssignDonations";
 // import GenerateReports from "../pages/admin/GenerateReports";
 // import SendNotifications from "../pages/admin/SendNotifications";
 // import ResolveComplaints from "../pages/admin/ResolveComplaints";
