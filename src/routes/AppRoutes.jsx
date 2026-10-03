@@ -40,7 +40,7 @@ import AssignDonations from "../pages/admin/AssignDonations";
 import GenerateReports from "../pages/admin/GenerateReports";
 import SendNotifications from "../pages/admin/SendNotifications";
 import ResolveComplaints from "../pages/admin/ResolveComplaints";
-// import AdminProfileSettings from "../pages/admin/AdminProfileSettings";
+import AdminProfileSettings from "../pages/admin/AdminProfileSettings";
 
 export default function AppRoutes() {
   return (
@@ -90,7 +90,7 @@ export default function AppRoutes() {
         <Route path="generate-reports" element={<GenerateReports />} />
         <Route path="send-notifications" element={<SendNotifications />} />
         <Route path="resolve-complaints" element={<ResolveComplaints />} />
-        {/* <Route path="profile" element={<AdminProfileSettings />} /> */}
+        <Route path="profile" element={<AdminProfileSettings />} />
       </Route>
 
       {/* Fallback route for any unknown URL */}
