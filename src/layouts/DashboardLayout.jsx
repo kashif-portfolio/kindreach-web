@@ -68,18 +68,17 @@ export default function DashboardLayout() {
     };
 
     return (
-        <div className="flex w-full h-screen bg-white overflow-hidden">
+        <div className="flex w-full h-screen bg-white overflow-hidden ">
 
             {/* Sidebar */}
-            <aside className="w-65 h-full bg-white border-r border-slate-200/80 flex flex-col shrink-0">
+            <aside className="w-65 h-full bg-white border-r border-slate-200/80 flex flex-col shrink-0  ">
 
                 {/* Logo Section */}
                 <div className="w-65 px-6 py-6 border-b border-slate-200/80 flex items-center gap-3">
                     <img src={logoGreen} alt="Kind Reach Logo" className="w-auto h-12 object-contain" />
                 </div>
 
-                <div className="flex-1 px-3 py-6 flex flex-col gap-0.5 overflow-y-auto">
-                    <p className="px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase mb-2">Menu</p>
+                <div className="flex-1 px-3 py-6 flex flex-col  overflow-y-auto">
 
                     {/* --- DONOR LINKS --- */}
                     {isDonor && (
