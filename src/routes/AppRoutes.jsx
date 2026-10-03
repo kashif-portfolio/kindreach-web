@@ -33,7 +33,7 @@ import NeedyProfile from "../pages/needy/NeedyProfile";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageDonors from "../pages/admin/ManageDonors";
 import ManageNeedy from "../pages/admin/ManageNeedy";
-// import DonationTypes from "../pages/admin/DonationTypes";
+import DonationTypes from "../pages/admin/DonationTypes";
 // import AdminDonationRequests from "../pages/admin/AdminDonationRequests";
 // import MonitorDonations from "../pages/admin/MonitorDonations";
 // import GenerateReports from "../pages/admin/GenerateReports";
@@ -82,8 +82,8 @@ export default function AppRoutes() {
         <Route index element={<AdminDashboard />} />
         <Route path="manage-donors" element={<ManageDonors />} />
         <Route path="manage-needy" element={<ManageNeedy />} />
-        {/* <Route path="donation-types" element={<DonationTypes />} />
-        <Route path="donation-requests" element={<AdminDonationRequests />} />
+        <Route path="donation-types" element={<DonationTypes />} />
+        {/* <Route path="donation-requests" element={<AdminDonationRequests />} />
         <Route path="monitor-donations" element={<MonitorDonations />} />
         <Route path="generate-reports" element={<GenerateReports />} />
         <Route path="send-notifications" element={<SendNotifications />} />
