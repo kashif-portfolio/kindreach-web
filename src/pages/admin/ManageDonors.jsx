@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import BlockDonorModal from "../../components/admin/BlockDonorModal";
 import ApproveDonorModal from "../../components/admin/ApproveDonorModal";
 import UnblockDonorModal from "../../components/admin/UnblockDonorModal";
+import DonorDetailsModal from "../../components/admin/DonorDetailsModal";
 import {
     Search,
     Phone,
@@ -13,7 +14,6 @@ import {
     ChevronLeft,
     ChevronRight as ChevronRightIcon,
     Eye,
-    View
 } from "lucide-react";
 
 export default function ManageDonors() {
@@ -52,11 +52,15 @@ export default function ManageDonors() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDonorId, setSelectedDonorId] = useState(null);
+
     const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
     const [selectedApproveId, setSelectedApproveId] = useState(null);
+
     const [isUnblockModalOpen, setIsUnblockModalOpen] = useState(false);
     const [selectedUnblockId, setSelectedUnblockId] = useState(null);
 
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [selectedDonorDetails, setSelectedDonorDetails] = useState(null);
 
     const handleBlock = (id) => {
         setDonors(donors.map(donor =>
@@ -234,7 +238,12 @@ export default function ManageDonors() {
                                                 </button>
                                             )}
 
-                                            <button className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedDonorDetails(donor);
+                                                    setIsDetailsModalOpen(true);
+                                                }}
+                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
                                                 <Eye className="w-3.5 h-3.5" />
                                             </button>
 
@@ -308,6 +317,12 @@ export default function ManageDonors() {
                     handleUnblock(selectedUnblockId);
                     setIsUnblockModalOpen(false);
                 }}
+            />
+
+            <DonorDetailsModal
+                isOpen={isDetailsModalOpen}
+                onClose={() => setIsDetailsModalOpen(false)}
+                donor={selectedDonorDetails}
             />
 
         </div>
