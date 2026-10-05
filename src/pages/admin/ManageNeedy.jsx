@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import NeedyDetailsModal from "../../components/admin/NeedyDetailsModal";
+import VerifyApplicantModal from "../../components/admin/VerifyApplicantModal";
 import {
     Search,
     Check,
@@ -18,6 +19,9 @@ export default function ManageNeedyPersons() {
     // Details Modal State
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [selectedApplicantDetails, setSelectedApplicantDetails] = useState(null);
+
+    const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+    const [selectedVerifyId, setSelectedVerifyId] = useState(null);
 
     // Initial dummy data matching your design and screenshot
     const [applicants, setApplicants] = useState([
@@ -47,6 +51,12 @@ export default function ManageNeedyPersons() {
             app.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
             app.reason.toLowerCase().includes(searchTerm.toLowerCase());
     });
+
+    const handleVerify = (id) => {
+        setApplicants(applicants.map(app =>
+            app.id === id ? { ...app, status: "Verified" } : app
+        ));
+    };
 
     return (
         <div className="w-full px-8 py-0 flex flex-col gap-6">
@@ -156,7 +166,10 @@ export default function ManageNeedyPersons() {
                                             {applicant.status === "Pending" ? (
                                                 <>
                                                     <button
-                                                        onClick={() => handleStatusChange(applicant.id, "Verified")}
+                                                        onClick={() => {
+                                                            setSelectedVerifyId(applicant.id);
+                                                            setIsVerifyModalOpen(true);
+                                                        }}
                                                         className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                                                     >
                                                         <Check className="w-3 h-3" />
@@ -233,6 +246,14 @@ export default function ManageNeedyPersons() {
                 isOpen={isDetailsModalOpen}
                 onClose={() => setIsDetailsModalOpen(false)}
                 applicant={selectedApplicantDetails}
+            />
+            <VerifyApplicantModal
+                isOpen={isVerifyModalOpen}
+                onClose={() => setIsVerifyModalOpen(false)}
+                onConfirm={() => {
+                    handleVerify(selectedVerifyId);
+                    setIsVerifyModalOpen(false);
+                }}
             />
 
         </div>
