@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import NeedyDetailsModal from "../../components/admin/NeedyDetailsModal";
 import VerifyApplicantModal from "../../components/admin/VerifyApplicantModal";
+import RejectApplicantModal from "../../components/admin/RejectApplicantModal";
+import DeleteRecordModal from "../../components/admin/DeleteRecordModal";
 import {
     Search,
     Check,
@@ -9,7 +11,8 @@ import {
     Trash2,
     ChevronLeft,
     ChevronRight as ChevronRightIcon,
-    Eye
+    Eye,
+    Plus
 } from "lucide-react";
 
 export default function ManageNeedyPersons() {
@@ -22,6 +25,12 @@ export default function ManageNeedyPersons() {
 
     const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
     const [selectedVerifyId, setSelectedVerifyId] = useState(null);
+
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+    const [selectedRejectId, setSelectedRejectId] = useState(null);
+
+    const [isDeleteRecordModalOpen, setIsDeleteRecordModalOpen] = useState(false);
+    const [selectedDeleteRecordId, setSelectedDeleteRecordId] = useState(null);
 
     // Initial dummy data matching your design and screenshot
     const [applicants, setApplicants] = useState([
@@ -58,17 +67,38 @@ export default function ManageNeedyPersons() {
         ));
     };
 
+    const handleReject = (id) => {
+        setApplicants(applicants.map(app =>
+            app.id === id ? { ...app, status: "Rejected" } : app
+        ));
+    };
+
+    const handleDeleteRecord = (id) => {
+        setApplicants(applicants.filter(app => app.id !== id));
+    };
+
     return (
         <div className="w-full px-8 py-0 flex flex-col gap-6">
 
             {/* Page Header */}
-            <div className="flex flex-col gap-1">
-                <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
-                    Manage Needy Persons
-                </h1>
-                <p className="text-[13px] text-slate-500">
-                    {applicants.length} applicants on record
-                </p>
+            <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
+                        Manage Needy Persons
+                    </h1>
+                    <p className="text-[13px] text-slate-500">
+                        {applicants.length} applicants on record
+                    </p>
+                </div>
+
+                {/* Register Needy Person Button */}
+                <button
+                    onClick={() => setIsRegisterModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-[#009689] hover:bg-[#007f73] text-white rounded-xl text-[13px] font-semibold transition-colors shadow-xs cursor-pointer"
+                >
+                    <Plus className="w-4 h-4" />
+                    Register Needy Person
+                </button>
             </div>
 
             {/* Search Bar Bar (Full Width) */}
@@ -176,7 +206,10 @@ export default function ManageNeedyPersons() {
                                                         Verify
                                                     </button>
                                                     <button
-                                                        onClick={() => handleStatusChange(applicant.id, "Rejected")}
+                                                        onClick={() => {
+                                                            setSelectedRejectId(applicant.id);
+                                                            setIsRejectModalOpen(true);
+                                                        }}
                                                         className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                                                     >
                                                         <X className="w-3 h-3" />
@@ -200,7 +233,10 @@ export default function ManageNeedyPersons() {
                                             </button>
 
                                             <button
-                                                onClick={() => handleDelete(applicant.id)}
+                                                onClick={() => {
+                                                    setSelectedDeleteRecordId(applicant.id);
+                                                    setIsDeleteRecordModalOpen(true);
+                                                }}
                                                 className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -253,6 +289,24 @@ export default function ManageNeedyPersons() {
                 onConfirm={() => {
                     handleVerify(selectedVerifyId);
                     setIsVerifyModalOpen(false);
+                }}
+            />
+
+            <RejectApplicantModal
+                isOpen={isRejectModalOpen}
+                onClose={() => setIsRejectModalOpen(false)}
+                onConfirm={() => {
+                    handleReject(selectedRejectId);
+                    setIsRejectModalOpen(false);
+                }}
+            />
+
+            <DeleteRecordModal
+                isOpen={isDeleteRecordModalOpen}
+                onClose={() => setIsDeleteRecordModalOpen(false)}
+                onConfirm={() => {
+                    handleDeleteRecord(selectedDeleteRecordId);
+                    setIsDeleteRecordModalOpen(false);
                 }}
             />
 
