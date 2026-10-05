@@ -4,6 +4,7 @@ import ApproveDonorModal from "../../components/admin/ApproveDonorModal";
 import UnblockDonorModal from "../../components/admin/UnblockDonorModal";
 import DonorDetailsModal from "../../components/admin/DonorDetailsModal";
 import EditDonorModal from "../../components/admin/EditDonorModal";
+import DeleteDonorModal from "../../components/admin/DeleteDonorModal";
 import {
     Search,
     Phone,
@@ -66,6 +67,9 @@ export default function ManageDonors() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedDonorToEdit, setSelectedDonorToEdit] = useState(null);
 
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedDeleteId, setSelectedDeleteId] = useState(null);
+
     const handleBlock = (id) => {
         setDonors(donors.map(donor =>
             donor.id === id ? { ...donor, status: "Blocked" } : donor
@@ -88,6 +92,10 @@ export default function ManageDonors() {
         setDonors(donors.map(donor =>
             donor.id === updatedDonor.id ? updatedDonor : donor
         ));
+    };
+
+    const handleDelete = (id) => {
+        setDonors(donors.filter(donor => donor.id !== id));
     };
 
     return (
@@ -267,7 +275,13 @@ export default function ManageDonors() {
                                                 className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
                                                 <Edit className="w-3.5 h-3.5" />
                                             </button>
-                                            <button className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
+
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedDeleteId(donor.id);
+                                                    setIsDeleteModalOpen(true);
+                                                }}
+                                                className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
                                         </div>
@@ -346,6 +360,15 @@ export default function ManageDonors() {
                 onClose={() => setIsEditModalOpen(false)}
                 donor={selectedDonorToEdit}
                 onSave={handleEditSave}
+            />
+
+            <DeleteDonorModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={() => {
+                    handleDelete(selectedDeleteId);
+                    setIsDeleteModalOpen(false);
+                }}
             />
 
         </div>
