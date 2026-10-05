@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import NeedyDetailsModal from "../../components/admin/NeedyDetailsModal";
 import {
     Search,
     Check,
@@ -6,12 +7,17 @@ import {
     Edit,
     Trash2,
     ChevronLeft,
-    ChevronRight as ChevronRightIcon
+    ChevronRight as ChevronRightIcon,
+    Eye
 } from "lucide-react";
 
 export default function ManageNeedyPersons() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+
+    // Details Modal State
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [selectedApplicantDetails, setSelectedApplicantDetails] = useState(null);
 
     // Initial dummy data matching your design and screenshot
     const [applicants, setApplicants] = useState([
@@ -167,9 +173,19 @@ export default function ManageNeedyPersons() {
                                             ) : null}
 
                                             {/* Edit & Delete buttons hamesha available rahenge */}
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedApplicantDetails(applicant);
+                                                    setIsDetailsModalOpen(true);
+                                                }}
+                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
+                                                <Eye className="w-3.5 h-3.5" />
+                                            </button>
+
                                             <button className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
                                                 <Edit className="w-3.5 h-3.5" />
                                             </button>
+
                                             <button
                                                 onClick={() => handleDelete(applicant.id)}
                                                 className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
@@ -212,6 +228,12 @@ export default function ManageNeedyPersons() {
                 </div>
 
             </div>
+
+            <NeedyDetailsModal
+                isOpen={isDetailsModalOpen}
+                onClose={() => setIsDetailsModalOpen(false)}
+                applicant={selectedApplicantDetails}
+            />
 
         </div>
     );
