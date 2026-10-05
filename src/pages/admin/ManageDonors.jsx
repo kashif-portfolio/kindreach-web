@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import BlockDonorModal from "../../components/admin/BlockDonorModal";
 import ApproveDonorModal from "../../components/admin/ApproveDonorModal";
+import UnblockDonorModal from "../../components/admin/UnblockDonorModal";
 import {
     Search,
     Phone,
@@ -51,6 +52,9 @@ export default function ManageDonors() {
     const [selectedDonorId, setSelectedDonorId] = useState(null);
     const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
     const [selectedApproveId, setSelectedApproveId] = useState(null);
+    const [isUnblockModalOpen, setIsUnblockModalOpen] = useState(false);
+    const [selectedUnblockId, setSelectedUnblockId] = useState(null);
+
 
     const handleBlock = (id) => {
         setDonors(donors.map(donor =>
@@ -61,6 +65,12 @@ export default function ManageDonors() {
     const handleApprove = (id) => {
         setDonors(donors.map(donor =>
             donor.id === id ? { ...donor, status: "Approved" } : donor
+        ));
+    };
+
+    const handleUnblock = (id) => {
+        setDonors(donors.map(donor =>
+            donor.id === id ? { ...donor, status: "Approved" } : donor // ya "Active" jo bhi status aap dena chahein
         ));
     };
 
@@ -199,7 +209,10 @@ export default function ManageDonors() {
                                             )}
                                             {donor.status === "Blocked" && (
                                                 <button
-                                                    onClick={() => handleStatusToggle(donor.id)}
+                                                    onClick={() => {
+                                                        setSelectedUnblockId(donor.id);
+                                                        setIsUnblockModalOpen(true);
+                                                    }}
                                                     className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                                                 >
                                                     <Check className="w-3 h-3" />
@@ -278,6 +291,15 @@ export default function ManageDonors() {
                 onConfirm={() => {
                     handleApprove(selectedApproveId);
                     setIsApproveModalOpen(false);
+                }}
+            />
+
+            <UnblockDonorModal
+                isOpen={isUnblockModalOpen}
+                onClose={() => setIsUnblockModalOpen(false)}
+                onConfirm={() => {
+                    handleUnblock(selectedUnblockId);
+                    setIsUnblockModalOpen(false);
                 }}
             />
 
