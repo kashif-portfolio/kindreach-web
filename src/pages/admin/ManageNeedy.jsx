@@ -3,6 +3,7 @@ import NeedyDetailsModal from "../../components/admin/NeedyDetailsModal";
 import VerifyApplicantModal from "../../components/admin/VerifyApplicantModal";
 import RejectApplicantModal from "../../components/admin/RejectApplicantModal";
 import DeleteRecordModal from "../../components/admin/DeleteRecordModal";
+import RegisterNeedyModal from "../../components/admin/RegisterNeedyModal";
 import {
     Search,
     Check,
@@ -31,6 +32,9 @@ export default function ManageNeedyPersons() {
 
     const [isDeleteRecordModalOpen, setIsDeleteRecordModalOpen] = useState(false);
     const [selectedDeleteRecordId, setSelectedDeleteRecordId] = useState(null);
+
+    // Register Modal State
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
     // Initial dummy data matching your design and screenshot
     const [applicants, setApplicants] = useState([
@@ -75,6 +79,19 @@ export default function ManageNeedyPersons() {
 
     const handleDeleteRecord = (id) => {
         setApplicants(applicants.filter(app => app.id !== id));
+    };
+
+    const handleRegisterNewApplicant = (newPerson) => {
+        const applicantWithMeta = {
+            id: applicants.length + 1,
+            ...newPerson,
+            status: "Pending", // Default status
+            initials: newPerson.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2),
+            color: "bg-[#009689]",
+            registered: new Date().toISOString().split('T')[0],
+            requestsMade: 0
+        };
+        setApplicants([applicantWithMeta, ...applicants]);
     };
 
     return (
@@ -308,6 +325,13 @@ export default function ManageNeedyPersons() {
                     handleDeleteRecord(selectedDeleteRecordId);
                     setIsDeleteRecordModalOpen(false);
                 }}
+            />
+
+            {/* Register Modal Integration */}
+            <RegisterNeedyModal
+                isOpen={isRegisterModalOpen}
+                onClose={() => setIsRegisterModalOpen(false)}
+                onRegister={handleRegisterNewApplicant}
             />
 
         </div>
