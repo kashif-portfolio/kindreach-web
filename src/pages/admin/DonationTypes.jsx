@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AddDonationTypeModal from "../../components/admin/AddDonationTypeModal";
 import EditDonationTypeModal from "../../components/admin/EditDonationTypeModal";
+import DeleteDonationTypeModal from "../../components/admin/DeleteDonationTypeModal";
 import {
     Plus,
     Edit3,
@@ -44,6 +45,9 @@ export default function DonationTypes() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedItemToEdit, setSelectedItemToEdit] = useState(null);
 
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedItemToDelete, setSelectedItemToDelete] = useState(null);
+
     // 3. PAGINATION STATES: Current page aur items per page track karne ke liye
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 3;
@@ -69,6 +73,14 @@ export default function DonationTypes() {
         setDonationTypes(
             donationTypes.map((item) => (item.id === updatedItem.id ? updatedItem : item))
         );
+    };
+
+    const handleConfirmDelete = () => {
+        if (selectedItemToDelete) {
+            setDonationTypes(donationTypes.filter(item => item.id !== selectedItemToDelete.id));
+            setIsDeleteModalOpen(false);
+            setSelectedItemToDelete(null);
+        }
     };
 
     // --- PAGINATION LOGIC ---
@@ -149,7 +161,10 @@ export default function DonationTypes() {
                                             </button>
                                             {/* Delete Button */}
                                             <button
-                                                onClick={() => handleDelete(item.id)}
+                                                onClick={() => {
+                                                    setSelectedItemToDelete(item);
+                                                    setIsDeleteModalOpen(true);
+                                                }}
                                                 className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg transition-colors cursor-pointer border border-slate-200"
                                                 title="Delete"
                                             >
@@ -218,6 +233,12 @@ export default function DonationTypes() {
                 onClose={() => setIsEditModalOpen(false)}
                 onSave={handleUpdateDonationType}
                 donationData={selectedItemToEdit}
+            />
+            <DeleteDonationTypeModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                donationTitle={selectedItemToDelete?.title}
             />
 
         </div>
