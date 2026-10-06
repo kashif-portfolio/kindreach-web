@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import RequestDetailsModal from "../../components/admin/RequestDetailsModal";
 import {
     Check,
     X,
@@ -8,6 +9,9 @@ import {
 
 export default function DonationRequests() {
     const [activeTab, setActiveTab] = useState("All");
+
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null);
 
     // Dummy donation requests data matching the screenshot
     const [requests, setRequests] = useState([
@@ -93,8 +97,8 @@ export default function DonationRequests() {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-colors cursor-pointer border ${activeTab === tab
-                                ? "bg-[#009689] text-white border-[#009689] shadow-2xs"
-                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                            ? "bg-[#009689] text-white border-[#009689] shadow-2xs"
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                             }`}
                     >
                         {tab}
@@ -120,7 +124,14 @@ export default function DonationRequests() {
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-[13px]">
                             {filteredRequests.map((req) => (
-                                <tr key={req.id} className="hover:bg-slate-50/60 transition-colors">
+                                <tr
+                                    key={req.id}
+                                    onClick={() => {
+                                        setSelectedRequest(req);
+                                        setIsDetailModalOpen(true);
+                                    }}
+                                    className="hover:bg-slate-50/60 transition-colors cursor-pointer"
+                                >
 
                                     {/* Request ID */}
                                     <td className="py-4 px-6 font-semibold text-slate-500">
@@ -183,7 +194,7 @@ export default function DonationRequests() {
                                     </td>
 
                                     {/* Actions */}
-                                    <td className="py-4 px-6 text-right">
+                                    <td className="py-4 px-6 text-right" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex items-center justify-end gap-2">
                                             {req.status === "Pending" ? (
                                                 <>
@@ -236,6 +247,15 @@ export default function DonationRequests() {
 
             </div>
 
+            {/* Request Details Modal */}
+            <RequestDetailsModal
+                isOpen={isDetailModalOpen}
+                onClose={() => {
+                    setIsDetailModalOpen(false);
+                    setSelectedRequest(null);
+                }}
+                request={selectedRequest}
+            />
         </div>
     );
 }
