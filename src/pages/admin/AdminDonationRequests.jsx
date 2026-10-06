@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import RequestDetailsModal from "../../components/admin/RequestDetailsModal";
 import ApproveRequestModal from "../../components/admin/ApproveRequestModal";
+import RejectRequestModal from "../../components/admin/RejectRequestModal";
 import {
     Check,
     X,
@@ -16,6 +17,10 @@ export default function DonationRequests() {
 
     const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
     const [requestToApprove, setRequestToApprove] = useState(null);
+
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+    const [requestToReject, setRequestToReject] = useState(null);
+
     // Dummy donation requests data matching the screenshot
     const [requests, setRequests] = useState([
         {
@@ -212,7 +217,10 @@ export default function DonationRequests() {
                                                         Approve
                                                     </button>
                                                     <button
-                                                        onClick={() => handleStatusChange(req.id, "Rejected")}
+                                                        onClick={() => {
+                                                            setRequestToReject(req.id);
+                                                            setIsRejectModalOpen(true);
+                                                        }}
                                                         className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                                                     >
                                                         <X className="w-3 h-3" />
@@ -273,6 +281,19 @@ export default function DonationRequests() {
                     handleStatusChange(requestToApprove, "Approved");
                     setIsApproveModalOpen(false);
                     setRequestToApprove(null);
+                }}
+            />
+
+            <RejectRequestModal
+                isOpen={isRejectModalOpen}
+                onClose={() => {
+                    setIsRejectModalOpen(false);
+                    setRequestToReject(null);
+                }}
+                onConfirm={() => {
+                    handleStatusChange(requestToReject, "Rejected");
+                    setIsRejectModalOpen(false);
+                    setRequestToReject(null);
                 }}
             />
 
