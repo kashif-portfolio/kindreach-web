@@ -245,9 +245,6 @@ export default function ManageNeedyPersons() {
                                                 <Eye className="w-3.5 h-3.5" />
                                             </button>
 
-                                            <button className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
-                                                <Edit className="w-3.5 h-3.5" />
-                                            </button>
 
                                             <button
                                                 onClick={() => {
