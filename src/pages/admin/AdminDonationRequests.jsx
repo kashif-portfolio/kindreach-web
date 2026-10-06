@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import RequestDetailsModal from "../../components/admin/RequestDetailsModal";
+import ApproveRequestModal from "../../components/admin/ApproveRequestModal";
 import {
     Check,
     X,
@@ -13,6 +14,8 @@ export default function DonationRequests() {
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
 
+    const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+    const [requestToApprove, setRequestToApprove] = useState(null);
     // Dummy donation requests data matching the screenshot
     const [requests, setRequests] = useState([
         {
@@ -199,7 +202,10 @@ export default function DonationRequests() {
                                             {req.status === "Pending" ? (
                                                 <>
                                                     <button
-                                                        onClick={() => handleStatusChange(req.id, "Approved")}
+                                                        onClick={() => {
+                                                            setRequestToApprove(req.id);
+                                                            setIsApproveModalOpen(true);
+                                                        }}
                                                         className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                                                     >
                                                         <Check className="w-3 h-3" />
@@ -256,6 +262,20 @@ export default function DonationRequests() {
                 }}
                 request={selectedRequest}
             />
+
+            <ApproveRequestModal
+                isOpen={isApproveModalOpen}
+                onClose={() => {
+                    setIsApproveModalOpen(false);
+                    setRequestToApprove(null);
+                }}
+                onConfirm={() => {
+                    handleStatusChange(requestToApprove, "Approved");
+                    setIsApproveModalOpen(false);
+                    setRequestToApprove(null);
+                }}
+            />
+
         </div>
     );
 }
