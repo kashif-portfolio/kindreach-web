@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AddDonationTypeModal from "../../components/admin/AddDonationTypeModal";
+import EditDonationTypeModal from "../../components/admin/EditDonationTypeModal";
 import {
     Plus,
     Edit3,
@@ -40,6 +41,9 @@ export default function DonationTypes() {
     // 2. MODAL STATE: Add Donation Type modal ko open/close karne ke liye
     const [isAddTypeModalOpen, setIsAddTypeModalOpen] = useState(false);
 
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedItemToEdit, setSelectedItemToEdit] = useState(null);
+
     // 3. PAGINATION STATES: Current page aur items per page track karne ke liye
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 3;
@@ -59,6 +63,12 @@ export default function DonationTypes() {
     // 5. DELETE HANDLER: Specific ID ki buniyad par row ko delete karne ka function
     const handleDelete = (id) => {
         setDonationTypes(donationTypes.filter(item => item.id !== id));
+    };
+
+    const handleUpdateDonationType = (updatedItem) => {
+        setDonationTypes(
+            donationTypes.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+        );
     };
 
     // --- PAGINATION LOGIC ---
@@ -129,7 +139,12 @@ export default function DonationTypes() {
                                     <td className="py-4 px-6 text-right">
                                         <div className="flex items-center justify-end gap-2">
                                             {/* Edit Button */}
-                                            <button className="p-1.5 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors cursor-pointer border border-slate-200" title="Edit">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedItemToEdit(item);
+                                                    setIsEditModalOpen(true);
+                                                }}
+                                                className="p-1.5 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors cursor-pointer border border-slate-200" title="Edit">
                                                 <Edit3 className="w-3.5 h-3.5" />
                                             </button>
                                             {/* Delete Button */}
@@ -196,6 +211,13 @@ export default function DonationTypes() {
                 isOpen={isAddTypeModalOpen}
                 onClose={() => setIsAddTypeModalOpen(false)}
                 onAdd={handleAddDonationType}
+            />
+
+            <EditDonationTypeModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSave={handleUpdateDonationType}
+                donationData={selectedItemToEdit}
             />
 
         </div>
