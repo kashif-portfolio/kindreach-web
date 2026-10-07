@@ -27,7 +27,7 @@ import MyProfile from "../pages/donor/DonorProfile";
 // Needy person portal screens
 import NeedyDashboard from "../pages/needy/NeedyDashboard";
 import BrowseDonations from "../pages/needy/BrowseDonations";
-// import RequestHelp from '../pages/needy/RequestHelp';
+import RequestHelp from '../pages/needy/RequestHelp';
 import NeedyRequests from "../pages/needy/MyRequests";
 // import Messages from './pages/needy/Messages';
 import NeedyFeedback from "../pages/needy/NeedyFeedback";
@@ -79,7 +79,7 @@ export default function AppRoutes() {
       <Route path="/needy" element={<DashboardLayout />}>
         <Route index element={<NeedyDashboard />} />
         <Route path="browse-donations" element={<BrowseDonations />} />
-        {/* <Route path="request-help" element={<RequestHelp />} /> */}
+        <Route path="request-help" element={<RequestHelp />} />
         <Route path="requests" element={<NeedyRequests />} />
         {/* <Route path="messages" element={<Messages />} /> */}
         <Route path="feedback" element={<NeedyFeedback />} />
