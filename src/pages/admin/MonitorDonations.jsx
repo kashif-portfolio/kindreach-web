@@ -1,84 +1,88 @@
 import React, { useState } from "react";
-import { 
-    Search, 
-    CheckCircle2, 
-    FileText, 
-    ShieldCheck, 
-    Truck, 
-    ChevronLeft, 
-    ChevronRight as ChevronRightIcon 
+import DonationDetailsModal from "../../components/admin/DonationDetailsModal";
+import {
+    Search,
+    CheckCircle2,
+    FileText,
+    ShieldCheck,
+    Truck,
+    ChevronLeft,
+    ChevronRight as ChevronRightIcon
 } from "lucide-react";
 
 export default function MonitorDonations() {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
 
+    const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
+    const [selectedDonation, setSelectedDonation] = useState(null);
+
     // Dummy monitor donations data
     const [donations, setDonations] = useState([
-        { 
-            id: 1, 
-            donor: "Ahmed Khan", 
-            type: "Food", 
-            description: "Atta (25 kg bags)", 
-            quantity: "5 bags", 
-            location: "Lahore", 
-            date: "2024-03-10", 
-            status: "Available" 
+        {
+            id: 1,
+            donor: "Ahmed Khan",
+            type: "Food",
+            description: "Atta (25 kg bags)",
+            quantity: "5 bags",
+            location: "Lahore",
+            date: "2024-03-10",
+            status: "Available"
         },
-        { 
-            id: 2, 
-            donor: "Usman Ali", 
-            type: "Clothes", 
-            description: "Children's Clothing (ages 5-10)", 
-            quantity: "20 items", 
-            location: "Islamabad", 
-            date: "2024-03-08", 
-            status: "Requested" 
+        {
+            id: 2,
+            donor: "Usman Ali",
+            type: "Clothes",
+            description: "Children's Clothing (ages 5-10)",
+            quantity: "20 items",
+            location: "Islamabad",
+            date: "2024-03-08",
+            status: "Requested"
         },
-        { 
-            id: 3, 
-            donor: "Hina Baig", 
-            type: "Financial Aid", 
-            description: "Monthly Support Fund", 
-            quantity: "PKR 10,000", 
-            location: "Faisalabad", 
-            date: "2024-03-06", 
-            status: "Approved" 
+        {
+            id: 3,
+            donor: "Hina Baig",
+            type: "Financial Aid",
+            description: "Monthly Support Fund",
+            quantity: "PKR 10,000",
+            location: "Faisalabad",
+            date: "2024-03-06",
+            status: "Approved"
         },
-        { 
-            id: 4, 
-            donor: "Tariq Mehmood", 
-            type: "Household Items", 
-            description: "Sofa Set (3-seater)", 
-            quantity: "1 set", 
-            location: "Rawalpindi", 
-            date: "2024-03-04", 
-            status: "Delivered" 
+        {
+            id: 4,
+            donor: "Tariq Mehmood",
+            type: "Household Items",
+            description: "Sofa Set (3-seater)",
+            quantity: "1 set",
+            location: "Rawalpindi",
+            date: "2024-03-04",
+            status: "Delivered"
         },
-        { 
-            id: 5, 
-            donor: "Ahmed Khan", 
-            type: "Food", 
-            description: "Cooking Oil and Sugar", 
-            quantity: "10 items", 
-            location: "Lahore", 
-            date: "2024-03-02", 
-            status: "Available" 
+        {
+            id: 5,
+            donor: "Ahmed Khan",
+            type: "Food",
+            description: "Cooking Oil and Sugar",
+            quantity: "10 items",
+            location: "Lahore",
+            date: "2024-03-02",
+            status: "Available"
         },
     ]);
 
     // Filter logic
     const filteredDonations = donations.filter(item => {
         const matchesSearch = item.donor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              item.location.toLowerCase().includes(searchTerm.toLowerCase());
+            item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.location.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === "All" || item.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
-            
+
             {/* Page Header */}
             <div className="flex flex-col gap-1">
                 <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
@@ -136,7 +140,7 @@ export default function MonitorDonations() {
             <div className="flex items-center justify-between gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input 
+                    <input
                         type="text"
                         placeholder="Search donations..."
                         value={searchTerm}
@@ -150,11 +154,10 @@ export default function MonitorDonations() {
                         <button
                             key={tab}
                             onClick={() => setStatusFilter(tab)}
-                            className={`px-3.5 py-2 rounded-xl text-[13px] font-medium transition-colors cursor-pointer border ${
-                                statusFilter === tab
-                                    ? "bg-[#009689] text-white border-[#009689] shadow-2xs"
-                                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                            }`}
+                            className={`px-3.5 py-2 rounded-xl text-[13px] font-medium transition-colors cursor-pointer border ${statusFilter === tab
+                                ? "bg-[#009689] text-white border-[#009689] shadow-2xs"
+                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                                }`}
                         >
                             {tab}
                         </button>
@@ -179,8 +182,15 @@ export default function MonitorDonations() {
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-[13px]">
                             {filteredDonations.map((item) => (
-                                <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                                    
+                                <tr
+                                    key={item.id}
+                                    onClick={() => {
+                                        setSelectedDonation(item);
+                                        setIsDonationModalOpen(true);
+                                    }}
+                                    className="hover:bg-slate-50/60 transition-colors cursor-pointer"
+                                >
+
                                     {/* Donor */}
                                     <td className="py-4 px-6 font-semibold text-slate-900">
                                         {item.donor}
@@ -268,6 +278,15 @@ export default function MonitorDonations() {
                 </div>
 
             </div>
+
+            <DonationDetailsModal
+                isOpen={isDonationModalOpen}
+                onClose={() => {
+                    setIsDonationModalOpen(false);
+                    setSelectedDonation(null);
+                }}
+                donation={selectedDonation}
+            />
 
         </div>
     );
