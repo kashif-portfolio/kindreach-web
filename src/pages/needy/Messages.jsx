@@ -47,7 +47,7 @@ export default function Messages() {
       </div>
 
       {/* Main Chat Container Card */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[520px] max-w-4xl">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-130 max-w-4xl">
         
         {/* Chat Header Info */}
         <div className="p-4 px-6 border-b border-slate-200/80 bg-white">
