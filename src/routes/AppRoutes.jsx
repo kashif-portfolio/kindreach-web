@@ -29,7 +29,7 @@ import NeedyDashboard from "../pages/needy/NeedyDashboard";
 import BrowseDonations from "../pages/needy/BrowseDonations";
 import RequestHelp from '../pages/needy/RequestHelp';
 import NeedyRequests from "../pages/needy/MyRequests";
-// import Messages from './pages/needy/Messages';
+import NeedyMessages from '../pages/needy/Messages';
 import NeedyFeedback from "../pages/needy/NeedyFeedback";
 import NeedyProfile from "../pages/needy/NeedyProfile";
 
@@ -81,7 +81,7 @@ export default function AppRoutes() {
         <Route path="browse-donations" element={<BrowseDonations />} />
         <Route path="request-help" element={<RequestHelp />} />
         <Route path="requests" element={<NeedyRequests />} />
-        {/* <Route path="messages" element={<Messages />} /> */}
+        <Route path="messages" element={<NeedyMessages />} />
         <Route path="feedback" element={<NeedyFeedback />} />
         <Route path="profile" element={<NeedyProfile />} />
       </Route>
@@ -94,7 +94,7 @@ export default function AppRoutes() {
         <Route path="donation-types" element={<DonationTypes />} />
         <Route path="donation-requests" element={<AdminDonationRequests />} />
         <Route path="monitor-donations" element={<MonitorDonations />} />
-        <Route path="/admin/assign-donations" element={<AssignDonations />} />
+        <Route path="assign-donations" element={<AssignDonations />} />
         <Route path="generate-reports" element={<GenerateReports />} />
         <Route path="send-notifications" element={<SendNotifications />} />
         <Route path="resolve-complaints" element={<ResolveComplaints />} />
