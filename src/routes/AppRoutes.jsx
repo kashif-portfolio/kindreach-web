@@ -18,7 +18,8 @@ import DonorDashboard from "../pages/donor/DonorDashboard";
 import PostDonation from "../pages/donor/AddDonation";
 import MyDonations from "../pages/donor/MyDonations";
 import DonationRequests from "../pages/donor/DonationRequests";
-import ScheduleDelivery from '../pages/donor/ScheduleDelivery'
+import ScheduleDelivery from "../pages/donor/ScheduleDelivery";
+import Messages from "../pages/donor/Messages";
 import DonationHistory from "../pages/donor/DonationHistory";
 import Feedback from "../pages/donor/Feedback";
 import MyProfile from "../pages/donor/DonorProfile";
@@ -66,6 +67,7 @@ export default function AppRoutes() {
         <Route path="my-donations" element={<MyDonations />} />
         <Route path="donation-requests" element={<DonationRequests />} />
         <Route path="schedule-delivery" element={<ScheduleDelivery />} />
+        <Route path="messages" element={<Messages />} />
         <Route path="history" element={<DonationHistory />} />
         <Route path="feedback" element={<Feedback />} />
         <Route path="profile" element={<MyProfile />} />
