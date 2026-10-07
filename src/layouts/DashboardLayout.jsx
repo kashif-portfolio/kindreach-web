@@ -37,6 +37,8 @@ export default function DashboardLayout() {
         if (path.includes('/donor/add-donation')) return 'Add Donation';
         if (path.includes('/donor/my-donations')) return 'My Donations';
         if (path.includes('/donor/donation-requests')) return 'Donation Requests';
+        if (path.includes('/donor/schedule-delivery')) return 'Schedule Delivery';
+        if (path.includes('/donor/messages')) return 'Messages';
         if (path.includes('/donor/history')) return 'Donation History';
         if (path.includes('/donor/feedback')) return 'Feedback';
         if (path.includes('/donor/profile')) return 'My Profile';
