@@ -46,7 +46,9 @@ export default function DashboardLayout() {
 
         // Needy titles
         if (path.includes('/needy/browse-donations')) return 'Browse Donations';
+        if (path === '/needy/request-help') return 'Request Help';
         if (path.includes('/needy/requests')) return 'My Requests';
+        if (path === '/needy/messages') return 'Messages';
         if (path.includes('/needy/feedback')) return 'Feedback';
         if (path.includes('/needy/profile')) return 'My Profile';
 
