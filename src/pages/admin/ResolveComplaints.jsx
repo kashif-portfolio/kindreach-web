@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { AlertTriangle, CheckCircle2, MessageSquare, Check } from "lucide-react";
+import ResolveComplaintModal from "../../components/admin/ResolveComplaintModal";
+import { AlertTriangle, CheckCircle2, Check } from "lucide-react";
 
 export default function ResolveComplaints() {
     // Complaints state containing both open and resolved items
@@ -33,10 +34,11 @@ export default function ResolveComplaints() {
         }
     ]);
 
-    const handleResolve = (id) => {
-        const resolutionNote = prompt("Enter resolution details / note:");
-        if (!resolutionNote) return;
+    const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
+    const [selectedComplaint, setSelectedComplaint] = useState(null);
 
+    // Complaint resolve handler jo modal se resolution note lega aur status update karega
+    const handleResolveComplaint = (id, resolutionNote) => {
         setComplaints(complaints.map(item => {
             if (item.id === id) {
                 return {
@@ -47,6 +49,8 @@ export default function ResolveComplaints() {
             }
             return item;
         }));
+        setIsResolveModalOpen(false);
+        setSelectedComplaint(null);
     };
 
     const openCount = complaints.filter(c => c.status === "Open").length;
@@ -98,7 +102,10 @@ export default function ResolveComplaints() {
 
                                     <div className="pl-12 pt-1">
                                         <button
-                                            onClick={() => handleResolve(item.id)}
+                                            onClick={() => {
+                                                setSelectedComplaint(item); 
+                                                setIsResolveModalOpen(true);
+                                            }}
                                             className="px-4 py-2 bg-[#009689] hover:bg-teal-700 text-white rounded-xl text-[12px] font-semibold transition-colors shadow-2xs cursor-pointer flex items-center gap-2"
                                         >
                                             <Check className="w-3.5 h-3.5" />
@@ -150,6 +157,19 @@ export default function ResolveComplaints() {
                         ))}
                 </div>
             </div>
+
+            {/* Resolve Complaint Modal */}
+            <ResolveComplaintModal
+                isOpen={isResolveModalOpen}
+                onClose={() => {
+                    setIsResolveModalOpen(false);
+                    setSelectedComplaint(null);
+                }}
+                complaint={selectedComplaint}
+                onResolve={(id, note) => {
+                    handleResolveComplaint(id, note);
+                }}
+            />
 
         </div>
     );
