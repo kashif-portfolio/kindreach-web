@@ -19,7 +19,8 @@ import {
     AlertTriangle,
     Heart,
     UserCheck,
-    Truck
+    Truck,
+    MessageCircle
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -227,6 +228,18 @@ export default function DashboardLayout() {
                                 )}
                             </NavLink>
                             <NavLink
+                                to="/needy/request-help"
+                                className={({ isActive }) => `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive ? 'bg-[#ECFDF5] text-[#009689]' : 'text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        {isActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#009689] rounded-r"></span>}
+                                        <PlusCircle className="w-4 h-4 shrink-0" />
+                                        <span>Request Help</span>
+                                    </>
+                                )}
+                            </NavLink>
+                            <NavLink
                                 to="/needy/requests"
                                 className={({ isActive }) => `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive ? 'bg-[#ECFDF5] text-[#009689]' : 'text-slate-600 hover:bg-slate-50'}`}
                             >
@@ -235,6 +248,18 @@ export default function DashboardLayout() {
                                         {isActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#009689] rounded-r"></span>}
                                         <Package className="w-4 h-4 shrink-0" />
                                         <span>My Requests</span>
+                                    </>
+                                )}
+                            </NavLink>
+                            <NavLink
+                                to="/needy/messages"
+                                className={({ isActive }) => `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive ? 'bg-[#ECFDF5] text-[#009689]' : 'text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        {isActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#009689] rounded-r"></span>}
+                                        <MessageCircle className="w-4 h-4 shrink-0" />
+                                        <span>Messages</span>
                                     </>
                                 )}
                             </NavLink>
