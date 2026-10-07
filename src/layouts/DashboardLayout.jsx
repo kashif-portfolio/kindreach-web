@@ -18,7 +18,8 @@ import {
     Send,
     AlertTriangle,
     Heart,
-    UserCheck
+    UserCheck,
+    Truck
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -129,6 +130,30 @@ export default function DashboardLayout() {
                                         {isActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#009689] rounded-r"></span>}
                                         <Clock className="w-4 h-4 shrink-0" />
                                         <span>Donation Requests</span>
+                                    </>
+                                )}
+                            </NavLink>
+                            <NavLink
+                                to="/donor/schedule-delivery"
+                                className={({ isActive }) => `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive ? 'bg-[#ECFDF5] text-[#009689]' : 'text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        {isActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#009689] rounded-r"></span>}
+                                        <Truck className="w-4 h-4 shrink-0" />
+                                        <span>Schedule Delivery</span>
+                                    </>
+                                )}
+                            </NavLink>
+                            <NavLink
+                                to="/donor/messages"
+                                className={({ isActive }) => `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive ? 'bg-[#ECFDF5] text-[#009689]' : 'text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        {isActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#009689] rounded-r"></span>}
+                                        <MessageSquare className="w-4 h-4 shrink-0" />
+                                        <span>Messages</span>
                                     </>
                                 )}
                             </NavLink>
@@ -317,15 +342,16 @@ export default function DashboardLayout() {
 
                             <NavLink
                                 to="/admin/assign-donations"
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-medium transition-colors ${location.pathname === "/admin/assign-donations"
-                                        ? "bg-teal-50 text-[#009689] font-semibold"
-                                        : "text-slate-600 hover:bg-slate-50"
-                                    }`}
+                                className={({ isActive }) => `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive ? 'bg-[#ECFDF5] text-[#009689]' : 'text-slate-600 hover:bg-slate-50'}`}
                             >
-                                <UserCheck className="w-4 h-4" />
-                                Assign Donations
+                                {({ isActive }) => (
+                                    <>
+                                        {isActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#009689] rounded-r"></span>}
+                                        <UserCheck className="w-4 h-4 shrink-0" />
+                                        <span>Assign Donations</span>
+                                    </>
+                                )}
                             </NavLink>
-
                             <NavLink
                                 to="/admin/generate-reports"
                                 className={({ isActive }) => `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive ? 'bg-[#ECFDF5] text-[#009689]' : 'text-slate-600 hover:bg-slate-50'}`}
