@@ -1,49 +1,16 @@
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import ConfirmModal from '../common/ConfirmModal';
 
 export default function AcceptRequestModal({ isOpen, onClose, onAccept, request }) {
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            {/* Modal Box */}
-            <div className="bg-white w-[384px] rounded-2xl shadow-xl overflow-hidden border border-slate-100 p-6 animate-in fade-in zoom-in-95 duration-200">
-
-                {/* Header & Icon Section */}
-                <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                        <CheckCircle2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h3 className="text-base font-bold text-slate-800">Accept Request</h3>
-                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                            This person will be notified that their request has been accepted.
-                        </p>
-                    </div>
-                </div>
-
-                {/* Footer Buttons */}
-                <div className="flex items-center justify-end gap-3 mt-6">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            onAccept(request.id);
-                            onClose();
-                        }}
-                        className="px-4 py-2 rounded-xl text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
-                    >
-                        Accept
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    );
+  return (
+    <ConfirmModal
+      isOpen={isOpen}
+      onClose={onClose}
+      onConfirm={() => onAccept?.(request?.id)}
+      title="Accept Request"
+      description="You are about to accept this donation request. The needy person will be notified."
+      confirmText="Accept"
+      variant="success"
+    />
+  );
 }
