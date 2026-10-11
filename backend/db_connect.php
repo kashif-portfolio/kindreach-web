@@ -19,7 +19,7 @@ $password = '';                            // Default XAMPP password (empty)
 try {
 
     // 3. Connect to database using PDO
-    $pdo = new PDO("mysql:host = $host ; dbname = $dbname ; charset = utf8 ", $username, $password);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
 
     // 4. Set error mode to catch bugs easily
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
