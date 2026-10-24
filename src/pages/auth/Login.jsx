@@ -1,24 +1,53 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-
+import { loginUser } from "../../services/authService";
 
 export default function Login() {
 
     //states
-
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
 
     // form submit function
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-    }
+        setError('');
+        setLoading(true);
 
+        try {
+            const result = await loginUser(email, password);
+
+            if (result.status === 'success') {
+                localStorage.setItem('user', JSON.stringify(result.data));
+
+                const role = result.data.role;
+                if (role === 'Admin') {
+                    navigate('/admin');
+                } else if (role === 'Donor') {
+                    navigate('/donor');
+                } else if (role === 'Needy') {
+                    navigate('/needy');
+                } else {
+                    navigate('/login');
+                }
+            } else {
+                setError(result.message || 'Login failed');
+            }
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Something went wrong. Try again.';
+            setError(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         // Main container Div
@@ -98,13 +127,18 @@ export default function Login() {
                     </div>
                 </div>
 
+                {error && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-xl">
+                        {error}
+                    </div>
+                )}
 
                 {/* Sign In Button */}
                 <button
                     type="submit"
                     className="w-full h-[43.99px] bg-[#009689] hover:bg-[#007F75] text-white font-semibold text-[14px] rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm"
                 >
-                    Sign In to KindReach
+                    {loading ? 'Signing in...' : 'Sign In to KindReach'}
                 </button>
             </form>
             <div className="text-center mt-6">

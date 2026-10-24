@@ -1,5 +1,7 @@
 import React from "react";
 import logoGreen from '../assets/logo-green.png';
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Outlet, useLocation, NavLink } from "react-router-dom";
 import {
     Bell,
@@ -72,6 +74,15 @@ export default function DashboardLayout() {
         localStorage.clear();
         window.location.href = "/login";
     };
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const user = localStorage.getItem('user');
+        if (!user) {
+            navigate('/login');
+        }
+    }, [navigate]);
 
     return (
         <div className="flex w-full h-screen bg-white overflow-hidden ">

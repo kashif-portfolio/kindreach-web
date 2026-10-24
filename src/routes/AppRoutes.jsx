@@ -50,7 +50,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       {/* Redirect root URL to donor dashboard by default */}
-      <Route path="/" element={<Navigate to="/donor" replace />} />
+     <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/* 1. Authentication routes group wrapped inside AuthLayout */}
       <Route element={<AuthLayout />}>
