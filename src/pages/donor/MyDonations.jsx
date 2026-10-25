@@ -1,46 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Pencil, Trash2, Plus, Package } from 'lucide-react';
 import DonationDetails from '../../components/donor/DonationDetailsModal';
 import EditDonationModal from '../../components/donor/EditDonationModal';
 import DeleteDonationModal from '../../components/donor/DeleteDonationModal';
+import { getMyDonations } from '../../services/donorService';
 
 export default function MyDonations() {
-    // Dummy state for donations
-    const [donations, setDonations] = useState([
-        {
-            id: 1,
-            title: 'Winter Warm Jackets',
-            category: 'Clothing',
-            quantity: 15,
-            status: 'Available',
-            date: '2026-08-15',
-            description: 'High-quality winter warm jackets.',
-            location: 'Lahore',
-        },
-        {
-            id: 2,
-            title: 'Rice & Flour Packets',
-            category: 'Food',
-            quantity: 30,
-            status: 'Delivered',
-            date: '2026-08-10',
-            description: 'Atta (25 kg bags) and rice packets.',
-            location: 'Shakargarh',
-        },
-        {
-            id: 3,
-            title: 'Notebooks & Stationery',
-            category: 'Education',
-            quantity: 50,
-            status: 'Requested',
-            date: '2026-08-05',
-            description: 'School notebooks and ballpoints.',
-            location: 'Islamabad',
-        },
-    ]);
+    const [donations, setDonations] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const navigate = useNavigate();
+    useEffect(() => {
+        const fetchDonations = async () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.donorID) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const result = await getMyDonations(user.donorID);
+                if (result.status === 'success') {
+                    // API fields ko UI format mein convert
+                    const mapped = result.data.map((item) => ({
+                        id: item.DonationID,
+                        title: item.Title,
+                        category: item.TypeName,
+                        quantity: item.Quantity,
+                        status: item.Status,
+                        date: item.CreatedAt ? item.CreatedAt.split(' ')[0] : '',
+                        description: item.Description || '',
+                        location: item.Location || '',
+                    }));
+                    setDonations(mapped);
+                }
+            } catch (err) {
+                console.error('Failed to load donations:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDonations();
+    }, []);
+
+
     // Modal States
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedDonation, setSelectedDonation] = useState(null);
@@ -92,6 +97,14 @@ export default function MyDonations() {
                     <span>Add New Donation</span>
                 </button>
             </div>
+
+            {loading && (
+                <p className="text-slate-500 text-sm py-8 text-center">Loading donations...</p>
+            )}
+
+            {!loading && donations.length === 0 && (
+                <p className="text-slate-500 text-sm py-8 text-center">No donations yet. Post your first donation!</p>
+            )}
 
             {/* Table Container */}
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
