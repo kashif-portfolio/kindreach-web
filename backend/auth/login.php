@@ -28,7 +28,7 @@ if (empty($data['email']) || empty($data['password'])) {
     exit();
 }
 
-$email    = trim($data['email']);
+$email = trim($data['email']);
 $password = $data['password'];
 
 try {
@@ -80,23 +80,36 @@ try {
         exit();
     }
 
-    // 5. Password response mein mat bhejo (security)
-    unset($user['Password']);
+
+    // Role ke hisaab se extra ID lo
+    $extra = [];
+    if ($user['RoleName'] === 'Donor') {
+        $stmt2 = $pdo->prepare("SELECT DonorID FROM donor WHERE UserID = ?");
+        $stmt2->execute([$user['UserID']]);
+        $row = $stmt2->fetch(PDO::FETCH_ASSOC);
+        $extra['donorID'] = $row ? $row['DonorID'] : null;
+    }
+    if ($user['RoleName'] === 'Needy') {
+        $stmt2 = $pdo->prepare("SELECT NeedyID FROM needy_person WHERE UserID = ?");
+        $stmt2->execute([$user['UserID']]);
+        $row = $stmt2->fetch(PDO::FETCH_ASSOC);
+        $extra['needyID'] = $row ? $row['NeedyID'] : null;
+    }
 
     // 6. Success response
     http_response_code(200);
     echo json_encode([
         "status" => "success",
         "message" => "Login successful",
-        "data" => [
-            "userID"  => $user['UserID'],
-            "name"    => $user['Name'],
-            "email"   => $user['Email'],
-            "phone"   => $user['Phone'],
+        "data" => array_merge([
+            "userID" => $user['UserID'],
+            "name" => $user['Name'],
+            "email" => $user['Email'],
+            "phone" => $user['Phone'],
             "address" => $user['Address'],
-            "role"    => $user['RoleName'],
-            "status"  => $user['Status']
-        ]
+            "role" => $user['RoleName'],
+            "status" => $user['Status']
+        ], $extra)
     ]);
 
 } catch (PDOException $e) {

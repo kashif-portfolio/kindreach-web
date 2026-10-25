@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { addDonation } from "../../services/donorService";
 import {
     Utensils,
     Shirt,
@@ -21,6 +22,10 @@ export default function PostDonation() {
         notes: ""
     });
 
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
     // Handle input changes dynamically
     const handleInputChange = (e) => {
         setFormData({
@@ -30,10 +35,57 @@ export default function PostDonation() {
     };
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Submitted Data:", { selectedCategory, ...formData });
-        alert("Donation posted successfully!");
+        setError('');
+
+        // localStorage se logged-in user lo
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.donorID) {
+            setError('Donor ID not found. Please login again.');
+            return;
+        }
+
+        if (!formData.quantity || !formData.location) {
+            setError('Quantity and location are required');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const payload = {
+                donorID: user.donorID,
+                typeID: categoryToTypeID[selectedCategory] || 1,
+                title: formData.description || selectedCategory + ' donation',
+                description: formData.notes || formData.description || '',
+                quantity: parseInt(formData.quantity),
+                location: formData.location,
+                urgencyLevel: 'Normal'
+            };
+
+            const result = await addDonation(payload);
+
+            if (result.status === 'success') {
+                alert('Donation posted successfully!');
+                navigate('/donor/my-donations');
+            } else {
+                setError(result.message || 'Failed to post donation');
+            }
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Something went wrong. Try again.';
+            setError(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Frontend category name → Database TypeID
+    const categoryToTypeID = {
+        "Food": 1,
+        "Clothes": 2,
+        "Financial Aid": 4,
+        "Household Items": 3   // DB mein Medical Support hai, closest mapping
     };
 
     // Categories data array
@@ -176,12 +228,19 @@ export default function PostDonation() {
                             >
                                 Cancel
                             </button>
+
+                            {error && (
+                                <div className="mb-3 p-3 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-xl">
+                                    {error}
+                                </div>
+                            )}
+
                             <button
                                 type="submit"
-                                className=" w-full px-6 py-2.5 bg-[#009689] hover:bg-[#007b70] text-white text-[14px] font-semibold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
-                            >
+                                disabled={loading}
+                                className=" w-full px-6 py-2.5 bg-[#009689] hover:bg-[#007b70] text-white text-[14px] font-semibold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
                                 <Heart className="w-4 h-4 fill-white text-white" />
-                                <span>Post Donation</span>
+                                <span>{loading ? 'Posting...' : 'Post Donation'}</span>
                             </button>
                         </div>
 
@@ -199,7 +258,7 @@ export default function PostDonation() {
                     <div className="bg-white p-5 rounded-2xl  border-t-4 border-amber-400  shadow-sm flex flex-col gap-4">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                             <span className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
-                            <Lightbulb className="w-5 h-5 text-amber-500" />
+                                <Lightbulb className="w-5 h-5 text-amber-500" />
                                 Live Preview
                             </span>
                             <span className="text-[11px] font-semibold text-[#E17100] bg-[#FFFBEB] px-2.5 py-1 rounded-md border border-amber-200 flex items-center gap-1.5">
