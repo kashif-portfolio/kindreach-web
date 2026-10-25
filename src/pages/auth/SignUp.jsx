@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import { registerUser } from '../../services/authService';
 
 export default function SignUp() {
     // State to toggle between 'donor' and 'needy'
@@ -23,12 +24,63 @@ export default function SignUp() {
         agreeTerms: false
     });
 
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({
             ...formData,
             [name]: type === 'checkbox' ? checked : value
         });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        // Password match check
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        if (formData.password.length < 6) {
+            setError('Password must be at least 6 characters');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const payload = {
+                name: formData.fullName,
+                email: formData.email,
+                password: formData.password,
+                phone: formData.phone,
+                address: formData.city || '',
+                role: userType === 'donor' ? 'Donor' : 'Needy',
+                cnic: formData.cnic || null,
+                incomeStatus: formData.monthlyIncome || null,
+            };
+
+            const result = await registerUser(payload);
+
+            if (result.status === 'success') {
+                // Auto login feel ke liye user save + redirect
+                // Ya seedha login page bhej do
+                alert('Registration successful! Please login.');
+                navigate('/login');
+            } else {
+                setError(result.message || 'Registration failed');
+            }
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Something went wrong. Try again.';
+            setError(msg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -78,7 +130,8 @@ export default function SignUp() {
             )}
 
             {/* Form Fields */}
-            <div className="w-full flex flex-col gap-4">
+
+            <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
 
                 {/* Full Name */}
                 <div className="flex flex-col">
@@ -262,7 +315,7 @@ export default function SignUp() {
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] "
                                 >
                                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
@@ -311,12 +364,26 @@ export default function SignUp() {
                 )}
 
                 {/* Submit Button */}
+
+
+                {error && (
+                    <div className="mb-3 p-3 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-xl">
+                        {error}
+                    </div>
+                )}
+
                 <div className="mt-2">
                     <button
-                        type="button"
-                        className="w-full h-11 bg-[#009689] hover:bg-[#007F75] text-white font-semibold rounded-xl transition-all duration-200 shadow-sm flex items-center justify-center"
+                        type="submit"
+                        disabled={loading}
+                        className="w-full h-11 bg-[#009689] hover:bg-[#007F75] text-white font-semibold rounded-xl transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer"
                     >
-                        {userType === 'donor' ? 'Create Donor Account' : 'Submit Registration Application'}
+                        {loading
+                            ? 'Please wait...'
+                            : userType === 'donor'
+                                ? 'Create Donor Account'
+                                : 'Submit Registration Application'}
+
                     </button>
                 </div>
 
@@ -327,8 +394,8 @@ export default function SignUp() {
                     </p>
                 </div>
 
-            </div>
+            </form>
 
-        </div>
+        </div >
     );
 }
