@@ -7,11 +7,11 @@ export default function SignUp() {
     // State to toggle between 'donor' and 'needy'
     const [userType, setUserType] = useState('donor'); // 'donor' or 'needy'
 
-    // Password show/hide states
+    // Password show/hide toggle states
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Form data state
+    // Form inputs state
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -28,6 +28,7 @@ export default function SignUp() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Handle input field changes
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({
@@ -36,24 +37,44 @@ export default function SignUp() {
         });
     };
 
+    // Form submit handler
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        // Password match check
+        // 1. Basic required validations
+        if (!formData.fullName.trim()) {
+            setError('Full Name is required');
+            return;
+        }
+
+        if (!formData.email.trim()) {
+            setError('Email address is required');
+            return;
+        }
+
+        // 2. Check if password and confirm password match
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             return;
         }
 
+        // 3. Minimum password length validation
         if (formData.password.length < 6) {
-            setError('Password must be at least 6 characters');
+            setError('Password must be at least 6 characters long');
+            return;
+        }
+
+        // 4. Terms agreement check (Required for Donor)
+        if (userType === 'donor' && !formData.agreeTerms) {
+            setError('Please agree to the Terms of Service and Privacy Policy');
             return;
         }
 
         setLoading(true);
 
         try {
+            // Prepare payload for backend (Backend only needs single password)
             const payload = {
                 name: formData.fullName,
                 email: formData.email,
@@ -68,8 +89,6 @@ export default function SignUp() {
             const result = await registerUser(payload);
 
             if (result.status === 'success') {
-                // Auto login feel ke liye user save + redirect
-                // Ya seedha login page bhej do
                 alert('Registration successful! Please login.');
                 navigate('/login');
             } else {
@@ -110,7 +129,7 @@ export default function SignUp() {
                 </button>
             </div>
 
-            {/* Header / Title based on Role */}
+            {/* Header Title based on selected Role */}
             <div className="text-center mb-4">
                 <h2 className="text-[24px] font-bold text-slate-900">
                     {userType === 'donor' ? 'Join as a Donor' : 'Apply for Aid'}
@@ -122,15 +141,14 @@ export default function SignUp() {
                 </p>
             </div>
 
-            {/* Needy Verification Notice Box (Figma ke mutabiq) */}
+            {/* Needy Verification Notice Box */}
             {userType === 'needy' && (
                 <div className="bg-[#F0FDF4] border border-[#BBF7D0] p-3.5 rounded-xl mb-4 text-[13px] text-[#166534]">
                     Your details will be verified by our Admin team before account activation — typically 1-2 business days.
                 </div>
             )}
 
-            {/* Form Fields */}
-
+            {/* Registration Form */}
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
 
                 {/* Full Name */}
@@ -148,7 +166,7 @@ export default function SignUp() {
                     />
                 </div>
 
-                {/* CNIC (Only for Needy) OR Email/Phone Grid */}
+                {/* CNIC (Needy) OR Email & Phone (Donor) */}
                 {userType === 'needy' ? (
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col">
@@ -187,6 +205,7 @@ export default function SignUp() {
                             <input
                                 type="email"
                                 name="email"
+                                autoComplete="email"
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="ahmed@email.com"
@@ -209,18 +228,19 @@ export default function SignUp() {
                     </div>
                 )}
 
-                {/* Email for Needy (Optional) */}
+                {/* Mandatory Email Address Field for Needy */}
                 {userType === 'needy' && (
                     <div className="flex flex-col">
                         <label className="text-[14px] font-medium text-slate-900 mb-1.5">
-                            Email Address <span className="text-xs text-text-muted font-normal">(optional)</span>
+                            Email Address <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="email"
                             name="email"
+                            autoComplete="email"
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder="fatima@email.com (optional)"
+                            placeholder="fatima@email.com"
                             className="w-full h-10 px-4 bg-white border border-[#CBD5E1] rounded-xl text-[14px] text-slate-900 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#009689] transition-all"
                         />
                     </div>
@@ -255,7 +275,7 @@ export default function SignUp() {
                     )}
                 </div>
 
-                {/* Monthly Income Level (Only for Needy) */}
+                {/* Monthly Income Level (Needy only) */}
                 {userType === 'needy' && (
                     <div className="flex flex-col">
                         <label className="text-[14px] font-medium text-slate-900 mb-1.5">
@@ -274,55 +294,9 @@ export default function SignUp() {
                     </div>
                 )}
 
-                {/* Password & Confirm Password (Donor has both, Needy has single password in design) */}
-                {userType === 'donor' ? (
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col">
-                            <label className="text-[14px] font-medium text-slate-900 mb-1.5">
-                                Password <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative w-full">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="Min. 6 chars"
-                                    className="w-full h-10 px-3 pr-9 bg-white border border-[#CBD5E1] rounded-xl text-[13px] text-slate-900 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#009689] transition-all"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
-                                >
-                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
-                            </div>
-                        </div>
-                        <div className="flex flex-col">
-                            <label className="text-[14px] font-medium text-slate-900 mb-1.5">
-                                Confirm Password <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative w-full">
-                                <input
-                                    type={showConfirmPassword ? "text" : "password"}
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    placeholder="Re-enter"
-                                    className="w-full h-10 px-3 pr-9 bg-white border border-[#CBD5E1] rounded-xl text-[13px] text-slate-900 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#009689] transition-all"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] "
-                                >
-                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
+                {/* Password and Confirm Password Grid for ALL users */}
+                <div className="grid grid-cols-2 gap-3">
+                    {/* Password Field */}
                     <div className="flex flex-col">
                         <label className="text-[14px] font-medium text-slate-900 mb-1.5">
                             Password <span className="text-red-500">*</span>
@@ -331,23 +305,49 @@ export default function SignUp() {
                             <input
                                 type={showPassword ? "text" : "password"}
                                 name="password"
+                                autoComplete="new-password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                placeholder="Min. 6 characters"
-                                className="w-full h-10 px-4 pr-12 bg-white border border-[#CBD5E1] rounded-xl text-[14px] text-slate-900 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#009689] transition-all"
+                                placeholder="Min. 6 chars"
+                                className="w-full h-10 px-3 pr-9 bg-white border border-[#CBD5E1] rounded-xl text-[13px] text-slate-900 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#009689] transition-all"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
                             >
-                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                         </div>
                     </div>
-                )}
 
-                {/* Terms Checkbox (Only for Donor) */}
+                    {/* Confirm Password Field */}
+                    <div className="flex flex-col">
+                        <label className="text-[14px] font-medium text-slate-900 mb-1.5">
+                            Confirm Password <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative w-full">
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                name="confirmPassword"
+                                autoComplete="new-password"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                placeholder="Re-enter"
+                                className="w-full h-10 px-3 pr-9 bg-white border border-[#CBD5E1] rounded-xl text-[13px] text-slate-900 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#009689] transition-all"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+                            >
+                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Terms Checkbox (Donor only) */}
                 {userType === 'donor' && (
                     <div className="flex items-center gap-2 mt-1">
                         <input
@@ -363,31 +363,29 @@ export default function SignUp() {
                     </div>
                 )}
 
-                {/* Submit Button */}
-
-
+                {/* Error Display Alert */}
                 {error && (
                     <div className="mb-3 p-3 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-xl">
                         {error}
                     </div>
                 )}
 
+                {/* Submit Action Button */}
                 <div className="mt-2">
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full h-11 bg-[#009689] hover:bg-[#007F75] text-white font-semibold rounded-xl transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer"
+                        className="w-full h-11 bg-[#009689] hover:bg-[#007F75] text-white font-semibold rounded-xl transition-all duration-200 shadow-sm flex items-center justify-center cursor-pointer disabled:opacity-50"
                     >
                         {loading
                             ? 'Please wait...'
                             : userType === 'donor'
                                 ? 'Create Donor Account'
                                 : 'Submit Registration Application'}
-
                     </button>
                 </div>
 
-                {/* Already have an account */}
+                {/* Footer Link to Login */}
                 <div className="text-center mt-2">
                     <p className="text-[14px] text-text-muted">
                         Already have an account? <Link to="/login" className="text-[#009689] font-medium hover:underline">Sign In</Link>
@@ -395,7 +393,6 @@ export default function SignUp() {
                 </div>
 
             </form>
-
-        </div >
+        </div>
     );
 }

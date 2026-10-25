@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getAvailableDonations } from "../../services/needyService";
 import SendRequestModal from "../../components/needy/SendRequestModal";
 import {
     Utensils,
@@ -15,76 +16,62 @@ export default function BrowseDonations() {
     const [selectedDonation, setSelectedDonation] = useState(null);
 
 
-    const donations = [
-        {
-            id: 1,
-            title: "Atta (25 kg bags)",
-            category: "Food",
-            qty: "Qty: 5 bags",
-            location: "Lahore, Gulberg",
-            donor: "Ahmed Khan · 2024-03-10",
-            icon: <Utensils className="w-5 h-5 text-[#E17100]" />,
-            iconBg: "bg-[#FEF3C7]",
-            badgeBg: "bg-[#FFFBEB] text-[#BB4D00] border-[#FEF3C7]"
-        },
-        {
-            id: 2,
-            title: "Children's Clothing (ages 5-10)",
-            category: "Clothes",
-            qty: "Qty: 20 items",
-            location: "Islamabad, F-7",
-            donor: "Usman Ali · 2024-03-08",
-            icon: <Shirt className="w-5 h-5 text-[#155DFC]" />,
-            iconBg: "bg-[#EFF6FF]",
-            badgeBg: "bg-[#EFF6FF] text-[#155DFC] border-[#BFDBFE]"
-        },
-        {
-            id: 3,
-            title: "Cooking Oil and Sugar (5 kg each)",
-            category: "Food",
-            qty: "Qty: 10 items",
-            location: "Karachi, Clifton",
-            donor: "Sara Malik · 2024-03-06",
-            icon: <Utensils className="w-5 h-5 text-[#E17100]" />,
-            iconBg: "bg-[#FEF3C7]",
-            badgeBg: "bg-[#FFFBEB] text-[#BB4D00] border-[#FEF3C7]"
-        },
-        {
-            id: 4,
-            title: "Sofa Set (3-seater, good condition)",
-            category: "Household Items",
-            qty: "Qty: 1 set",
-            location: "Rawalpindi, Saddar",
-            donor: "Tariq Mehmood · 2024-03-04",
-            icon: <Package className="w-5 h-5 text-[#7C3AED]" />,
-            iconBg: "bg-[#F3E8FF]",
-            badgeBg: "bg-[#F3E8FF] text-[#7C3AED] border-[#E9D5FF]"
-        },
-        {
-            id: 5,
-            title: "Monthly Food Allowance",
-            category: "Financial Aid",
-            qty: "Qty: PKR 3,000",
-            location: "Faisalabad, CBD",
-            donor: "Hina Baig · 2024-03-02",
-            icon: <DollarSign className="w-5 h-5 text-[#009966]" />,
-            iconBg: "bg-[#ECFDF5]",
-            badgeBg: "bg-[#ECFDF5] text-[#009966] border-[#A7F3D0]"
-        },
-        {
-            id: 6,
-            title: "Adult Clothing Set (assorted sizes)",
-            category: "Clothes",
-            qty: "Qty: 15 items",
-            location: "Lahore, Gulberg",
-            donor: "Ahmed Khan · 2024-03-01",
-            icon: <Shirt className="w-5 h-5 text-[#155DFC]" />,
-            iconBg: "bg-[#EFF6FF]",
-            badgeBg: "bg-[#EFF6FF] text-[#155DFC] border-[#BFDBFE]"
-        }
-    ];
+    const [donations, setDonations] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDonations = async () => {
+            try {
+                const result = await getAvailableDonations();
+                if (result.status === 'success') {
+                    const mapped = result.data.map((item) => {
+                        // icon category ke hisaab se
+                        let icon = <Package className="w-5 h-5 text-[#7C3AED]" />;
+                        let iconBg = "bg-[#F3E8FF]";
+                        let badgeBg = "bg-[#F3E8FF] text-[#7C3AED] border-[#E9D5FF]";
+
+                        if (item.TypeName === 'Food') {
+                            icon = <Utensils className="w-5 h-5 text-[#E17100]" />;
+                            iconBg = "bg-[#FEF3C7]";
+                            badgeBg = "bg-[#FFFBEB] text-[#BB4D00] border-[#FEF3C7]";
+                        } else if (item.TypeName === 'Clothes') {
+                            icon = <Shirt className="w-5 h-5 text-[#155DFC]" />;
+                            iconBg = "bg-[#EFF6FF]";
+                            badgeBg = "bg-[#EFF6FF] text-[#155DFC] border-[#BFDBFE]";
+                        } else if (item.TypeName === 'Financial Support' || item.TypeName === 'Financial Aid') {
+                            icon = <DollarSign className="w-5 h-5 text-[#009966]" />;
+                            iconBg = "bg-[#ECFDF5]";
+                            badgeBg = "bg-[#ECFDF5] text-[#009966] border-[#A7F3D0]";
+                        }
+
+                        return {
+                            id: item.DonationID,
+                            title: item.Title,
+                            category: item.TypeName,
+                            qty: `Qty: ${item.Quantity}`,
+                            location: item.Location || 'N/A',
+                            donor: `${item.DonorName || 'Donor'} · ${item.CreatedAt ? item.CreatedAt.split(' ')[0] : ''}`,
+                            icon,
+                            iconBg,
+                            badgeBg,
+                        };
+                    });
+                    setDonations(mapped);
+                }
+            } catch (err) {
+                console.error('Failed to load donations:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDonations();
+    }, []);
 
     const categories = ["All", "Food", "Clothes", "Financial Aid", "Household Items"];
+    const filteredDonations = selectedCategory === "All"
+        ? donations
+        : donations.filter((d) => d.category === selectedCategory);
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
@@ -131,9 +118,17 @@ export default function BrowseDonations() {
                 </div>
             </div>
 
+            {loading && (
+                <p className="text-center text-slate-500 text-sm py-8">Loading donations...</p>
+            )}
+
+            {!loading && filteredDonations.length === 0 && (
+                <p className="text-center text-slate-500 text-sm py-8">No available donations right now.</p>
+            )}
+
             {/* Donations Grid */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-6">
-                {donations.map((item) => (
+                {filteredDonations.map((item) => (
                     <div
                         key={item.id}
                         className="w-[550.03px] h-[221.62px] bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between"
