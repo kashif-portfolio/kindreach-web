@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getAllDonors, approveDonor, blockDonor } from "../../services/adminService";
 import BlockDonorModal from "../../components/admin/BlockDonorModal";
 import ApproveDonorModal from "../../components/admin/ApproveDonorModal";
 import UnblockDonorModal from "../../components/admin/UnblockDonorModal";
@@ -19,39 +20,17 @@ import {
 } from "lucide-react";
 
 export default function ManageDonors() {
+    // Search and filter states
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    // Dummy data matching the screenshot
-    const [donors, setDonors] = useState([
-        { id: 1, name: "Ahmed Khan", email: "ahmed@email.com", phone: "+92 300 123 4567", location: "Lahore", donations: 12, joined: "2024-01-15", status: "Approved", initials: "AK", color: "bg-[#009689]" },
-        { id: 2, name: "Sara Malik", email: "sara@email.com", phone: "+92 301 234 5678", location: "Karachi", donations: 0, joined: "2024-02-20", status: "Pending", initials: "SM", color: "bg-emerald-600" },
-        { id: 3, name: "Usman Ali", email: "usman@email.com", phone: "+92 302 345 6789", location: "Islamabad", donations: 7, joined: "2024-01-08", status: "Approved", initials: "UA", color: "bg-[#009689]" },
-        { id: 4, name: "Hina Baig", email: "hina@email.com", phone: "+92 303 456 7890", location: "Faisalabad", donations: 3, joined: "2023-12-05", status: "Blocked", initials: "HB", color: "bg-emerald-700" },
-        { id: 5, name: "Tariq Mehmood", email: "tariq@email.com", phone: "+92 304 567 8901", location: "Rawalpindi", donations: 0, joined: "2024-03-01", status: "Pending", initials: "TM", color: "bg-emerald-800" },
-    ]);
+    // Donors list from backend
+    const [donors, setDonors] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const handleStatusToggle = (id) => {
-        setDonors(donors.map(donor => {
-            if (donor.id === id) {
-                const newStatus = donor.status === "Approved" ? "Blocked" : donor.status === "Blocked" ? "Approved" : "Approved";
-                return { ...donor, status: newStatus };
-            }
-            return donor;
-        }));
-    };
-
-    // Filter logic
-    const filteredDonors = donors.filter(donor => {
-        const matchesSearch = donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            donor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            donor.location.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === "All" || donor.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
-
+    // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDonorId, setSelectedDonorId] = useState(null);
 
@@ -70,37 +49,134 @@ export default function ManageDonors() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
-    const handleBlock = (id) => {
-        setDonors(donors.map(donor =>
-            donor.id === id ? { ...donor, status: "Blocked" } : donor
-        ));
+    // Load all donors when page opens
+    useEffect(() => {
+        const fetchDonors = async () => {
+            try {
+                const result = await getAllDonors();
+                if (result.status === "success") {
+                    // Convert API data to UI format
+                    const mapped = result.data.map((item) => {
+                        const name = item.Name || "Donor";
+                        const initials = name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase();
+
+                        // Backend: Active / Blocked  →  UI: Approved / Blocked
+                        let status = "Pending";
+                        if (item.Status === "Active") status = "Approved";
+                        else if (item.Status === "Blocked") status = "Blocked";
+
+                        return {
+                            id: item.UserID, // UserID for approve/block API
+                            donorID: item.DonorID,
+                            name,
+                            email: item.Email,
+                            phone: item.Phone || "",
+                            location: item.Address || "",
+                            donations: 0,
+                            joined: item.CreatedAt ? item.CreatedAt.split(" ")[0] : "",
+                            status,
+                            initials,
+                            color: "bg-[#009689]",
+                        };
+                    });
+                    setDonors(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to load donors:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDonors();
+    }, []);
+
+    // Filter by search text and status
+    const filteredDonors = donors.filter((donor) => {
+        const matchesSearch =
+            donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            donor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            donor.location.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus =
+            statusFilter === "All" || donor.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    // Block donor - call API then update list
+    const handleBlock = async (id) => {
+        try {
+            const result = await blockDonor(id);
+            if (result.status === "success") {
+                setDonors((prev) =>
+                    prev.map((donor) =>
+                        donor.id === id ? { ...donor, status: "Blocked" } : donor
+                    )
+                );
+            } else {
+                alert(result.message || "Failed to block donor");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
-    const handleApprove = (id) => {
-        setDonors(donors.map(donor =>
-            donor.id === id ? { ...donor, status: "Approved" } : donor
-        ));
+    // Approve donor - call API then update list
+    const handleApprove = async (id) => {
+        try {
+            const result = await approveDonor(id);
+            if (result.status === "success") {
+                setDonors((prev) =>
+                    prev.map((donor) =>
+                        donor.id === id ? { ...donor, status: "Approved" } : donor
+                    )
+                );
+            } else {
+                alert(result.message || "Failed to approve donor");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
-    const handleUnblock = (id) => {
-        setDonors(donors.map(donor =>
-            donor.id === id ? { ...donor, status: "Approved" } : donor // ya "Active" jo bhi status aap dena chahein
-        ));
+    // Unblock donor - same as approve (set Active again)
+    const handleUnblock = async (id) => {
+        try {
+            const result = await approveDonor(id);
+            if (result.status === "success") {
+                setDonors((prev) =>
+                    prev.map((donor) =>
+                        donor.id === id ? { ...donor, status: "Approved" } : donor
+                    )
+                );
+            } else {
+                alert(result.message || "Failed to unblock donor");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
+    // Edit save - local only (no edit API yet)
     const handleEditSave = (updatedDonor) => {
-        setDonors(donors.map(donor =>
-            donor.id === updatedDonor.id ? updatedDonor : donor
-        ));
+        setDonors((prev) =>
+            prev.map((donor) =>
+                donor.id === updatedDonor.id ? updatedDonor : donor
+            )
+        );
     };
 
+    // Delete - local only (no delete API yet)
     const handleDelete = (id) => {
-        setDonors(donors.filter(donor => donor.id !== id));
+        setDonors((prev) => prev.filter((donor) => donor.id !== id));
     };
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
-
             {/* Page Header */}
             <div className="flex flex-col gap-1">
                 <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
@@ -139,6 +215,11 @@ export default function ManageDonors() {
                 </div>
             </div>
 
+            {/* Loading */}
+            {loading && (
+                <p className="text-center text-slate-500 text-sm py-8">Loading donors...</p>
+            )}
+
             {/* Donors Table Card */}
             <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
                 <div className="overflow-x-auto">
@@ -157,7 +238,6 @@ export default function ManageDonors() {
                         <tbody className="divide-y divide-slate-100 text-[13px]">
                             {filteredDonors.map((donor) => (
                                 <tr key={donor.id} className="hover:bg-slate-50/60 transition-colors">
-
                                     {/* Donor Info */}
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
@@ -246,8 +326,8 @@ export default function ManageDonors() {
                                             {donor.status === "Pending" && (
                                                 <button
                                                     onClick={() => {
-                                                        setSelectedApproveId(donor.id); // Donor ki ID save karein
-                                                        setIsApproveModalOpen(true);    // Modal ko kholen
+                                                        setSelectedApproveId(donor.id);
+                                                        setIsApproveModalOpen(true);
                                                     }}
                                                     className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                                                 >
@@ -261,18 +341,18 @@ export default function ManageDonors() {
                                                     setSelectedDonorDetails(donor);
                                                     setIsDetailsModalOpen(true);
                                                 }}
-                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
+                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                                            >
                                                 <Eye className="w-3.5 h-3.5" />
                                             </button>
-
 
                                             <button
                                                 onClick={() => {
                                                     setSelectedDonorToEdit(donor);
                                                     setIsEditModalOpen(true);
                                                 }}
-                                                clas
-                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
+                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                                            >
                                                 <Edit className="w-3.5 h-3.5" />
                                             </button>
 
@@ -281,12 +361,12 @@ export default function ManageDonors() {
                                                     setSelectedDeleteId(donor.id);
                                                     setIsDeleteModalOpen(true);
                                                 }}
-                                                className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
+                                                className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                                            >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
                                         </div>
                                     </td>
-
                                 </tr>
                             ))}
                         </tbody>
@@ -296,11 +376,15 @@ export default function ManageDonors() {
                 {/* Pagination Footer */}
                 <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
                     <span className="text-[12px] text-slate-500 font-medium">
-                        Showing <span className="font-semibold text-slate-700">{filteredDonors.length}</span> results
+                        Showing{" "}
+                        <span className="font-semibold text-slate-700">
+                            {filteredDonors.length}
+                        </span>{" "}
+                        results
                     </span>
                     <div className="flex items-center gap-1.5">
                         <button
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                             className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
                         >
                             <ChevronLeft className="w-3.5 h-3.5" />
@@ -310,7 +394,7 @@ export default function ManageDonors() {
                             1
                         </button>
                         <button
-                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            onClick={() => setCurrentPage((prev) => prev + 1)}
                             className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
                         >
                             Next
@@ -318,16 +402,15 @@ export default function ManageDonors() {
                         </button>
                     </div>
                 </div>
-
             </div>
 
+            {/* Modals */}
             <BlockDonorModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onConfirm={() => {
-                    // Yahan par aap apni block hone wali logic ya state update likhein ge
                     handleBlock(selectedDonorId);
-                    setIsModalOpen(false); // Modal band kar dein
+                    setIsModalOpen(false);
                 }}
             />
 
@@ -370,8 +453,6 @@ export default function ManageDonors() {
                     setIsDeleteModalOpen(false);
                 }}
             />
-
         </div>
-
     );
 }
