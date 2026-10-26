@@ -1,16 +1,53 @@
 import React, { useState } from "react";
 import { X, Utensils, Send } from "lucide-react";
+import { sendRequest } from "../../services/needyService";
 
 export default function SendRequestModal({ isOpen, onClose, donation }) {
     const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Yahan aap apni request submit ki API ya logic likhein ge
-        alert("Donation request submitted successfully!");
-        onClose();
+        setError("");
+
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+        if (!user.needyID) {
+            setError("Needy ID not found. Please login again as Needy.");
+            return;
+        }
+
+        if (!donation?.id) {
+            setError("No donation selected.");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const result = await sendRequest({
+                donationID: donation.id,
+                needyID: user.needyID,
+                message: message.trim(),
+            });
+
+            if (result.status === "success") {
+                alert("Donation request submitted successfully!");
+                setMessage("");
+                onClose();
+            } else {
+                setError(result.message || "Failed to send request");
+            }
+        } catch (err) {
+            const msg =
+                err.response?.data?.message || "Something went wrong. Try again.";
+            setError(msg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -63,6 +100,12 @@ export default function SendRequestModal({ isOpen, onClose, donation }) {
                         </div>
                     </div>
 
+                    {error && (
+                        <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-xl">
+                            {error}
+                        </div>
+                    )}
+
                     {/* Modal Footer Buttons */}
                     <div className="flex items-center justify-end gap-3 pt-2">
                         <button
@@ -74,10 +117,11 @@ export default function SendRequestModal({ isOpen, onClose, donation }) {
                         </button>
                         <button
                             type="submit"
+                            disabled={loading}
                             className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#009689] text-[13px] font-semibold text-white hover:bg-[#007d72] transition-colors shadow-sm cursor-pointer"
                         >
                             <Send className="w-4 h-4" />
-                            Send Request
+                            {loading ? "Sending..." : "Send Request"}
                         </button>
                     </div>
 
