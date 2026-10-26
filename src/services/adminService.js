@@ -29,3 +29,13 @@ export const getAllRequests = async () => {
   const response = await api.get('/admin/get_all_requests.php');
   return response.data;
 };
+
+export const rejectNeedy = async (needyID) => {
+  const response = await api.post('/admin/reject_needy.php', { needyID });
+  return response.data;
+};
+
+export const deleteNeedy = async (needyID) => {
+  const response = await api.post('/admin/delete_needy.php', { needyID });
+  return response.data;
+};

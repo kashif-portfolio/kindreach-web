@@ -1,4 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+    getAllNeedy,
+    verifyNeedy,
+    rejectNeedy,
+    deleteNeedy,
+} from "../../services/adminService";
 import NeedyDetailsModal from "../../components/admin/NeedyDetailsModal";
 import VerifyApplicantModal from "../../components/admin/VerifyApplicantModal";
 import RejectApplicantModal from "../../components/admin/RejectApplicantModal";
@@ -8,19 +14,23 @@ import {
     Search,
     Check,
     X,
-    Edit,
     Trash2,
     ChevronLeft,
     ChevronRight as ChevronRightIcon,
     Eye,
-    Plus
+    Plus,
 } from "lucide-react";
 
 export default function ManageNeedyPersons() {
+    // Search and pagination
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Details Modal State
+    // Applicants list from backend
+    const [applicants, setApplicants] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Modal states
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [selectedApplicantDetails, setSelectedApplicantDetails] = useState(null);
 
@@ -33,70 +43,139 @@ export default function ManageNeedyPersons() {
     const [isDeleteRecordModalOpen, setIsDeleteRecordModalOpen] = useState(false);
     const [selectedDeleteRecordId, setSelectedDeleteRecordId] = useState(null);
 
-    // Register Modal State
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
-    // Initial dummy data matching your design and screenshot
-    const [applicants, setApplicants] = useState([
-        { id: 1, name: "Fatima Bibi", email: "fatima@email.com", location: "Karachi", reason: "Unemployment", household: 5, requests: 3, status: "Verified", initials: "FB", color: "bg-teal-700" },
-        { id: 2, name: "Muhammad Ramzan", email: "ramzan@email.com", location: "Multan", reason: "Natural Disaster", household: 7, requests: 0, status: "Pending", initials: "MR", color: "bg-[#009689]" },
-        { id: 3, name: "Amina Begum", email: "amina@email.com", location: "Lahore", reason: "Disability", household: 3, requests: 2, status: "Verified", initials: "AB", color: "bg-teal-600" },
-        { id: 4, name: "Ghulam Hassan", email: "ghulam@email.com", location: "Peshawar", reason: "Chronic Illness", household: 6, requests: 0, status: "Pending", initials: "GH", color: "bg-emerald-700" },
-        { id: 5, name: "Zainab Khatoon", email: "zainab@email.com", location: "Quetta", reason: "Other", household: 2, requests: 1, status: "Rejected", initials: "ZK", color: "bg-teal-800" },
-    ]);
+    // Load all needy persons when page opens
+    useEffect(() => {
+        const fetchNeedy = async () => {
+            try {
+                const result = await getAllNeedy();
+                if (result.status === "success") {
+                    // Convert API data to UI format
+                    const mapped = result.data.map((item) => {
+                        const name = item.Name || "Needy";
+                        const initials = name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase();
 
-    const handleStatusChange = (id, newStatus) => {
-        setApplicants(applicants.map(app => {
-            if (app.id === id) {
-                return { ...app, status: newStatus };
+                        // Backend VerificationStatus → UI status
+                        let status = item.VerificationStatus || "Pending";
+                        if (status !== "Verified" && status !== "Rejected") {
+                            status = "Pending";
+                        }
+
+                        return {
+                            id: item.NeedyID, // used for verify / reject / delete APIs
+                            userID: item.UserID,
+                            name,
+                            email: item.Email || "",
+                            location: item.Address || "",
+                            reason: item.IncomeStatus || "N/A",
+                            household: item.FamilyDetails || "—",
+                            requests: 0,
+                            status,
+                            initials,
+                            color: "bg-[#009689]",
+                        };
+                    });
+                    setApplicants(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to load needy persons:", err);
+            } finally {
+                setLoading(false);
             }
-            return app;
-        }));
-    };
+        };
 
-    const handleDelete = (id) => {
-        setApplicants(applicants.filter(app => app.id !== id));
-    };
+        fetchNeedy();
+    }, []);
 
-    // Filter logic
-    const filteredApplicants = applicants.filter(app => {
-        return app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // Filter by name, location or reason
+    const filteredApplicants = applicants.filter((app) => {
+        return (
+            app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             app.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            app.reason.toLowerCase().includes(searchTerm.toLowerCase());
+            String(app.reason).toLowerCase().includes(searchTerm.toLowerCase())
+        );
     });
 
-    const handleVerify = (id) => {
-        setApplicants(applicants.map(app =>
-            app.id === id ? { ...app, status: "Verified" } : app
-        ));
+    // Verify applicant - API call then update list
+    const handleVerify = async (id) => {
+        try {
+            const result = await verifyNeedy(id);
+            if (result.status === "success") {
+                setApplicants((prev) =>
+                    prev.map((app) =>
+                        app.id === id ? { ...app, status: "Verified" } : app
+                    )
+                );
+            } else {
+                alert(result.message || "Failed to verify");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
-    const handleReject = (id) => {
-        setApplicants(applicants.map(app =>
-            app.id === id ? { ...app, status: "Rejected" } : app
-        ));
+    // Reject applicant - API call then update list
+    const handleReject = async (id) => {
+        try {
+            const result = await rejectNeedy(id);
+            if (result.status === "success") {
+                setApplicants((prev) =>
+                    prev.map((app) =>
+                        app.id === id ? { ...app, status: "Rejected" } : app
+                    )
+                );
+            } else {
+                alert(result.message || "Failed to reject");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
-    const handleDeleteRecord = (id) => {
-        setApplicants(applicants.filter(app => app.id !== id));
+    // Delete applicant - API call then remove from list
+    const handleDeleteRecord = async (id) => {
+        try {
+            const result = await deleteNeedy(id);
+            if (result.status === "success") {
+                setApplicants((prev) => prev.filter((app) => app.id !== id));
+            } else {
+                alert(result.message || "Failed to delete");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
+    // Register from modal - local only (no register-by-admin API yet)
     const handleRegisterNewApplicant = (newPerson) => {
         const applicantWithMeta = {
-            id: applicants.length + 1,
+            id: Date.now(),
             ...newPerson,
-            status: "Pending", // Default status
-            initials: newPerson.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2),
+            status: "Pending",
+            initials: newPerson.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2),
             color: "bg-[#009689]",
-            registered: new Date().toISOString().split('T')[0],
-            requestsMade: 0
+            requests: 0,
+            reason: newPerson.reason || "N/A",
+            household: newPerson.household || "—",
+            location: newPerson.location || "",
+            email: newPerson.email || "",
         };
-        setApplicants([applicantWithMeta, ...applicants]);
+        setApplicants((prev) => [applicantWithMeta, ...prev]);
     };
 
     return (
         <div className="w-full px-8 py-0 flex flex-col gap-6">
-
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
@@ -108,7 +187,6 @@ export default function ManageNeedyPersons() {
                     </p>
                 </div>
 
-                {/* Register Needy Person Button */}
                 <button
                     onClick={() => setIsRegisterModalOpen(true)}
                     className="flex items-center gap-2 px-4 py-2.5 bg-[#009689] hover:bg-[#007f73] text-white rounded-xl text-[13px] font-semibold transition-colors shadow-xs cursor-pointer"
@@ -118,7 +196,7 @@ export default function ManageNeedyPersons() {
                 </button>
             </div>
 
-            {/* Search Bar Bar (Full Width) */}
+            {/* Search Bar */}
             <div className="flex items-center gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -132,7 +210,14 @@ export default function ManageNeedyPersons() {
                 </div>
             </div>
 
-            {/* Applicants Table Card */}
+            {/* Loading message */}
+            {loading && (
+                <p className="text-center text-slate-500 text-sm py-8">
+                    Loading applicants...
+                </p>
+            )}
+
+            {/* Applicants Table */}
             <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
@@ -149,42 +234,46 @@ export default function ManageNeedyPersons() {
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-[13px]">
                             {filteredApplicants.map((applicant) => (
-                                <tr key={applicant.id} className="hover:bg-slate-50/60 transition-colors">
-
-                                    {/* Person Info */}
+                                <tr
+                                    key={applicant.id}
+                                    className="hover:bg-slate-50/60 transition-colors"
+                                >
+                                    {/* Person info */}
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-9 h-9 ${applicant.color} text-white font-bold text-[12px] rounded-full flex items-center justify-center shrink-0 shadow-sm`}>
+                                            <div
+                                                className={`w-9 h-9 ${applicant.color} text-white font-bold text-[12px] rounded-full flex items-center justify-center shrink-0 shadow-sm`}
+                                            >
                                                 {applicant.initials}
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="font-semibold text-slate-900">{applicant.name}</span>
-                                                <span className="text-[12px] text-slate-400">{applicant.email}</span>
+                                                <span className="font-semibold text-slate-900">
+                                                    {applicant.name}
+                                                </span>
+                                                <span className="text-[12px] text-slate-400">
+                                                    {applicant.email}
+                                                </span>
                                             </div>
                                         </div>
                                     </td>
 
-                                    {/* Location */}
                                     <td className="py-4 px-4 text-slate-600 font-medium">
                                         {applicant.location}
                                     </td>
 
-                                    {/* Reason */}
                                     <td className="py-4 px-4 text-slate-600 font-medium">
                                         {applicant.reason}
                                     </td>
 
-                                    {/* Household */}
                                     <td className="py-4 px-4 font-semibold text-slate-800">
                                         {applicant.household}
                                     </td>
 
-                                    {/* Requests Count */}
                                     <td className="py-4 px-4 font-semibold text-slate-800">
                                         {applicant.requests}
                                     </td>
 
-                                    {/* Status Badge */}
+                                    {/* Status badge */}
                                     <td className="py-4 px-4">
                                         {applicant.status === "Verified" && (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
@@ -209,8 +298,8 @@ export default function ManageNeedyPersons() {
                                     {/* Actions */}
                                     <td className="py-4 px-6 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            {/* Agar status Pending ho toh Verify aur Reject buttons show honge */}
-                                            {applicant.status === "Pending" ? (
+                                            {/* Show Verify / Reject only when Pending */}
+                                            {applicant.status === "Pending" && (
                                                 <>
                                                     <button
                                                         onClick={() => {
@@ -233,18 +322,17 @@ export default function ManageNeedyPersons() {
                                                         Reject
                                                     </button>
                                                 </>
-                                            ) : null}
+                                            )}
 
-                                            {/* Edit & Delete buttons hamesha available rahenge */}
                                             <button
                                                 onClick={() => {
                                                     setSelectedApplicantDetails(applicant);
                                                     setIsDetailsModalOpen(true);
                                                 }}
-                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200">
+                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                                            >
                                                 <Eye className="w-3.5 h-3.5" />
                                             </button>
-
 
                                             <button
                                                 onClick={() => {
@@ -257,21 +345,24 @@ export default function ManageNeedyPersons() {
                                             </button>
                                         </div>
                                     </td>
-
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
 
-                {/* Pagination Footer */}
+                {/* Pagination */}
                 <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
                     <span className="text-[12px] text-slate-500 font-medium">
-                        Showing <span className="font-semibold text-slate-700">{filteredApplicants.length}</span> results
+                        Showing{" "}
+                        <span className="font-semibold text-slate-700">
+                            {filteredApplicants.length}
+                        </span>{" "}
+                        results
                     </span>
                     <div className="flex items-center gap-1.5">
                         <button
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                             className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
                         >
                             <ChevronLeft className="w-3.5 h-3.5" />
@@ -281,7 +372,7 @@ export default function ManageNeedyPersons() {
                             1
                         </button>
                         <button
-                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            onClick={() => setCurrentPage((prev) => prev + 1)}
                             className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
                         >
                             Next
@@ -289,14 +380,15 @@ export default function ManageNeedyPersons() {
                         </button>
                     </div>
                 </div>
-
             </div>
 
+            {/* Modals */}
             <NeedyDetailsModal
                 isOpen={isDetailsModalOpen}
                 onClose={() => setIsDetailsModalOpen(false)}
                 applicant={selectedApplicantDetails}
             />
+
             <VerifyApplicantModal
                 isOpen={isVerifyModalOpen}
                 onClose={() => setIsVerifyModalOpen(false)}
@@ -324,13 +416,11 @@ export default function ManageNeedyPersons() {
                 }}
             />
 
-            {/* Register Modal Integration */}
             <RegisterNeedyModal
                 isOpen={isRegisterModalOpen}
                 onClose={() => setIsRegisterModalOpen(false)}
                 onRegister={handleRegisterNewApplicant}
             />
-
         </div>
     );
 }
