@@ -1,46 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Check, X, Eye } from "lucide-react";
 import AcceptRequestModal from "../../components/donor/AcceptRequestModal";
 import DeclineRequestModal from "../../components/donor/DeclineRequestModal";
 import ViewRequestModal from "../../components/donor/ViewRequestModal";
+import { getDonationRequests, acceptRequest, declineRequest } from "../../services/donorService";
+
 
 export default function DonationRequests() {
-    // Sample requests data - baad mein yeh backend API se aayega
-    const [requests, setRequests] = useState([
-        {
-            id: 1,
-            name: "Fatima Bibi",
-            initials: "FB",
-            avatarBg: "bg-emerald-100 text-emerald-700",
-            itemRequested: "Atta (25 kg bags)",
-            date: "2024-03-11",
-            message: "I have a family of 5 and we urgently need food supplies. We would be very grateful for your generosity.",
-            status: "Pending",
-            statusColor: "bg-amber-50 text-amber-700 border-amber-200",
-        },
-        {
-            id: 2,
-            name: "Muhammad Ramzan",
-            initials: "MR",
-            avatarBg: "bg-teal-100 text-teal-700",
-            itemRequested: "Children's Clothing (ages 5-10)",
-            date: "2024-03-09",
-            message: "I have 4 young children who need winter clothes as we approach the cold season in our area.",
-            status: "Pending",
-            statusColor: "bg-amber-50 text-amber-700 border-amber-200",
-        },
-        {
-            id: 3,
-            name: "Amina Begum",
-            initials: "AB",
-            avatarBg: "bg-emerald-100 text-emerald-700",
-            itemRequested: "Monthly Support Fund",
-            date: "2024-03-07",
-            message: "Thank you sincerely for your generous support. This will help us tremendously this month.",
-            status: "Accepted",
-            statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        },
-    ]);
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRequests = async () => {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            if (!user.donorID) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const result = await getDonationRequests(user.donorID);
+                if (result.status === "success") {
+                    const mapped = result.data.map((item) => {
+                        const name = item.NeedyName || "Needy";
+                        const initials = name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase();
+
+                        const status = item.Status || "Pending";
+                        let statusColor = "bg-amber-50 text-amber-700 border-amber-200";
+                        if (status === "Accepted") {
+                            statusColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                        } else if (status === "Declined") {
+                            statusColor = "bg-red-50 text-red-700 border-red-200";
+                        }
+
+                        return {
+                            id: item.RequestID,
+                            name,
+                            initials,
+                            avatarBg: "bg-emerald-100 text-emerald-700",
+                            itemRequested: item.DonationTitle,
+                            date: item.RequestDate ? item.RequestDate.split(" ")[0] : "",
+                            message: item.Message || "",
+                            status,
+                            statusColor,
+                        };
+                    });
+                    setRequests(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to load requests:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRequests();
+    }, []);
+
 
 
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
@@ -52,9 +73,23 @@ export default function DonationRequests() {
         setIsAcceptModalOpen(true);
     };
 
-    const handleAcceptConfirm = (id) => {
-        // Request ka status update karne ke liye
-        setRequests(requests.map(r => r.id === id ? { ...r, status: 'Accepted' } : r));
+    const handleAcceptConfirm = async (id) => {
+        try {
+            const result = await acceptRequest(id);
+            if (result.status === "success") {
+                setRequests((prev) =>
+                    prev.map((r) =>
+                        r.id === id
+                            ? { ...r, status: "Accepted", statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+                            : r
+                    )
+                );
+            } else {
+                alert(result.message || "Failed to accept");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
     const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
@@ -64,10 +99,24 @@ export default function DonationRequests() {
         setIsDeclineModalOpen(true);
     };
 
-    const handleDeclineConfirm = (id) => {
-        setRequests(requests.map(r => r.id === id ? { ...r, status: 'Declined' } : r));
+    const handleDeclineConfirm = async (id) => {
+        try {
+            const result = await declineRequest(id);
+            if (result.status === "success") {
+                setRequests((prev) =>
+                    prev.map((r) =>
+                        r.id === id
+                            ? { ...r, status: "Declined", statusColor: "bg-red-50 text-red-700 border-red-200" }
+                            : r
+                    )
+                );
+            } else {
+                alert(result.message || "Failed to decline");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
-
 
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
@@ -83,6 +132,14 @@ export default function DonationRequests() {
                 <h1 className="text-[20px] font-bold text-slate-900">Donation Requests</h1>
                 <p className="text-[13px] text-slate-500">Manage incoming requests for your donations</p>
             </div>
+
+            {loading && (
+                <p className="text-center text-slate-500 text-sm py-8">Loading requests...</p>
+            )}
+
+            {!loading && requests.length === 0 && (
+                <p className="text-center text-slate-500 text-sm py-8">No requests yet.</p>
+            )}
 
             {/* Requests List Container */}
             <div className="flex flex-col gap-4">
