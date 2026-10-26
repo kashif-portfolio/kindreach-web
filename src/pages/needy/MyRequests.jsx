@@ -1,55 +1,86 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
     Utensils,
     Shirt,
     Check
 } from 'lucide-react';
+import { getMyRequests } from "../../services/needyService";
 
-export default function NeedyRequests() {
-    const requests = [
-        {
-            id: 1,
-            title: "Atta (25 kg bags)",
-            donor: "Ahmed Khan",
-            date: "2024-03-11",
-            icon: <Utensils className="w-5 h-5" />,
-            iconBg: "bg-[#FEF3C7]",
-            iconColor: "text-[#E17100]",
-            status: "Pending",
-            statusColor: "text-[#BB4D00]",
-            statusBg: "bg-[#FFFBEB]",
-            statusBorder: "border-[#FEF3C7]",
-            currentStep: 1
-        },
-        {
-            id: 2,
-            title: "Cooking Oil and Sugar",
-            donor: "Sara Malik",
-            date: "2024-03-09",
-            icon: <Utensils className="w-5 h-5" />,
-            iconBg: "bg-[#FEF3C7]",
-            iconColor: "text-[#E17100]",
-            status: "Accepted",
-            statusColor: "text-[#009966]",
-            statusBg: "bg-[#ECFDF5]",
-            statusBorder: "border-[#A7F3D0]",
-            currentStep: 2
-        },
-        {
-            id: 3,
-            title: "Adult Clothing Set",
-            donor: "Ahmed Khan",
-            date: "2024-03-01",
-            icon: <Shirt className="w-5 h-5" />,
-            iconBg: "bg-[#EFF6FF]",
-            iconColor: "text-[#155DFC]",
-            status: "Delivered",
-            statusColor: "text-[#009966]",
-            statusBg: "bg-[#ECFDF5]",
-            statusBorder: "border-[#A7F3D0]",
-            currentStep: 4
-        }
-    ];
+export default function MyRequests() { 
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRequests = async () => {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            if (!user.needyID) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const result = await getMyRequests(user.needyID);
+                if (result.status === "success") {
+                    const mapped = result.data.map((item) => {
+                        const status = item.Status || "Pending";
+
+                        // Step number status se
+                        let currentStep = 1;
+                        if (status === "Accepted") currentStep = 2;
+                        else if (status === "Approved") currentStep = 3;
+                        else if (status === "Delivered") currentStep = 4;
+                        else if (status === "Declined" || status === "Rejected") currentStep = 1;
+
+                        // Icon
+                        let icon = <Utensils className="w-5 h-5" />;
+                        let iconBg = "bg-[#FEF3C7]";
+                        let iconColor = "text-[#E17100]";
+                        if (item.TypeName === "Clothes") {
+                            icon = <Shirt className="w-5 h-5" />;
+                            iconBg = "bg-[#EFF6FF]";
+                            iconColor = "text-[#155DFC]";
+                        }
+
+                        // Status colors
+                        let statusColor = "text-[#BB4D00]";
+                        let statusBg = "bg-[#FFFBEB]";
+                        let statusBorder = "border-[#FEF3C7]";
+                        if (status === "Accepted" || status === "Delivered") {
+                            statusColor = "text-[#009966]";
+                            statusBg = "bg-[#ECFDF5]";
+                            statusBorder = "border-[#A7F3D0]";
+                        } else if (status === "Declined" || status === "Rejected") {
+                            statusColor = "text-red-600";
+                            statusBg = "bg-red-50";
+                            statusBorder = "border-red-200";
+                        }
+
+                        return {
+                            id: item.RequestID,
+                            title: item.DonationTitle,
+                            donor: item.DonorName || "Donor",
+                            date: item.RequestDate ? item.RequestDate.split(" ")[0] : "",
+                            icon,
+                            iconBg,
+                            iconColor,
+                            status,
+                            statusColor,
+                            statusBg,
+                            statusBorder,
+                            currentStep,
+                        };
+                    });
+                    setRequests(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to load requests:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRequests();
+    }, []);
 
     const steps = ["Submitted", "Accepted", "Approved", "Delivered"];
 
@@ -72,6 +103,17 @@ export default function NeedyRequests() {
             </div>
 
             {/* Requests Cards List */}
+
+            {loading && (
+                <p className="text-center text-slate-500 text-sm py-8">Loading requests...</p>
+            )}
+
+            {!loading && requests.length === 0 && (
+                <p className="text-center text-slate-500 text-sm py-8">
+                    No requests yet. Browse donations and send a request.
+                </p>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {requests.map((request) => (
                     <div
@@ -114,8 +156,8 @@ export default function NeedyRequests() {
                                     return (
                                         <div key={step} className="flex flex-col items-center z-10">
                                             <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
-                                                    ? 'bg-[#009689] border-[#009689] text-white shadow-sm'
-                                                    : 'bg-white border-slate-200 text-slate-400'
+                                                ? 'bg-[#009689] border-[#009689] text-white shadow-sm'
+                                                : 'bg-white border-slate-200 text-slate-400'
                                                 }`}>
                                                 {isCompleted ? (
                                                     <Check className="w-3.5 h-3.5 stroke-3" />
