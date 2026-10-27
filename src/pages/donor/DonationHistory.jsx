@@ -1,42 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TrendingUp } from "lucide-react";
+import { getMyDonations } from "../../services/donorService";
 
 export default function DonationHistory() {
-    const [historyData] = useState([
-        {
-            id: 1,
-            type: "Food",
-            typeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-            description: "Rice (10 kg)",
-            recipient: "Fatima Bibi",
-            location: "Karachi",
-            date: "2024-02-10",
-            status: "Delivered",
-            statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        },
-        {
-            id: 2,
-            type: "Clothes",
-            typeColor: "bg-sky-50 text-sky-700 border-sky-200",
-            description: "Adult Clothing Set",
-            recipient: "Muhammad Ramzan",
-            location: "Multan",
-            date: "2024-01-25",
-            status: "Delivered",
-            statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        },
-        {
-            id: 3,
-            type: "Household Items",
-            typeColor: "bg-amber-50 text-amber-700 border-amber-200",
-            description: "Kitchen Utensils Set",
-            recipient: "Amina Begum",
-            location: "Lahore",
-            date: "2024-01-10",
-            status: "Delivered",
-            statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        },
-    ]);
+    const [historyData, setHistoryData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            if (!user.donorID) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const result = await getMyDonations(user.donorID);
+                if (result.status === "success") {
+                    const mapped = result.data.map((item) => {
+                        let typeColor = "bg-slate-50 text-slate-700 border-slate-200";
+                        if (item.TypeName === "Food") {
+                            typeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                        } else if (item.TypeName === "Clothes") {
+                            typeColor = "bg-sky-50 text-sky-700 border-sky-200";
+                        } else if (item.TypeName === "Household Items" || item.TypeName === "Household") {
+                            typeColor = "bg-amber-50 text-amber-700 border-amber-200";
+                        }
+
+                        let statusColor = "bg-amber-50 text-amber-700 border-amber-200";
+                        if (item.Status === "Delivered" || item.Status === "Accepted") {
+                            statusColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                        } else if (item.Status === "Available") {
+                            statusColor = "bg-blue-50 text-blue-700 border-blue-200";
+                        }
+
+                        return {
+                            id: item.DonationID,
+                            type: item.TypeName || "Other",
+                            typeColor,
+                            description: item.Title,
+                            recipient: "—", // no recipient in this API
+                            location: item.Location || "—",
+                            date: item.CreatedAt ? item.CreatedAt.split(" ")[0] : "",
+                            status: item.Status || "—",
+                            statusColor,
+                        };
+                    });
+                    setHistoryData(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to load history:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHistory();
+    }, []);
+
 
     return (
         <div className="flex flex-col gap-6 p-2">
@@ -45,6 +66,14 @@ export default function DonationHistory() {
                 <h1 className="text-[20px] font-bold text-slate-900">Donation History</h1>
                 <p className="text-[13px] text-slate-500">Your completed donations</p>
             </div>
+
+            {loading && (
+                <p className="text-center text-slate-500 text-sm py-6">Loading history...</p>
+            )}
+
+            {!loading && historyData.length === 0 && (
+                <p className="text-center text-slate-500 text-sm py-6">No donation history yet.</p>
+            )}
 
             {/* Table Card Container */}
             <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
