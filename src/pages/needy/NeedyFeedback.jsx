@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { submitFeedback, getFeedbackList } from "../../services/feedbackService";
 import {
     Heart,
     Package,
@@ -16,6 +17,108 @@ export default function NeedyFeedback() {
     const [rating, setRating] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState("Donation Quality");
     const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [recentReviews, setRecentReviews] = useState([]);
+
+    useEffect(() => {
+        const loadFeedback = async () => {
+            try {
+                const result = await getFeedbackList();
+                if (result.status === "success") {
+                    const mapped = result.data.map((item) => {
+                        const name = item.Name || "User";
+                        const initials = name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase();
+                        return {
+                            id: item.FeedbackID,
+                            name,
+                            initials,
+                            color: "bg-emerald-600",
+                            rating: item.Rating,
+                            comment: item.Comments,
+                        };
+                    });
+                    setRecentReviews(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to load feedback:", err);
+            }
+        };
+        loadFeedback();
+    }, []);
+
+    const handleSubmit = async () => {
+        setError("");
+
+        if (rating < 1) {
+            setError("Please select a rating");
+            return;
+        }
+        if (!message.trim()) {
+            setError("Please write your feedback message");
+            return;
+        }
+
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!user.userID) {
+            setError("Please login again");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const commentsText = `[${selectedCategory}] ${message.trim()}`;
+
+            const result = await submitFeedback({
+                userID: user.userID,
+                rating: rating,
+                comments: commentsText,
+                requestID: null,
+            });
+
+            if (result.status === "success") {
+                alert("Feedback submitted successfully!");
+                setRating(0);
+                setMessage("");
+
+                const list = await getFeedbackList();
+                if (list.status === "success") {
+                    const mapped = list.data.map((item) => {
+                        const name = item.Name || "User";
+                        const initials = name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase();
+                        return {
+                            id: item.FeedbackID,
+                            name,
+                            initials,
+                            color: "bg-emerald-600",
+                            rating: item.Rating,
+                            comment: item.Comments,
+                        };
+                    });
+                    setRecentReviews(mapped);
+                }
+            } else {
+                setError(result.message || "Failed to submit");
+            }
+        } catch (err) {
+            const msg =
+                err.response?.data?.message || "Something went wrong. Try again.";
+            setError(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const categories = [
         { name: "Donation Quality", icon: Package },
@@ -25,32 +128,6 @@ export default function NeedyFeedback() {
         { name: "Other", icon: FileText },
     ];
 
-    const recentReviews = [
-        {
-            id: 1,
-            name: "Fatima Bibi",
-            initials: "FB",
-            color: "bg-emerald-600",
-            rating: 5,
-            comment: "\"CharityHub connected me with donors who truly cared. I am grateful for every bit of help.\""
-        },
-        {
-            id: 2,
-            name: "Amina Begum",
-            initials: "AB",
-            color: "bg-emerald-600",
-            rating: 5,
-            comment: "\"The process was easy and respectful. They treated us with dignity.\""
-        },
-        {
-            id: 3,
-            name: "Ghulam Hassan",
-            initials: "GH",
-            color: "bg-emerald-600",
-            rating: 4,
-            comment: "\"I wish there were more clothing donations, but the food support was excellent.\""
-        }
-    ];
 
     return (
         <div className="flex flex-col gap-6 p-2">
@@ -138,6 +215,12 @@ export default function NeedyFeedback() {
                             Your Message
                         </h3>
 
+                        {error && (
+                            <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-xl">
+                                {error}
+                            </div>
+                        )}
+
                         <div className="relative">
                             <textarea
                                 rows={5}
@@ -161,10 +244,12 @@ export default function NeedyFeedback() {
                             </button>
                             <button
                                 type="button"
-                                className="w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#009689] text-[13px] font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+                                onClick={handleSubmit}
+                                disabled={loading}
+                                className="w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#009689] text-[13px] font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 <Heart className="w-4 h-4 fill-white" />
-                                Submit Feedback
+                                {loading ? "Submitting..." : "Submit Feedback"}
                             </button>
                         </div>
                     </div>
