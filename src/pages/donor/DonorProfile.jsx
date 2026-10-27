@@ -1,70 +1,150 @@
-import React, { useState } from "react";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  ShieldCheck, 
-  Edit3, 
-  Camera, 
-  Save, 
+import React, { useState, useEffect } from "react";
+import { updateProfile, changePassword } from "../../services/authService";
+import {
+  Edit3,
+  Camera,
+  Save,
   X,
-  Lock,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 
 export default function MyProfile() {
   const [isEditing, setIsEditing] = useState(false);
 
-  // Profile Data State
   const [profileData, setProfileData] = useState({
-    fullName: "Ahmed Khan",
-    email: "ahmed@email.com",
-    phone: "+92 300 123 4567",
-    physicalAddress: "Gulberg III, Lahore",
+    fullName: "",
+    email: "",
+    phone: "",
+    physicalAddress: "",
     idType: "CNIC",
-    idNumber: "35202-1234567-1",
-    totalDonations: 12,
-    memberSince: "Jan 2024"
+    idNumber: "—",
+    totalDonations: 0,
+    memberSince: "—",
   });
 
-  // Password State
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
+
+  // Load profile from localStorage (set at login)
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.userID) return;
+
+    setProfileData({
+      fullName: user.name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      physicalAddress: user.address || "",
+      idType: "CNIC",
+      idNumber: "—",
+      totalDonations: 0,
+      memberSince: "—",
+    });
+  }, []);
+
+  const initials = (profileData.fullName || "U")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfileData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+    setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
-    setPasswords((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+    setPasswords((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = (e) => {
+  // Save profile to database + localStorage
+  const handleSave = async (e) => {
     e.preventDefault();
-    setIsEditing(false);
+
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.userID) {
+      alert("Please login again");
+      return;
+    }
+
+    try {
+      const result = await updateProfile({
+        userID: user.userID,
+        name: profileData.fullName,
+        phone: profileData.phone,
+        address: profileData.physicalAddress,
+      });
+
+      if (result.status === "success") {
+        const updated = {
+          ...user,
+          name: profileData.fullName,
+          phone: profileData.phone,
+          address: profileData.physicalAddress,
+        };
+        localStorage.setItem("user", JSON.stringify(updated));
+        setIsEditing(false);
+        alert("Profile updated successfully");
+      } else {
+        alert(result.message || "Failed to update");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    }
   };
 
-  const handlePasswordUpdate = (e) => {
+  // Change password in database
+  const handlePasswordUpdate = async (e) => {
     e.preventDefault();
-    alert("Password updated successfully!");
-    setPasswords({ currentPassword: "", newPassword: "", confirmPassword: "" });
+
+    if (!passwords.currentPassword || !passwords.newPassword) {
+      alert("Please fill current and new password");
+      return;
+    }
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      alert("New passwords do not match");
+      return;
+    }
+    if (passwords.newPassword.length < 6) {
+      alert("New password must be at least 6 characters");
+      return;
+    }
+
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.userID) {
+      alert("Please login again");
+      return;
+    }
+
+    try {
+      const result = await changePassword({
+        userID: user.userID,
+        currentPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword,
+      });
+
+      if (result.status === "success") {
+        alert("Password changed successfully");
+        setPasswords({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      } else {
+        alert(result.message || "Failed to change password");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    }
   };
 
   return (
     <div className="flex flex-col gap-4 pb-4 max-w-7xl mx-auto">
-      {/* Page Header / Breadcrumb */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[18px] font-bold text-slate-900">My Profile</h1>
@@ -72,13 +152,11 @@ export default function MyProfile() {
         </div>
       </div>
 
-      {/* Main Grid Layout (2 Columns like Figma) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        
-        {/* LEFT COLUMN: Profile Summary Card */}
+        {/* LEFT: Summary */}
         <div className="lg:col-span-4 bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm flex flex-col items-center text-center h-fit">
           <div className="w-20 h-20 rounded-full bg-[#009689] flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-md relative group">
-            AK
+            {initials}
             {isEditing && (
               <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                 <Camera className="w-5 h-5" />
@@ -106,10 +184,8 @@ export default function MyProfile() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Personal Info & Password Section */}
+        {/* RIGHT: Form */}
         <div className="lg:col-span-8 flex flex-col gap-4">
-          
-          {/* Personal Information Card */}
           <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <h3 className="text-[14px] font-bold text-slate-900">Personal Information</h3>
@@ -142,7 +218,6 @@ export default function MyProfile() {
               )}
             </div>
 
-            {/* Details View or Form Inputs */}
             {isEditing ? (
               <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
@@ -151,7 +226,7 @@ export default function MyProfile() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-semibold text-slate-600">Email Address</label>
-                  <input type="email" name="email" value={profileData.email} onChange={handleChange} className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]" />
+                  <input type="email" name="email" value={profileData.email} disabled className="p-2 rounded-lg border border-slate-200 text-[12px] bg-slate-50 text-slate-500" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-semibold text-slate-600">Phone Number</label>
@@ -182,10 +257,9 @@ export default function MyProfile() {
             )}
           </div>
 
-          {/* Change Password Card */}
           <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
             <h3 className="text-[14px] font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Change Password</h3>
-            
+
             <form onSubmit={handlePasswordUpdate} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-[11px] font-semibold text-slate-600">Current Password</label>
@@ -234,9 +308,7 @@ export default function MyProfile() {
               </div>
             </form>
           </div>
-
         </div>
-
       </div>
     </div>
   );
