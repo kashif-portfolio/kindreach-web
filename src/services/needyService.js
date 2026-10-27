@@ -17,3 +17,8 @@ export const getMyRequests = async (needyID) => {
   const response = await api.get(`/needy/get_my_requests.php?needyID=${needyID}`);
   return response.data;
 };
+
+export const submitHelpRequest = async (data) => {
+  const response = await api.post('/needy/submit_help_request.php', data);
+  return response.data;
+};
