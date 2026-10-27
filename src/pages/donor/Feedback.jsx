@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { submitFeedback, getFeedbackList } from "../../services/feedbackService";
 import {
     Monitor,
     Package,
@@ -15,6 +16,9 @@ export default function Feedback() {
     const [rating, setRating] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState("Customer Support");
     const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [recentReviews, setRecentReviews] = useState([]);
 
     const categories = [
         { name: "Platform Experience", icon: Monitor },
@@ -24,32 +28,76 @@ export default function Feedback() {
         { name: "Other", icon: FileText },
     ];
 
-    const recentReviews = [
-        {
-            id: 1,
-            name: "Sara Malik",
-            initials: "SM",
-            color: "bg-emerald-600",
-            rating: 5,
-            comment: "The donation process was seamless. I felt truly connected to families in need."
-        },
-        {
-            id: 2,
-            name: "Usman Ali",
-            initials: "UA",
-            color: "bg-emerald-600",
-            rating: 5,
-            comment: "Great platform! Easy to post and track donations. Love the transparency."
-        },
-        {
-            id: 3,
-            name: "Hina Baig",
-            initials: "HB",
-            color: "bg-emerald-600",
-            rating: 5,
-            comment: "Wonderful experience. Would love more categories in the future."
+    const handleSubmit = async () => {
+        setError("");
+
+        if (rating < 1) {
+            setError("Please select a rating");
+            return;
         }
-    ];
+        if (!message.trim()) {
+            setError("Please write your feedback message");
+            return;
+        }
+
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!user.userID) {
+            setError("Please login again");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // Category text comments ke sath bhej rahe hain (table mein category column nahi)
+            const commentsText = `[${selectedCategory}] ${message.trim()}`;
+
+            const result = await submitFeedback({
+                userID: user.userID,
+                rating: rating,
+                comments: commentsText,
+                requestID: null,
+            });
+
+            if (result.status === "success") {
+                alert("Feedback submitted successfully!");
+                setRating(0);
+                setMessage("");
+
+                // List refresh
+                const list = await getFeedbackList();
+                if (list.status === "success") {
+                    const mapped = list.data.map((item) => {
+                        const name = item.Name || "User";
+                        const initials = name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase();
+                        return {
+                            id: item.FeedbackID,
+                            name,
+                            initials,
+                            color: "bg-emerald-600",
+                            rating: item.Rating,
+                            comment: item.Comments,
+                        };
+                    });
+                    setRecentReviews(mapped);
+                }
+            } else {
+                setError(result.message || "Failed to submit");
+            }
+        } catch (err) {
+            const msg =
+                err.response?.data?.message || "Something went wrong. Try again.";
+            setError(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     return (
         <div className="flex flex-col gap-6 p-2">
@@ -137,6 +185,12 @@ export default function Feedback() {
                             Your Message
                         </h3>
 
+                        {error && (
+                            <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-xl">
+                                {error}
+                            </div>
+                        )}
+
                         <div className="relative">
                             <textarea
                                 rows={5}
@@ -160,10 +214,12 @@ export default function Feedback() {
                             </button>
                             <button
                                 type="button"
-                                className=" w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#009689] text-[13px] font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+                                onClick={handleSubmit}
+                                disabled={loading}
+                                className="w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#009689] text-[13px] font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 <Send className="w-4 h-4" />
-                                Submit Feedback
+                                {loading ? "Submitting..." : "Submit Feedback"}
                             </button>
                         </div>
                     </div>
