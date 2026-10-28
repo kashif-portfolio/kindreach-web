@@ -26,3 +26,18 @@ export const declineRequest = async (requestID) => {
   const response = await api.post('/donor/decline_request.php', { requestID });
   return response.data;
 };
+
+export const getAcceptedRequests = async (donorID) => {
+  const response = await api.get(`/donor/get_accepted_requests.php?donorID=${donorID}`);
+  return response.data;
+};
+
+export const scheduleDelivery = async (data) => {
+  const response = await api.post('/donor/schedule_delivery.php', data);
+  return response.data;
+};
+
+export const getSchedules = async (donorID) => {
+  const response = await api.get(`/donor/get_schedules.php?donorID=${donorID}`);
+  return response.data;
+};
