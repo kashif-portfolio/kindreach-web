@@ -26,6 +26,7 @@ export default function NeedyDashboard() {
     const [loading, setLoading] = useState(true);
     const [recentRequests, setRecentRequests] = useState([]);
     const [availableDonations, setAvailableDonations] = useState([]);
+    const [showVerifiedBanner, setShowVerifiedBanner] = useState(true);
 
     useEffect(() => {
         const load = async () => {
@@ -61,6 +62,15 @@ export default function NeedyDashboard() {
         load();
     }, []);
 
+    useEffect(() => {
+        // Hide banner after 5 seconds
+        const timer = setTimeout(() => {
+            setShowVerifiedBanner(false);
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, []);
+
+
     return (
         <div className="w-full px-8 py-4 flex flex-col gap-6">
             <div className="flex flex-col">
@@ -72,20 +82,22 @@ export default function NeedyDashboard() {
                 </p>
             </div>
 
-            <div className="w-full bg-[#ECFDF5] border border-[#A7F3D0] rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
-                <div className="w-9 h-9 bg-[#D1FAE5] rounded-xl flex items-center justify-center text-[#009966] shrink-0">
-                    <CheckCircle className="w-5 h-5" />
+            {showVerifiedBanner && (
+                <div className="w-full bg-[#ECFDF5] border border-[#A7F3D0] rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+                    <div className="w-9 h-9 bg-[#D1FAE5] rounded-xl flex items-center justify-center text-[#009966] shrink-0">
+                        <CheckCircle className="w-5 h-5" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[14px] font-bold text-slate-900">
+                            Account Verified
+                        </span>
+                        <span className="text-[13px] text-slate-600">
+                            Your account is verified. You can browse and request available
+                            donations.
+                        </span>
+                    </div>
                 </div>
-                <div className="flex flex-col">
-                    <span className="text-[14px] font-bold text-slate-900">
-                        Account Verified
-                    </span>
-                    <span className="text-[13px] text-slate-600">
-                        Your account is verified. You can browse and request available
-                        donations.
-                    </span>
-                </div>
-            </div>
+            )}
 
             {/* 4 Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -223,8 +235,8 @@ export default function NeedyDashboard() {
                                     <div
                                         key={item.RequestID || index}
                                         className={`px-6 py-3.5 flex items-center justify-between ${index < recentRequests.length - 1
-                                                ? "border-b border-slate-100"
-                                                : ""
+                                            ? "border-b border-slate-100"
+                                            : ""
                                             }`}
                                     >
                                         <div className="flex items-center gap-3.5">
@@ -291,8 +303,8 @@ export default function NeedyDashboard() {
                                     <div
                                         key={item.DonationID || index}
                                         className={`px-6 py-3.5 flex items-center justify-between ${index < availableDonations.length - 1
-                                                ? "border-b border-slate-100"
-                                                : ""
+                                            ? "border-b border-slate-100"
+                                            : ""
                                             }`}
                                     >
                                         <div className="flex items-center gap-3.5">

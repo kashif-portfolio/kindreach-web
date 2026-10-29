@@ -91,7 +91,7 @@ export default function MyDonations() {
                 </div>
                 <button
                     onClick={() => navigate('/donor/add-donation')}
-                    className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm cursor-pointer"
+                    className="flex items-center justify-center gap-2 bg-[#009689] hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm cursor-pointer"
                 >
                     <Plus className="w-4 h-4" />
                     <span>Add New Donation</span>
