@@ -1,20 +1,65 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-    AlertTriangle, 
-    Users, 
-    Heart, 
-    Package, 
-    Clock, 
-    ChevronRight, 
-    FileText, 
-    Send 
+import {
+    getAllDonors,
+    getAllNeedy,
+    getAllRequests,
+} from "../../services/adminService";
+import {
+    AlertTriangle,
+    Users,
+    Heart,
+    Package,
+    Clock,
+    ChevronRight,
+    FileText,
+    Send
 } from "lucide-react";
 
 export default function AdminDashboard() {
+    const [stats, setStats] = useState({
+        totalDonors: 0,
+        totalNeedy: 0,
+        pendingRequests: 0,
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const [donorsRes, needyRes, reqRes] = await Promise.all([
+                    getAllDonors(),
+                    getAllNeedy(),
+                    getAllRequests(),
+                ]);
+
+                const donors =
+                    donorsRes.status === "success" ? donorsRes.data || [] : [];
+                const needy =
+                    needyRes.status === "success" ? needyRes.data || [] : [];
+                const requests =
+                    reqRes.status === "success" ? reqRes.data || [] : [];
+
+                setStats({
+                    totalDonors: donors.length,
+                    totalNeedy: needy.length,
+                    pendingRequests: requests.filter(
+                        (r) => (r.Status || r.status) === "Pending"
+                    ).length,
+                });
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
-            
+
             {/* Page Header */}
             <div className="flex flex-col gap-1">
                 <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
@@ -25,38 +70,10 @@ export default function AdminDashboard() {
                 </p>
             </div>
 
-            {/* Action Required Banner */}
-            <div className="w-full bg-[#FFFBEB] border border-[#FDE68A] rounded-2xl p-5 flex items-center justify-between shadow-xs">
-                <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 bg-[#FEF3C7] rounded-xl flex items-center justify-center text-urgent shrink-0 border border-[#FCD34D]/40">
-                        <AlertTriangle className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col">
-                        <h3 className="text-[14px] font-bold text-slate-900">Action Required</h3>
-                        <p className="text-[13px] text-slate-600 mt-0.5">
-                            2 donor accounts and 2 needy person applications are awaiting approval.
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2.5">
-                    <Link 
-                        to="/admin/manage-donors" 
-                        className="px-4 py-2.5 bg-urgent  hover:bg-[#B45309] text-white rounded-xl text-[13px] font-semibold transition-colors shadow-sm cursor-pointer"
-                    >
-                        Review Donors
-                    </Link>
-                    <Link 
-                        to="/admin/manage-needy" 
-                        className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-[13px] font-semibold transition-colors shadow-2xs cursor-pointer"
-                    >
-                        Review Needy
-                    </Link>
-                </div>
-            </div>
 
             {/* 4 Summary Stat Cards */}
             <div className="grid grid-cols-4 gap-5">
-                
+
                 {/* Total Donors */}
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
                     <div className="flex items-center justify-between">
@@ -66,7 +83,7 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex flex-col mt-3">
-                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">124</h2>
+                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{loading ? "…" : stats.totalDonors}</h2>
                         <span className="text-[12px] text-emerald-600 font-medium mt-2">+5 this month</span>
                     </div>
                 </div>
@@ -80,7 +97,7 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex flex-col mt-3">
-                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">87</h2>
+                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{loading ? "…" : stats.totalNeedy}</h2>
                         <span className="text-[12px] text-emerald-600 font-medium mt-2">+3 this week</span>
                     </div>
                 </div>
@@ -94,7 +111,7 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex flex-col mt-3">
-                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">56</h2>
+                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{loading ? "…" : "—"}</h2>
                         <span className="text-[12px] text-slate-400 font-medium mt-2">~ 23 available</span>
                     </div>
                 </div>
@@ -108,7 +125,7 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex flex-col mt-3">
-                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">18</h2>
+                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{loading ? "…" : stats.pendingRequests}</h2>
                         <span className="text-[12px] text-amber-600 font-medium mt-2">Needs attention</span>
                     </div>
                 </div>
@@ -117,7 +134,7 @@ export default function AdminDashboard() {
 
             {/* Bottom Section: Recent Activity & Quick Actions */}
             <div className="grid grid-cols-3 gap-6">
-                
+
                 {/* Left: Recent Activity Feed (Takes 2 columns) */}
                 <div className="col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -126,7 +143,7 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex flex-col divide-y divide-slate-100">
-                        
+
                         {/* Activity 1 */}
                         <div className="py-3.5 flex items-center justify-between">
                             <div className="flex items-start gap-3">
@@ -197,7 +214,7 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        
+
                         <Link to="/admin/manage-donors" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
                             <div className="flex items-center gap-3">
                                 <Users className="w-4 h-4 text-[#009689]" />
