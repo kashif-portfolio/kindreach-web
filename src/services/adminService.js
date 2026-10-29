@@ -39,3 +39,21 @@ export const deleteNeedy = async (needyID) => {
   const response = await api.post('/admin/delete_needy.php', { needyID });
   return response.data;
 };
+
+export const getDonationTypes = async () => {
+  const response = await api.get('/admin/get_donation_types.php');
+  return response.data;
+};
+
+export const addDonationType = async (typeName, description) => {
+  const response = await api.post('/admin/add_donation_type.php', {
+    typeName,
+    description,
+  });
+  return response.data;
+};
+
+export const deleteDonationType = async (typeID) => {
+  const response = await api.post('/admin/delete_donation_type.php', { typeID });
+  return response.data;
+};

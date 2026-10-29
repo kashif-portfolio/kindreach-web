@@ -1,4 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+    getDonationTypes,
+    addDonationType,
+    deleteDonationType,
+} from "../../services/adminService";
 import AddDonationTypeModal from "../../components/admin/AddDonationTypeModal";
 import EditDonationTypeModal from "../../components/admin/EditDonationTypeModal";
 import DeleteDonationTypeModal from "../../components/admin/DeleteDonationTypeModal";
@@ -11,33 +16,9 @@ import {
 } from "lucide-react";
 
 export default function DonationTypes() {
-    // 1. STATE MANAGEMENT: Donation types ki initial list
-    const [donationTypes, setDonationTypes] = useState([
-        {
-            id: 1,
-            title: "Financial Aid",
-            donations: "45 donations",
-            description: "Monetary donations and financial support for families in need",
-        },
-        {
-            id: 2,
-            title: "Food",
-            donations: "78 donations",
-            description: "Non-perishable food items, groceries and nutritional supplies",
-        },
-        {
-            id: 3,
-            title: "Clothes",
-            donations: "34 donations",
-            description: "Clothing items for all ages, genders and seasons",
-        },
-        {
-            id: 4,
-            title: "Old Household Items",
-            donations: "23 donations",
-            description: "Furniture, appliances and household goods in good condition",
-        },
-    ]);
+
+    const [donationTypes, setDonationTypes] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     // 2. MODAL STATE: Add Donation Type modal ko open/close karne ke liye
     const [isAddTypeModalOpen, setIsAddTypeModalOpen] = useState(false);
@@ -48,20 +29,61 @@ export default function DonationTypes() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedItemToDelete, setSelectedItemToDelete] = useState(null);
 
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const result = await getDonationTypes();
+                if (result.status === "success") {
+                    const mapped = (result.data || []).map((item) => ({
+                        id: item.TypeID,
+                        title: item.TypeName,
+                        description: item.Description || "",
+                        donations: `${item.TotalDonations || 0} donations`,
+                    }));
+                    mapped.sort((a, b) => b.id - a.id); // bada id = naya = upar
+                    setDonationTypes(mapped);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
     // 3. PAGINATION STATES: Current page aur items per page track karne ke liye
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
+    const itemsPerPage = 5;
 
     // 4. ADD HANDLER: Naye donation type ko form se lekar state mein top par add karne ka function
-    const handleAddDonationType = (newType) => {
-        const formattedType = {
-            id: Date.now(),
-            title: newType.typeName,
-            description: newType.description,
-            donations: "0 donations",
-        };
-        setDonationTypes([formattedType, ...donationTypes]);
-        setCurrentPage(1);
+    const handleAddDonationType = async (newType) => {
+        try {
+            const result = await addDonationType(
+                newType.typeName,
+                newType.description || ""
+            );
+            if (result.status === "success") {
+                // Reload list from server
+                const list = await getDonationTypes();
+                if (list.status === "success") {
+                    const mapped = (list.data || []).map((item) => ({
+                        id: item.TypeID,
+                        title: item.TypeName,
+                        description: item.Description || "",
+                        donations: `${item.TotalDonations || 0} donations`,
+                    }));
+                    mapped.sort((a, b) => b.id - a.id); // naya upar
+                    setDonationTypes(mapped);
+                    setCurrentPage(1);
+                }
+                setCurrentPage(1);
+            } else {
+                alert(result.message || "Failed to add");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
     // 5. DELETE HANDLER: Specific ID ki buniyad par row ko delete karne ka function
@@ -75,11 +97,22 @@ export default function DonationTypes() {
         );
     };
 
-    const handleConfirmDelete = () => {
-        if (selectedItemToDelete) {
-            setDonationTypes(donationTypes.filter(item => item.id !== selectedItemToDelete.id));
-            setIsDeleteModalOpen(false);
-            setSelectedItemToDelete(null);
+    const handleConfirmDelete = async () => {
+        if (!selectedItemToDelete) return;
+
+        try {
+            const result = await deleteDonationType(selectedItemToDelete.id);
+            if (result.status === "success") {
+                setDonationTypes((prev) =>
+                    prev.filter((item) => item.id !== selectedItemToDelete.id)
+                );
+                setIsDeleteModalOpen(false);
+                setSelectedItemToDelete(null);
+            } else {
+                alert(result.message || "Cannot delete");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Delete failed (type may be in use)");
         }
     };
 
@@ -109,6 +142,10 @@ export default function DonationTypes() {
                     Add Type
                 </button>
             </div>
+
+            {loading && (
+                <p className="text-sm text-slate-500">Loading...</p>
+            )}
 
             {/* TABLE CONTAINER SECTION */}
             <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden flex flex-col">
