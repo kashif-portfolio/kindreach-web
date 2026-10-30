@@ -57,3 +57,11 @@ export const deleteDonationType = async (typeID) => {
   const response = await api.post('/admin/delete_donation_type.php', { typeID });
   return response.data;
 };
+
+export const updateRequestStatus = async (requestID, status) => {
+  const response = await api.post("/admin/update_request_status.php", {
+    requestID,
+    status,
+  });
+  return response.data;
+};

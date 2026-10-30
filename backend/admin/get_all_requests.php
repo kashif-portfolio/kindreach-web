@@ -15,23 +15,21 @@ try {
     $stmt = $pdo->prepare("
         SELECT 
             dr.RequestID,
-            dr.Message,
             dr.Status,
             dr.RequestDate,
-            dr.RespondedAt,
-            d.Title AS DonationTitle,
-            d.DonationID,
-            dt.TypeName,
+            dr.Message,
+            d.Title AS Item,
+            dt.TypeName AS Type,
             donor_user.Name AS DonorName,
             needy_user.Name AS NeedyName
         FROM donation_request dr
-        JOIN donation d ON dr.DonationID = d.DonationID
-        JOIN donation_type dt ON d.TypeID = dt.TypeID
-        JOIN donor dn ON d.DonorID = dn.DonorID
-        JOIN user donor_user ON dn.UserID = donor_user.UserID
-        JOIN needy_person np ON dr.NeedyID = np.NeedyID
-        JOIN user needy_user ON np.UserID = needy_user.UserID
-        ORDER BY dr.RequestDate DESC
+        LEFT JOIN donation d ON dr.DonationID = d.DonationID
+        LEFT JOIN donation_type dt ON d.TypeID = dt.TypeID
+        LEFT JOIN donor dn ON d.DonorID = dn.DonorID
+        LEFT JOIN user donor_user ON dn.UserID = donor_user.UserID
+        LEFT JOIN needy_person np ON dr.NeedyID = np.NeedyID
+        LEFT JOIN user needy_user ON np.UserID = needy_user.UserID
+        ORDER BY dr.RequestID ASC
     ");
     $stmt->execute();
     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);

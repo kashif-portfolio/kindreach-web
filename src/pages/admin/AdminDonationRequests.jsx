@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getAllRequests, updateRequestStatus } from "../../services/adminService";
 import RequestDetailsModal from "../../components/admin/RequestDetailsModal";
 import ApproveRequestModal from "../../components/admin/ApproveRequestModal";
 import RejectRequestModal from "../../components/admin/RejectRequestModal";
@@ -6,89 +7,90 @@ import {
     Check,
     X,
     ChevronLeft,
-    ChevronRight as ChevronRightIcon
+    ChevronRight as ChevronRightIcon,
 } from "lucide-react";
 
 export default function DonationRequests() {
     const [activeTab, setActiveTab] = useState("All");
-
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
-
     const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
     const [requestToApprove, setRequestToApprove] = useState(null);
-
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [requestToReject, setRequestToReject] = useState(null);
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Dummy donation requests data matching the screenshot
-    const [requests, setRequests] = useState([
-        {
-            id: "#001",
-            donor: "Ahmed Khan",
-            needyPerson: "Fatima Bibi",
-            type: "Food",
-            item: "Atta and Rice (10 kg each)",
-            date: "2024-03-10",
-            status: "Pending"
-        },
-        {
-            id: "#002",
-            donor: "Usman Ali",
-            needyPerson: "Amina Begum",
-            type: "Clothes",
-            item: "Winter Clothing Set",
-            date: "2024-03-08",
-            status: "Approved"
-        },
-        {
-            id: "#003",
-            donor: "Ahmed Khan",
-            needyPerson: "Muhammad Ramzan",
-            type: "Financial Aid",
-            item: "PKR 5,000 Emergency Fund",
-            date: "2024-03-05",
-            status: "Pending"
-        },
-        {
-            id: "#004",
-            donor: "Sara Malik",
-            needyPerson: "Fatima Bibi",
-            type: "Household Items",
-            item: "Mattress and Bedding",
-            date: "2024-03-01",
-            status: "Delivered"
-        },
-        {
-            id: "#005",
-            donor: "Usman Ali",
-            needyPerson: "Ghulam Hassan",
-            type: "Food",
-            item: "Cooking Oil and Sugar (5 kg)",
-            date: "2024-02-28",
-            status: "Rejected"
-        },
-    ]);
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const result = await getAllRequests();
+                if (result.status === "success") {
+                    const mapped = (result.data || []).map((item) => {
+                        let status = item.Status || "Pending";
+                        if (status === "Accepted") status = "Approved";
 
-    const handleStatusChange = (id, newStatus) => {
-        setRequests(requests.map(req => {
-            if (req.id === id) {
-                return { ...req, status: newStatus };
+                        return {
+                            id: item.RequestID,
+                            displayId: `#${String(item.RequestID).padStart(3, "0")}`,
+                            donor: item.DonorName || "—",
+                            needyPerson: item.NeedyName || "—",
+                            type: item.Type || item.TypeName || "—",
+                            item: item.Item || item.Title || "—",
+                            date: item.RequestDate
+                                ? String(item.RequestDate).split(" ")[0]
+                                : "",
+                            status,
+                        };
+                    });
+                    setRequests(mapped);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
             }
-            return req;
-        }));
+        };
+        load();
+    }, []);
+
+    const handleApprove = async (id) => {
+        try {
+            const result = await updateRequestStatus(id, "Accepted");
+            if (result.status === "success") {
+                setRequests((prev) =>
+                    prev.map((r) => (r.id === id ? { ...r, status: "Approved" } : r))
+                );
+            } else {
+                alert(result.message || "Failed");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
     };
 
-    // Filter logic based on tabs
-    const filteredRequests = requests.filter(req => {
+    const handleReject = async (id) => {
+        try {
+            const result = await updateRequestStatus(id, "Rejected");
+            if (result.status === "success") {
+                setRequests((prev) =>
+                    prev.map((r) => (r.id === id ? { ...r, status: "Rejected" } : r))
+                );
+            } else {
+                alert(result.message || "Failed");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong");
+        }
+    };
+
+    const filteredRequests = requests.filter((req) => {
         if (activeTab === "All") return true;
         return req.status === activeTab;
     });
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
-
-            {/* Page Header */}
             <div className="flex flex-col gap-1">
                 <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
                     Donation Requests
@@ -98,15 +100,14 @@ export default function DonationRequests() {
                 </p>
             </div>
 
-            {/* Filter Tabs */}
             <div className="flex items-center gap-2">
                 {["All", "Pending", "Approved", "Rejected", "Delivered"].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-colors cursor-pointer border ${activeTab === tab
-                            ? "bg-[#009689] text-white border-[#009689] shadow-2xs"
-                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                                ? "bg-[#009689] text-white border-[#009689] shadow-2xs"
+                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                             }`}
                     >
                         {tab}
@@ -114,7 +115,6 @@ export default function DonationRequests() {
                 ))}
             </div>
 
-            {/* Requests Table Card */}
             <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
@@ -131,6 +131,20 @@ export default function DonationRequests() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-[13px]">
+                            {loading && (
+                                <tr>
+                                    <td colSpan={8} className="py-8 text-center text-slate-400">
+                                        Loading...
+                                    </td>
+                                </tr>
+                            )}
+                            {!loading && filteredRequests.length === 0 && (
+                                <tr>
+                                    <td colSpan={8} className="py-8 text-center text-slate-400">
+                                        No requests found.
+                                    </td>
+                                </tr>
+                            )}
                             {filteredRequests.map((req) => (
                                 <tr
                                     key={req.id}
@@ -140,40 +154,22 @@ export default function DonationRequests() {
                                     }}
                                     className="hover:bg-slate-50/60 transition-colors cursor-pointer"
                                 >
-
-                                    {/* Request ID */}
                                     <td className="py-4 px-6 font-semibold text-slate-500">
-                                        {req.id}
+                                        {req.displayId}
                                     </td>
-
-                                    {/* Donor */}
                                     <td className="py-4 px-4 font-semibold text-slate-900">
                                         {req.donor}
                                     </td>
-
-                                    {/* Needy Person */}
-                                    <td className="py-4 px-4 text-slate-700">
-                                        {req.needyPerson}
-                                    </td>
-
-                                    {/* Type Badge */}
+                                    <td className="py-4 px-4 text-slate-700">{req.needyPerson}</td>
                                     <td className="py-4 px-4">
                                         <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium bg-teal-50 text-teal-700 border border-teal-200/60">
                                             {req.type}
                                         </span>
                                     </td>
-
-                                    {/* Item */}
                                     <td className="py-4 px-4 text-slate-600 font-medium">
                                         {req.item}
                                     </td>
-
-                                    {/* Date */}
-                                    <td className="py-4 px-4 text-slate-500">
-                                        {req.date}
-                                    </td>
-
-                                    {/* Status Badge */}
+                                    <td className="py-4 px-4 text-slate-500">{req.date}</td>
                                     <td className="py-4 px-4">
                                         {req.status === "Approved" && (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
@@ -200,9 +196,10 @@ export default function DonationRequests() {
                                             </span>
                                         )}
                                     </td>
-
-                                    {/* Actions */}
-                                    <td className="py-4 px-6 text-right" onClick={(e) => e.stopPropagation()}>
+                                    <td
+                                        className="py-4 px-6 text-right"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         <div className="flex items-center justify-end gap-2">
                                             {req.status === "Pending" ? (
                                                 <>
@@ -228,21 +225,25 @@ export default function DonationRequests() {
                                                     </button>
                                                 </>
                                             ) : (
-                                                <span className="text-slate-400 font-medium text-[12px]">-</span>
+                                                <span className="text-slate-400 font-medium text-[12px]">
+                                                    -
+                                                </span>
                                             )}
                                         </div>
                                     </td>
-
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
 
-                {/* Pagination Footer */}
                 <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
                     <span className="text-[12px] text-slate-500 font-medium">
-                        Showing <span className="font-semibold text-slate-700">{filteredRequests.length}</span> results
+                        Showing{" "}
+                        <span className="font-semibold text-slate-700">
+                            {filteredRequests.length}
+                        </span>{" "}
+                        results
                     </span>
                     <div className="flex items-center gap-1.5">
                         <button className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs">
@@ -258,10 +259,8 @@ export default function DonationRequests() {
                         </button>
                     </div>
                 </div>
-
             </div>
 
-            {/* Request Details Modal */}
             <RequestDetailsModal
                 isOpen={isDetailModalOpen}
                 onClose={() => {
@@ -278,7 +277,7 @@ export default function DonationRequests() {
                     setRequestToApprove(null);
                 }}
                 onConfirm={() => {
-                    handleStatusChange(requestToApprove, "Approved");
+                    handleApprove(requestToApprove);
                     setIsApproveModalOpen(false);
                     setRequestToApprove(null);
                 }}
@@ -291,12 +290,11 @@ export default function DonationRequests() {
                     setRequestToReject(null);
                 }}
                 onConfirm={() => {
-                    handleStatusChange(requestToReject, "Rejected");
+                    handleReject(requestToReject);
                     setIsRejectModalOpen(false);
                     setRequestToReject(null);
                 }}
             />
-
         </div>
     );
 }
