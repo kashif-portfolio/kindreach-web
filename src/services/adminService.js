@@ -65,3 +65,8 @@ export const updateRequestStatus = async (requestID, status) => {
   });
   return response.data;
 };
+
+export const getAllDonations = async () => {
+  const response = await api.get("/admin/get_all_donations.php");
+  return response.data;
+};

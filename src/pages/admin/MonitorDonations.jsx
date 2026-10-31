@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DonationDetailsModal from "../../components/admin/DonationDetailsModal";
+import { getAllDonations } from "../../services/adminService";
 import {
     Search,
     CheckCircle2,
@@ -17,59 +18,41 @@ export default function MonitorDonations() {
     const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
     const [selectedDonation, setSelectedDonation] = useState(null);
 
-    // Dummy monitor donations data
-    const [donations, setDonations] = useState([
-        {
-            id: 1,
-            donor: "Ahmed Khan",
-            type: "Food",
-            description: "Atta (25 kg bags)",
-            quantity: "5 bags",
-            location: "Lahore",
-            date: "2024-03-10",
-            status: "Available"
-        },
-        {
-            id: 2,
-            donor: "Usman Ali",
-            type: "Clothes",
-            description: "Children's Clothing (ages 5-10)",
-            quantity: "20 items",
-            location: "Islamabad",
-            date: "2024-03-08",
-            status: "Requested"
-        },
-        {
-            id: 3,
-            donor: "Hina Baig",
-            type: "Financial Aid",
-            description: "Monthly Support Fund",
-            quantity: "PKR 10,000",
-            location: "Faisalabad",
-            date: "2024-03-06",
-            status: "Approved"
-        },
-        {
-            id: 4,
-            donor: "Tariq Mehmood",
-            type: "Household Items",
-            description: "Sofa Set (3-seater)",
-            quantity: "1 set",
-            location: "Rawalpindi",
-            date: "2024-03-04",
-            status: "Delivered"
-        },
-        {
-            id: 5,
-            donor: "Ahmed Khan",
-            type: "Food",
-            description: "Cooking Oil and Sugar",
-            quantity: "10 items",
-            location: "Lahore",
-            date: "2024-03-02",
-            status: "Available"
-        },
-    ]);
+    const [donations, setDonations] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const result = await getAllDonations();
+                if (result.status === "success") {
+                    const mapped = (result.data || []).map((item) => ({
+                        id: item.DonationID,
+                        donor: item.DonorName || "—",
+                        type: item.TypeName || "—",
+                        description: item.Title || item.Description || "—",
+                        quantity: item.Quantity || "—",
+                        location: item.Location || "—",
+                        date: item.CreatedAt
+                            ? String(item.CreatedAt).split(" ")[0]
+                            : "",
+                        status: item.Status || "Available",
+                    }));
+                    setDonations(mapped);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    const countAvailable = donations.filter((d) => d.status === "Available").length;
+    const countRequested = donations.filter((d) => d.status === "Requested").length;
+    const countApproved = donations.filter((d) => d.status === "Approved").length;
+    const countDelivered = donations.filter((d) => d.status === "Delivered").length;
 
     // Filter logic
     const filteredDonations = donations.filter(item => {
@@ -102,7 +85,7 @@ export default function MonitorDonations() {
                         </div>
                         AVAILABLE
                     </div>
-                    <div className="text-[24px] font-bold text-slate-900">2</div>
+                    <div className="text-[24px] font-bold text-slate-900">{loading ? "…" : countAvailable}</div>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col gap-3">
@@ -112,7 +95,7 @@ export default function MonitorDonations() {
                         </div>
                         REQUESTED
                     </div>
-                    <div className="text-[24px] font-bold text-slate-900">1</div>
+                    <div className="text-[24px] font-bold text-slate-900">{countRequested}</div>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col gap-3">
@@ -122,7 +105,7 @@ export default function MonitorDonations() {
                         </div>
                         APPROVED
                     </div>
-                    <div className="text-[24px] font-bold text-slate-900">1</div>
+                    <div className="text-[24px] font-bold text-slate-900">{countApproved}</div>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col gap-3">
@@ -132,7 +115,7 @@ export default function MonitorDonations() {
                         </div>
                         DELIVERED
                     </div>
-                    <div className="text-[24px] font-bold text-slate-900">1</div>
+                    <div className="text-[24px] font-bold text-slate-900">{countDelivered}</div>
                 </div>
             </div>
 
