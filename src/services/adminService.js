@@ -70,3 +70,11 @@ export const getAllDonations = async () => {
   const response = await api.get("/admin/get_all_donations.php");
   return response.data;
 };
+
+export const assignDonation = async (donationID, needyID) => {
+  const response = await api.post("/admin/assign_donation.php", {
+    donationID,
+    needyID,
+  });
+  return response.data;
+};
