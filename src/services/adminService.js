@@ -78,3 +78,12 @@ export const assignDonation = async (donationID, needyID) => {
   });
   return response.data;
 };
+
+export const generateReport = async (reportType, fromDate, toDate) => {
+  const response = await api.post("/admin/generate_report.php", {
+    reportType,
+    fromDate,
+    toDate,
+  });
+  return response.data;
+};
