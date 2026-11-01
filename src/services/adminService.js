@@ -87,3 +87,22 @@ export const generateReport = async (reportType, fromDate, toDate) => {
   });
   return response.data;
 };
+
+export const sendNotification = async (title, message, sendTo) => {
+  const response = await api.post("/admin/send_notification.php", {
+    title,
+    message,
+    sendTo,
+  });
+  return response.data;
+};
+
+// MUST be userID 
+export const getNotifications = async (userID) => {
+  const url =
+    userID != null && userID !== ""
+      ? `/admin/get_notifications.php?userID=${userID}`
+      : `/admin/get_notifications.php`;
+  const response = await api.get(url);
+  return response.data;
+};
