@@ -1,0 +1,10 @@
+import api from "./api";
+
+export const submitComplaint = async (userID, subject, description) => {
+  const res = await api.post("/complaints/submit_complaint.php", {
+    userID,
+    subject,
+    description,
+  });
+  return res.data;
+};

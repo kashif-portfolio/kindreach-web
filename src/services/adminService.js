@@ -106,3 +106,16 @@ export const getNotifications = async (userID) => {
   const response = await api.get(url);
   return response.data;
 };
+
+export const getComplaints = async () => {
+  const res = await api.get("/admin/get_complaints.php");
+  return res.data;
+};
+
+export const resolveComplaint = async (complaintID, adminNote = "") => {
+  const res = await api.post("/admin/resolve_complaint.php", {
+    complaintID,
+    adminNote,
+  });
+  return res.data;
+};
