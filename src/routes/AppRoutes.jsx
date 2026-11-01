@@ -21,6 +21,7 @@ import DonationRequests from "../pages/donor/DonationRequests";
 import ScheduleDelivery from "../pages/donor/ScheduleDelivery";
 import Messages from "../pages/donor/Messages";
 import DonationHistory from "../pages/donor/DonationHistory";
+import DonorSubmitComplaint from "../pages/donor/SubmitComplaint";
 import Feedback from "../pages/donor/Feedback";
 import MyProfile from "../pages/donor/DonorProfile";
 
@@ -30,8 +31,10 @@ import BrowseDonations from "../pages/needy/BrowseDonations";
 import RequestHelp from '../pages/needy/RequestHelp';
 import NeedyRequests from "../pages/needy/MyRequests";
 import NeedyMessages from '../pages/needy/Messages';
+import NeedySubmitComplaint from "../pages/needy/SubmitComplaint";
 import NeedyFeedback from "../pages/needy/NeedyFeedback";
 import NeedyProfile from "../pages/needy/NeedyProfile";
+
 
 // Admin portal screens
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -71,6 +74,7 @@ export default function AppRoutes() {
         <Route path="schedule-delivery" element={<ScheduleDelivery />} />
         <Route path="messages" element={<Messages />} />
         <Route path="history" element={<DonationHistory />} />
+        <Route path="complaint" element={<DonorSubmitComplaint />} />
         <Route path="feedback" element={<Feedback />} />
         <Route path="profile" element={<MyProfile />} />
       </Route>
@@ -82,6 +86,7 @@ export default function AppRoutes() {
         <Route path="request-help" element={<RequestHelp />} />
         <Route path="requests" element={<NeedyRequests />} />
         <Route path="messages" element={<NeedyMessages />} />
+        <Route path="complaint" element={<NeedySubmitComplaint />} />
         <Route path="feedback" element={<NeedyFeedback />} />
         <Route path="profile" element={<NeedyProfile />} />
       </Route>

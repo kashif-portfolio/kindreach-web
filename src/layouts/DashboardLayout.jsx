@@ -132,12 +132,15 @@ export default function DashboardLayout() {
     if (path.includes("/donor/schedule-delivery")) return "Schedule Delivery";
     if (path.includes("/donor/messages")) return "Messages";
     if (path.includes("/donor/history")) return "Donation History";
+    if (path.includes("/donor/complaint")) return "Submit Complaint";
+    if (path.includes("/needy/complaint")) return "Submit Complaint";
     if (path.includes("/donor/feedback")) return "Feedback";
     if (path.includes("/donor/profile")) return "My Profile";
     if (path.includes("/needy/browse-donations")) return "Browse Donations";
     if (path === "/needy/request-help") return "Request Help";
     if (path.includes("/needy/requests")) return "My Requests";
     if (path === "/needy/messages") return "Messages";
+    if (path.includes("/needy/complaint")) return "Submit Complaint";
     if (path.includes("/needy/feedback")) return "Feedback";
     if (path.includes("/needy/profile")) return "My Profile";
     if (path.includes("/admin/manage-donors")) return "Manage Donors";
@@ -157,10 +160,9 @@ export default function DashboardLayout() {
   const hasUnread = notifications.length > 0;
 
   const linkClass = ({ isActive }) =>
-    `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${
-      isActive
-        ? "bg-[#ECFDF5] text-[#009689]"
-        : "text-slate-600 hover:bg-slate-50"
+    `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive
+      ? "bg-[#ECFDF5] text-[#009689]"
+      : "text-slate-600 hover:bg-slate-50"
     }`;
 
   const ActiveBar = ({ isActive }) =>
@@ -245,6 +247,15 @@ export default function DashboardLayout() {
                   </>
                 )}
               </NavLink>
+              <NavLink to="/donor/complaint" className={linkClass}>
+                {({ isActive }) => (
+                  <>
+                    <ActiveBar isActive={isActive} />
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>Complaint</span>
+                  </>
+                )}
+              </NavLink>
               <NavLink to="/donor/feedback" className={linkClass}>
                 {({ isActive }) => (
                   <>
@@ -313,6 +324,17 @@ export default function DashboardLayout() {
                   </>
                 )}
               </NavLink>
+
+              <NavLink to="/needy/complaint" className={linkClass}>
+                {({ isActive }) => (
+                  <>
+                    <ActiveBar isActive={isActive} />
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>Complaint</span>
+                  </>
+                )}
+              </NavLink>
+
               <NavLink to="/needy/feedback" className={linkClass}>
                 {({ isActive }) => (
                   <>
