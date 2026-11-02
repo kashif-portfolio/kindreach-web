@@ -4,14 +4,13 @@ import { Eye, EyeOff } from 'lucide-react';
 import { registerUser } from '../../services/authService';
 
 export default function SignUp() {
-    // State to toggle between 'donor' and 'needy'
-    const [userType, setUserType] = useState('donor'); // 'donor' or 'needy'
+    // donor ya needy tab
+    const [userType, setUserType] = useState('donor');
 
-    // Password show/hide toggle states
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Form inputs state
+    // form fields
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -19,6 +18,7 @@ export default function SignUp() {
         cnic: '',
         city: '',
         monthlyIncome: '',
+        familyDetails: '',
         password: '',
         confirmPassword: '',
         agreeTerms: false
@@ -28,7 +28,6 @@ export default function SignUp() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Handle input field changes
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({
@@ -37,12 +36,11 @@ export default function SignUp() {
         });
     };
 
-    // Form submit handler
+    // register form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        // 1. Basic required validations
         if (!formData.fullName.trim()) {
             setError('Full Name is required');
             return;
@@ -53,28 +51,50 @@ export default function SignUp() {
             return;
         }
 
-        // 2. Check if password and confirm password match
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             return;
         }
 
-        // 3. Minimum password length validation
         if (formData.password.length < 6) {
             setError('Password must be at least 6 characters long');
             return;
         }
 
-        // 4. Terms agreement check (Required for Donor)
+        // donor terms
         if (userType === 'donor' && !formData.agreeTerms) {
             setError('Please agree to the Terms of Service and Privacy Policy');
             return;
         }
 
+        // needy required (CMS fields)
+        if (userType === 'needy') {
+            if (!formData.cnic.trim()) {
+                setError('CNIC is required');
+                return;
+            }
+            if (!formData.phone.trim()) {
+                setError('Phone number is required');
+                return;
+            }
+            if (!formData.city.trim()) {
+                setError('Address / city is required');
+                return;
+            }
+            if (!formData.monthlyIncome.trim()) {
+                setError('Income status is required');
+                return;
+            }
+            if (!formData.familyDetails.trim()) {
+                setError('Family details are required');
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {
-            // Prepare payload for backend (Backend only needs single password)
+            // backend payload
             const payload = {
                 name: formData.fullName,
                 email: formData.email,
@@ -84,6 +104,7 @@ export default function SignUp() {
                 role: userType === 'donor' ? 'Donor' : 'Needy',
                 cnic: formData.cnic || null,
                 incomeStatus: formData.monthlyIncome || null,
+                familyDetails: formData.familyDetails || null,
             };
 
             const result = await registerUser(payload);
@@ -105,7 +126,7 @@ export default function SignUp() {
     return (
         <div className="w-full max-w-110 mx-auto px-6 py-10 flex flex-col">
 
-            {/* Role Switcher Tabs (Donor vs Needy) */}
+            {/* role tabs */}
             <div className="flex bg-[#F1F5F9] p-1 rounded-xl mb-4">
                 <button
                     type="button"
@@ -129,7 +150,6 @@ export default function SignUp() {
                 </button>
             </div>
 
-            {/* Header Title based on selected Role */}
             <div className="text-center mb-4">
                 <h2 className="text-[24px] font-bold text-slate-900">
                     {userType === 'donor' ? 'Join as a Donor' : 'Apply for Aid'}
@@ -141,17 +161,14 @@ export default function SignUp() {
                 </p>
             </div>
 
-            {/* Needy Verification Notice Box */}
             {userType === 'needy' && (
                 <div className="bg-[#F0FDF4] border border-[#BBF7D0] p-3.5 rounded-xl mb-4 text-[13px] text-[#166534]">
                     Your details will be verified by our Admin team before account activation — typically 1-2 business days.
                 </div>
             )}
 
-            {/* Registration Form */}
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
 
-                {/* Full Name */}
                 <div className="flex flex-col">
                     <label className="text-[14px] font-medium text-slate-900 mb-1.5">
                         Full Name <span className="text-red-500">*</span>
@@ -166,7 +183,6 @@ export default function SignUp() {
                     />
                 </div>
 
-                {/* CNIC (Needy) OR Email & Phone (Donor) */}
                 {userType === 'needy' ? (
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col">
@@ -228,7 +244,6 @@ export default function SignUp() {
                     </div>
                 )}
 
-                {/* Mandatory Email Address Field for Needy */}
                 {userType === 'needy' && (
                     <div className="flex flex-col">
                         <label className="text-[14px] font-medium text-slate-900 mb-1.5">
@@ -246,10 +261,10 @@ export default function SignUp() {
                     </div>
                 )}
 
-                {/* City / Location */}
                 <div className="flex flex-col">
                     <label className="text-[14px] font-medium text-slate-900 mb-1.5">
-                        {userType === 'donor' ? 'City / Location' : 'City / Address'} <span className="text-red-500">*</span>
+                        {userType === 'donor' ? 'City / Location' : 'City / Address'}{' '}
+                        <span className="text-red-500">*</span>
                     </label>
                     {userType === 'donor' ? (
                         <select
@@ -275,7 +290,7 @@ export default function SignUp() {
                     )}
                 </div>
 
-                {/* Monthly Income Level (Needy only) */}
+                {/* needy income */}
                 {userType === 'needy' && (
                     <div className="flex flex-col">
                         <label className="text-[14px] font-medium text-slate-900 mb-1.5">
@@ -294,16 +309,31 @@ export default function SignUp() {
                     </div>
                 )}
 
-                {/* Password and Confirm Password Grid for ALL users */}
+                {/* needy family details */}
+                {userType === 'needy' && (
+                    <div className="flex flex-col">
+                        <label className="text-[14px] font-medium text-slate-900 mb-1.5">
+                            Family details <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            name="familyDetails"
+                            value={formData.familyDetails}
+                            onChange={handleChange}
+                            rows={3}
+                            placeholder="e.g. 5 family members, 2 children..."
+                            className="w-full px-4 py-2.5 bg-white border border-[#CBD5E1] rounded-xl text-[14px] text-slate-900 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#009689] transition-all resize-none"
+                        />
+                    </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-3">
-                    {/* Password Field */}
                     <div className="flex flex-col">
                         <label className="text-[14px] font-medium text-slate-900 mb-1.5">
                             Password <span className="text-red-500">*</span>
                         </label>
                         <div className="relative w-full">
                             <input
-                                type={showPassword ? "text" : "password"}
+                                type={showPassword ? 'text' : 'password'}
                                 name="password"
                                 autoComplete="new-password"
                                 value={formData.password}
@@ -321,14 +351,13 @@ export default function SignUp() {
                         </div>
                     </div>
 
-                    {/* Confirm Password Field */}
                     <div className="flex flex-col">
                         <label className="text-[14px] font-medium text-slate-900 mb-1.5">
                             Confirm Password <span className="text-red-500">*</span>
                         </label>
                         <div className="relative w-full">
                             <input
-                                type={showConfirmPassword ? "text" : "password"}
+                                type={showConfirmPassword ? 'text' : 'password'}
                                 name="confirmPassword"
                                 autoComplete="new-password"
                                 value={formData.confirmPassword}
@@ -347,7 +376,6 @@ export default function SignUp() {
                     </div>
                 </div>
 
-                {/* Terms Checkbox (Donor only) */}
                 {userType === 'donor' && (
                     <div className="flex items-center gap-2 mt-1">
                         <input
@@ -358,19 +386,18 @@ export default function SignUp() {
                             className="w-4 h-4 accent-[#009689] rounded"
                         />
                         <span className="text-[13px] text-text-muted">
-                            I agree to the <span className="text-[#009689] font-medium">Terms of Service</span> and <span className="text-[#009689] font-medium">Privacy Policy</span>
+                            I agree to the <span className="text-[#009689] font-medium">Terms of Service</span> and{' '}
+                            <span className="text-[#009689] font-medium">Privacy Policy</span>
                         </span>
                     </div>
                 )}
 
-                {/* Error Display Alert */}
                 {error && (
                     <div className="mb-3 p-3 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-xl">
                         {error}
                     </div>
                 )}
 
-                {/* Submit Action Button */}
                 <div className="mt-2">
                     <button
                         type="submit"
@@ -385,13 +412,14 @@ export default function SignUp() {
                     </button>
                 </div>
 
-                {/* Footer Link to Login */}
                 <div className="text-center mt-2">
                     <p className="text-[14px] text-text-muted">
-                        Already have an account? <Link to="/login" className="text-[#009689] font-medium hover:underline">Sign In</Link>
+                        Already have an account?{' '}
+                        <Link to="/login" className="text-[#009689] font-medium hover:underline">
+                            Sign In
+                        </Link>
                     </p>
                 </div>
-
             </form>
         </div>
     );
