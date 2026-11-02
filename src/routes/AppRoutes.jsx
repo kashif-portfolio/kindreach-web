@@ -1,11 +1,10 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-// Layouts imports
-import AuthLayout from '../layouts/AuthLayout';
+import AuthLayout from "../layouts/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout";
+import ProtectedRoute from "../components/ProtectedRoute";
 
-// Authentication screens
 import Login from "../pages/auth/Login";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import VerifyOtp from "../pages/auth/VerifyOTP";
@@ -13,7 +12,6 @@ import PasswordSuccess from "../pages/auth/PasswordSuccess";
 import ResetPassword from "../pages/auth/ResetPassword";
 import SignUp from "../pages/auth/SignUp";
 
-// Donor portal screens
 import DonorDashboard from "../pages/donor/DonorDashboard";
 import PostDonation from "../pages/donor/AddDonation";
 import MyDonations from "../pages/donor/MyDonations";
@@ -25,18 +23,15 @@ import DonorSubmitComplaint from "../pages/donor/SubmitComplaint";
 import Feedback from "../pages/donor/Feedback";
 import MyProfile from "../pages/donor/DonorProfile";
 
-// Needy person portal screens
 import NeedyDashboard from "../pages/needy/NeedyDashboard";
 import BrowseDonations from "../pages/needy/BrowseDonations";
-import RequestHelp from '../pages/needy/RequestHelp';
+import RequestHelp from "../pages/needy/RequestHelp";
 import NeedyRequests from "../pages/needy/MyRequests";
-import NeedyMessages from '../pages/needy/Messages';
+import NeedyMessages from "../pages/needy/Messages";
 import NeedySubmitComplaint from "../pages/needy/SubmitComplaint";
 import NeedyFeedback from "../pages/needy/NeedyFeedback";
 import NeedyProfile from "../pages/needy/NeedyProfile";
 
-
-// Admin portal screens
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageDonors from "../pages/admin/ManageDonors";
 import ManageNeedy from "../pages/admin/ManageNeedy";
@@ -52,10 +47,9 @@ import AdminProfileSettings from "../pages/admin/AdminProfileSettings";
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Redirect root URL to donor dashboard by default */}
-     <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* 1. Authentication routes group wrapped inside AuthLayout */}
+      {/* public auth */}
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
@@ -65,8 +59,15 @@ export default function AppRoutes() {
         <Route path="signup" element={<SignUp />} />
       </Route>
 
-      {/* 2. Donor portal routes group wrapped inside DashboardLayout */}
-      <Route path="/donor" element={<DashboardLayout />}>
+      {/* donor only */}
+      <Route
+        path="/donor"
+        element={
+          <ProtectedRoute allow={["donor"]}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<DonorDashboard />} />
         <Route path="add-donation" element={<PostDonation />} />
         <Route path="my-donations" element={<MyDonations />} />
@@ -79,8 +80,15 @@ export default function AppRoutes() {
         <Route path="profile" element={<MyProfile />} />
       </Route>
 
-      {/* 3. Needy person portal routes group wrapped inside DashboardLayout */}
-      <Route path="/needy" element={<DashboardLayout />}>
+      {/* needy only */}
+      <Route
+        path="/needy"
+        element={
+          <ProtectedRoute allow={["needy"]}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<NeedyDashboard />} />
         <Route path="browse-donations" element={<BrowseDonations />} />
         <Route path="request-help" element={<RequestHelp />} />
@@ -91,8 +99,15 @@ export default function AppRoutes() {
         <Route path="profile" element={<NeedyProfile />} />
       </Route>
 
-      {/* 4. Admin portal routes group wrapped inside DashboardLayout */}
-      <Route path="/admin" element={<DashboardLayout />}>
+      {/* admin only */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allow={["admin"]}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<AdminDashboard />} />
         <Route path="manage-donors" element={<ManageDonors />} />
         <Route path="manage-needy" element={<ManageNeedy />} />
@@ -106,7 +121,6 @@ export default function AppRoutes() {
         <Route path="profile" element={<AdminProfileSettings />} />
       </Route>
 
-      {/* Fallback route for any unknown URL */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
