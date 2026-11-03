@@ -1,17 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getDonationTypes } from "../../services/adminService";
 import { addDonation } from "../../services/donorService";
 import {
-  Utensils,
-  Shirt,
-  CreditCard,
-  Home,
   Heart,
   Lightbulb,
 } from "lucide-react";
 
 export default function PostDonation() {
-  const [selectedCategory, setSelectedCategory] = useState("Food");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [formData, setFormData] = useState({
     description: "",
     quantity: "",
@@ -23,13 +20,23 @@ export default function PostDonation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Map UI category → DB TypeID (phpMyAdmin donation_type se match karein)
-  const categoryToTypeID = {
-    Food: 1,
-    Clothes: 2,
-    "Household Items": 3,
-    "Financial Aid": 4,
-  };
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const result = await getDonationTypes();
+        if (result.status !== 'success') throw new Error('Could not load categories');
+        setCategories((result.data || []).map((item) => ({
+          id: String(item.TypeID), name: item.TypeName, desc: item.Description || '',
+          icon: <Heart className="w-6 h-6 text-emerald-500" />,
+        })));
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Could not load categories');
+      } finally { setCategoriesLoading(false); }
+    };
+    loadCategories();
+  }, []);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -65,7 +72,7 @@ export default function PostDonation() {
       return;
     }
 
-    const typeID = categoryToTypeID[selectedCategory];
+    const typeID = categories.find((item) => item.id === selectedCategory)?.id;
     if (!typeID) {
       setError("Please select a valid category");
       return;
@@ -101,33 +108,6 @@ export default function PostDonation() {
     }
   };
 
-  const categories = [
-    {
-      id: "Food",
-      name: "Food",
-      desc: "Groceries & non-perishables",
-      icon: <Utensils className="w-6 h-6 text-amber-500" />,
-    },
-    {
-      id: "Clothes",
-      name: "Clothes",
-      desc: "Clothing for all ages",
-      icon: <Shirt className="w-6 h-6 text-blue-500" />,
-    },
-    {
-      id: "Financial Aid",
-      name: "Financial Aid",
-      desc: "Monetary support",
-      icon: <CreditCard className="w-6 h-6 text-emerald-500" />,
-    },
-    {
-      id: "Household Items",
-      name: "Household Items",
-      desc: "Furniture & appliances",
-      icon: <Home className="w-6 h-6 text-purple-500" />,
-    },
-  ];
-
   return (
     <div className="w-full flex flex-col gap-6">
       <div className="w-full bg-linear-to-r from-[#009689] to-[#007b70] rounded-2xl p-6 text-white flex items-center justify-between shadow-sm">
@@ -156,12 +136,14 @@ export default function PostDonation() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {categoriesLoading && <p>Loading categories...</p>}
+          {!categoriesLoading && categories.length === 0 && <p>No categories available. Contact admin.</p>}
           {categories.map((cat) => {
-            const isSelected = selectedCategory === cat.name;
+            const isSelected = selectedCategory === cat.id;
             return (
               <div
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.name)}
+                onClick={() => setSelectedCategory(cat.id)}
                 className={`cursor-pointer bg-white p-5 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center gap-2 relative hover:-translate-y-1 hover:shadow-md ${
                   isSelected
                     ? "border-2 border-[#E17100] bg-[#FFFBEB]/40 shadow-sm"
@@ -275,7 +257,7 @@ export default function PostDonation() {
               </button>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || categoriesLoading || categories.length === 0}
                 className="px-6 py-2.5 bg-[#009689] hover:bg-[#007b70] text-white text-[14px] font-semibold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
                 <Heart className="w-4 h-4 fill-white text-white" />
@@ -300,7 +282,7 @@ export default function PostDonation() {
                 Live Preview
               </span>
               <span className="text-[11px] font-semibold text-[#E17100] bg-[#FFFBEB] px-2.5 py-1 rounded-md border border-amber-200">
-                {selectedCategory}
+                {categories.find((item) => item.id === selectedCategory)?.name || 'Select a category'}
               </span>
             </div>
             <div className="flex flex-col gap-2">

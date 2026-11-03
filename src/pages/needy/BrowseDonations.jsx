@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 export default function BrowseDonations() {
+    const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDonation, setSelectedDonation] = useState(null);
@@ -47,6 +48,7 @@ export default function BrowseDonations() {
                         return {
                             id: item.DonationID,
                             title: item.Title,
+                            description: item.Description || "",
                             category: item.TypeName,
                             qty: `Qty: ${item.Quantity}`,
                             location: item.Location || 'N/A',
@@ -68,10 +70,15 @@ export default function BrowseDonations() {
         fetchDonations();
     }, []);
 
-    const categories = ["All", "Food", "Clothes", "Financial Aid", "Household Items"];
-    const filteredDonations = selectedCategory === "All"
-        ? donations
-        : donations.filter((d) => d.category === selectedCategory);
+    // Use actual category names and combine category and text filtering.
+    const categories = ["All", ...new Set(donations.map((item) => item.category))];
+    const filteredDonations = donations.filter((item) => {
+        const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+        const search = searchTerm.trim().toLowerCase();
+        const matchesSearch = [item.title, item.description, item.donor, item.location]
+            .some((value) => String(value || '').toLowerCase().includes(search));
+        return matchesCategory && matchesSearch;
+    });
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
@@ -98,6 +105,8 @@ export default function BrowseDonations() {
                     <input
                         type="text"
                         placeholder="Search by description, donor or location..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200/80 rounded-xl text-[13px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#009689] shadow-sm"
                     />
                 </div>

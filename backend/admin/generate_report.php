@@ -84,7 +84,7 @@ try {
             LEFT JOIN donation_type dt ON d.TypeID = dt.TypeID
             LEFT JOIN needy_person np ON dr.NeedyID = np.NeedyID
             LEFT JOIN user nu ON np.UserID = nu.UserID
-            WHERE dr.Status IN ('Delivered', 'Accepted', 'Approved')
+            WHERE dr.Status = 'Delivered'
               AND DATE(dr.RequestDate) BETWEEN ? AND ?
             ORDER BY dr.RequestDate DESC
         ");
