@@ -57,3 +57,8 @@ export const completeDelivery = async (scheduleID) => {
   const response = await api.post('/donor/complete_delivery.php', { scheduleID });
   return response.data;
 };
+
+export const getDonationHistory = async (donorID) => {
+  const response = await api.get('/donor/get_donation_history.php', { params: { donorID } });
+  return response.data;
+};

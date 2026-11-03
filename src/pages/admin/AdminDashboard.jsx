@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-    getAllDonors,
-    getAllNeedy,
-    getAllRequests,
-} from "../../services/adminService";
+import { getDashboard } from "../../services/adminService";
 import {
     AlertTriangle,
     Users,
@@ -17,44 +13,29 @@ import {
 } from "lucide-react";
 
 export default function AdminDashboard() {
-    const [stats, setStats] = useState({
-        totalDonors: 0,
-        totalNeedy: 0,
-        pendingRequests: 0,
-    });
+    const [stats, setStats] = useState({});
+    const [activity, setActivity] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
+        let active = true;
         const load = async () => {
             try {
-                const [donorsRes, needyRes, reqRes] = await Promise.all([
-                    getAllDonors(),
-                    getAllNeedy(),
-                    getAllRequests(),
-                ]);
-
-                const donors =
-                    donorsRes.status === "success" ? donorsRes.data || [] : [];
-                const needy =
-                    needyRes.status === "success" ? needyRes.data || [] : [];
-                const requests =
-                    reqRes.status === "success" ? reqRes.data || [] : [];
-
-                setStats({
-                    totalDonors: donors.length,
-                    totalNeedy: needy.length,
-                    pendingRequests: requests.filter(
-                        (r) => (r.Status || r.status) === "Pending"
-                    ).length,
-                });
+                const result = await getDashboard();
+                if (result.status !== 'success') throw new Error(result.message || 'Could not load dashboard');
+                if (active) {
+                    setStats(result.data.stats);
+                    setActivity(result.data.activity || []);
+                }
             } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
+                if (active) setError(err.response?.data?.message || err.message || 'Could not load dashboard');
+            } finally { if (active) setLoading(false); }
         };
         load();
+        return () => { active = false; };
     }, []);
+    const count = (value) => loading ? '…' : error ? '—' : value;
 
 
     return (
@@ -71,6 +52,8 @@ export default function AdminDashboard() {
             </div>
 
 
+            {error && <p role="alert" className="text-[13px] text-red-600">{error}</p>}
+
             {/* 4 Summary Stat Cards */}
             <div className="grid grid-cols-4 gap-5">
 
@@ -83,8 +66,8 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex flex-col mt-3">
-                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{loading ? "…" : stats.totalDonors}</h2>
-                        <span className="text-[12px] text-emerald-600 font-medium mt-2">+5 this month</span>
+                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{count(stats.totalDonors)}</h2>
+                        <span className="text-[12px] text-emerald-600 font-medium mt-2">{loading ? "Loading..." : error ? "Unavailable" : `+${stats.donorsThisMonth} this month`}</span>
                     </div>
                 </div>
 
@@ -97,8 +80,8 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex flex-col mt-3">
-                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{loading ? "…" : stats.totalNeedy}</h2>
-                        <span className="text-[12px] text-emerald-600 font-medium mt-2">+3 this week</span>
+                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{count(stats.totalNeedy)}</h2>
+                        <span className="text-[12px] text-emerald-600 font-medium mt-2">{loading ? "Loading..." : error ? "Unavailable" : `+${stats.needyThisWeek} this week`}</span>
                     </div>
                 </div>
 
@@ -111,8 +94,8 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex flex-col mt-3">
-                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{loading ? "…" : "—"}</h2>
-                        <span className="text-[12px] text-slate-400 font-medium mt-2">~ 23 available</span>
+                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{count(stats.activeDonations)}</h2>
+                        <span className="text-[12px] text-slate-400 font-medium mt-2">{loading ? "Loading..." : error ? "Unavailable" : `${stats.availableDonations} available`}</span>
                     </div>
                 </div>
 
@@ -125,8 +108,8 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex flex-col mt-3">
-                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{loading ? "…" : stats.pendingRequests}</h2>
-                        <span className="text-[12px] text-amber-600 font-medium mt-2">Needs attention</span>
+                        <h2 className="text-[28px] font-bold text-slate-900 leading-none">{count(stats.pendingRequests)}</h2>
+                        <span className="text-[12px] text-amber-600 font-medium mt-2">{loading ? "Loading..." : error ? "Unavailable" : `${stats.pendingDonationRequests} donation · ${stats.pendingHelpRequests} help`}</span>
                     </div>
                 </div>
 
@@ -139,70 +122,25 @@ export default function AdminDashboard() {
                 <div className="col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                         <h3 className="text-[15px] font-bold text-slate-900">Recent Activity</h3>
-                        <span className="text-[12px] text-slate-400 font-medium">Live feed</span>
+                        <span className="text-[12px] text-slate-400 font-medium">Latest records</span>
                     </div>
 
                     <div className="flex flex-col divide-y divide-slate-100">
 
-                        {/* Activity 1 */}
-                        <div className="py-3.5 flex items-center justify-between">
-                            <div className="flex items-start gap-3">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                                <div className="flex flex-col">
-                                    <span className="text-[13px] font-semibold text-slate-800">New donor registered</span>
-                                    <span className="text-[12px] text-slate-500 mt-0.5">Sara Malik</span>
+                        {loading && <p className="text-[13px] text-slate-500 py-5">Loading recent activity...</p>}
+                        {!loading && !error && activity.length === 0 && <p className="text-[13px] text-slate-500 py-5">No recent activity yet.</p>}
+                        {activity.map((item) => (
+                            <div key={item.id} className="py-3.5 flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex items-start gap-3 min-w-0">
+                                    <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${item.tone === 'warning' ? 'bg-amber-500' : item.tone === 'info' ? 'bg-sky-500' : 'bg-emerald-500'}`} />
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[13px] font-semibold text-slate-800">{item.title}</span>
+                                        <span className="text-[12px] text-slate-500 mt-0.5 break-words">{item.detail}</span>
+                                    </div>
                                 </div>
+                                <span className="text-[11px] text-slate-400 shrink-0">{String(item.occurredAt || '').slice(0, 16)}</span>
                             </div>
-                            <span className="text-[12px] text-slate-400">5 min ago</span>
-                        </div>
-
-                        {/* Activity 2 */}
-                        <div className="py-3.5 flex items-center justify-between">
-                            <div className="flex items-start gap-3">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                                <div className="flex flex-col">
-                                    <span className="text-[13px] font-semibold text-slate-800">Donation request approved</span>
-                                    <span className="text-[12px] text-slate-500 mt-0.5">Fatima Bibi → Ahmed Khan</span>
-                                </div>
-                            </div>
-                            <span className="text-[12px] text-slate-400">23 min ago</span>
-                        </div>
-
-                        {/* Activity 3 */}
-                        <div className="py-3.5 flex items-center justify-between">
-                            <div className="flex items-start gap-3">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                                <div className="flex flex-col">
-                                    <span className="text-[13px] font-semibold text-slate-800">Needy person verified</span>
-                                    <span className="text-[12px] text-slate-500 mt-0.5">Amina Begum</span>
-                                </div>
-                            </div>
-                            <span className="text-[12px] text-slate-400">1 hr ago</span>
-                        </div>
-
-                        {/* Activity 4 */}
-                        <div className="py-3.5 flex items-center justify-between">
-                            <div className="flex items-start gap-3">
-                                <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0"></span>
-                                <div className="flex flex-col">
-                                    <span className="text-[13px] font-semibold text-slate-800">Complaint received</span>
-                                    <span className="text-[12px] text-slate-500 mt-0.5">Ahmed Khan</span>
-                                </div>
-                            </div>
-                            <span className="text-[12px] text-slate-400">2 hrs ago</span>
-                        </div>
-
-                        {/* Activity 5 */}
-                        <div className="py-3.5 flex items-center justify-between">
-                            <div className="flex items-start gap-3">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                                <div className="flex flex-col">
-                                    <span className="text-[13px] font-semibold text-slate-800">Donation delivered</span>
-                                    <span className="text-[12px] text-slate-500 mt-0.5">Atta and Rice — Lahore</span>
-                                </div>
-                            </div>
-                            <span className="text-[12px] text-slate-400">3 hrs ago</span>
-                        </div>
+                        ))}
 
                     </div>
                 </div>

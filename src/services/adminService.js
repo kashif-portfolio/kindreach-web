@@ -127,3 +127,5 @@ export const updateDonationType = async (item) => (await api.post('/admin/update
   typeID: item.id, typeName: item.title, description: item.description,
 })).data;
 export const registerNeedyByAdmin = async (data) => (await api.post('/admin/register_needy.php', data)).data;
+
+export const getDashboard = async () => (await api.get('/admin/get_dashboard.php')).data;

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { TrendingUp } from "lucide-react";
-import { getMyDonations } from "../../services/donorService";
+import { getDonationHistory } from "../../services/donorService";
 
 export default function DonationHistory() {
     const [historyData, setHistoryData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -15,7 +16,8 @@ export default function DonationHistory() {
             }
 
             try {
-                const result = await getMyDonations(user.donorID);
+                const result = await getDonationHistory(user.donorID);
+                if (result.status !== "success") throw new Error(result.message || "Could not load donation history");
                 if (result.status === "success") {
                     const mapped = result.data.filter((item) => item.Status === "Delivered").map((item) => {
                         let typeColor = "bg-slate-50 text-slate-700 border-slate-200";
@@ -39,9 +41,9 @@ export default function DonationHistory() {
                             type: item.TypeName || "Other",
                             typeColor,
                             description: item.Title,
-                            recipient: "—", // no recipient in this API
+                            recipient: item.RecipientName || "Not recorded",
                             location: item.Location || "—",
-                            date: item.CreatedAt ? item.CreatedAt.split(" ")[0] : "",
+                            date: item.DeliveredAt ? String(item.DeliveredAt).split(" ")[0] : "Not recorded",
                             status: item.Status || "—",
                             statusColor,
                         };
@@ -49,7 +51,7 @@ export default function DonationHistory() {
                     setHistoryData(mapped);
                 }
             } catch (err) {
-                console.error("Failed to load history:", err);
+                setError(err.response?.data?.message || err.message || "Could not load donation history");
             } finally {
                 setLoading(false);
             }
@@ -71,9 +73,11 @@ export default function DonationHistory() {
                 <p className="text-center text-slate-500 text-sm py-6">Loading history...</p>
             )}
 
-            {!loading && historyData.length === 0 && (
+            {!loading && !error && historyData.length === 0 && (
                 <p className="text-center text-slate-500 text-sm py-6">No donation history yet.</p>
             )}
+
+            {error && <p role="alert" className="text-[13px] text-red-600">{error}</p>}
 
             {/* Table Card Container */}
             <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
@@ -85,7 +89,7 @@ export default function DonationHistory() {
                                 <th className="py-3.5 px-6">Description</th>
                                 <th className="py-3.5 px-6">Recipient</th>
                                 <th className="py-3.5 px-6">Location</th>
-                                <th className="py-3.5 px-6">Date</th>
+                                <th className="py-3.5 px-6">Delivered on</th>
                                 <th className="py-3.5 px-6">Status</th>
                             </tr>
                         </thead>
