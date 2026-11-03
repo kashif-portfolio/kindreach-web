@@ -19,3 +19,12 @@ export const changePassword = async (data) => {
   const response = await api.post('/auth/change_password.php', data);
   return response.data;
 };
+export const getSession = async () => {
+  const response = await api.get('/auth/session.php');
+  return response.data;
+};
+
+export const logoutUser = async () => {
+  const response = await api.post('/auth/logout.php');
+  return response.data;
+};

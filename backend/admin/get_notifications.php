@@ -1,10 +1,14 @@
 <?php
 require_once '../db_connect.php';
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+$currentUser = require_login();
 
 $userID = isset($_GET['userID']) ? (int) $_GET['userID'] : 0;
+
+// Only admin may view everybody's notification history.
+if ($currentUser['role'] !== 'Admin') {
+    require_own_id($userID, $currentUser['userID']);
+}
 
 try {
     if ($userID > 0) {

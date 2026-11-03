@@ -5,6 +5,8 @@
 
 require_once '../db_connect.php';
 
+$currentUser = require_login(['Donor']);
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Only POST method is allowed"]);
@@ -12,6 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $data = json_decode(file_get_contents("php://input"), true);
+
+require_own_id($data['donorID'] ?? 0, $currentUser['donorID']);
 
 // Required fields
 if (

@@ -43,6 +43,12 @@ $phone    = trim($data['phone']);
 $address  = isset($data['address']) ? trim($data['address']) : '';
 $roleName = trim($data['role']); // "Donor" or "Needy"
 
+// Public registration is only for donors and needy persons.
+// Admin accounts cannot be created through the signup API.
+if (!in_array($roleName, ['Donor', 'Needy'], true)) {
+    auth_error(400, 'Registration is only allowed for Donor or Needy');
+}
+
 // Extra fields (optional)
 $cnic         = isset($data['cnic']) ? trim($data['cnic']) : null;
 $organization = isset($data['organization']) ? trim($data['organization']) : null;

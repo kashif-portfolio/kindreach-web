@@ -5,6 +5,8 @@
 
 require_once '../db_connect.php';
 
+$currentUser = require_login(['Needy']);
+
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Only GET method is allowed"]);

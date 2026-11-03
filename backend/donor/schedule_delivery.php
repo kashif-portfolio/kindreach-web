@@ -1,6 +1,8 @@
 <?php
 require_once '../db_connect.php';
 
+$currentUser = require_login(['Donor']);
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Only POST allowed"]);
@@ -8,6 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $data = json_decode(file_get_contents("php://input"), true);
+
+require_own_id($data['donorID'] ?? 0, $currentUser['donorID']);
 
 if (
     empty($data['requestID']) ||
@@ -29,6 +33,8 @@ $deliveryTime    = isset($data['deliveryTime']) ? trim($data['deliveryTime']) : 
 $address         = trim($data['address']);
 $contactPerson   = isset($data['contactPerson']) ? trim($data['contactPerson']) : null;
 $notes           = isset($data['notes']) ? trim($data['notes']) : null;
+
+require_donor_request($requestID, $currentUser['donorID']);
 
 try {
     $stmt = $pdo->prepare("

@@ -1,6 +1,9 @@
 <?php
 require_once '../db_connect.php';
 
+$currentUser = require_login(['Donor']);
+require_own_id($_GET['donorID'] ?? 0, $currentUser['donorID']);
+
 $donorID = isset($_GET['donorID']) ? (int)$_GET['donorID'] : 0;
 if (!$donorID) {
     http_response_code(400);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import logoGreen from "../assets/logo-green.png";
 import { Outlet, useLocation, NavLink, useNavigate } from "react-router-dom";
+import { logoutUser } from "../services/authService";
 import { getNotifications } from "../services/adminService";
 import {
   Bell,
@@ -120,9 +121,15 @@ export default function DashboardLayout() {
       ? "/needy/profile"
       : "/donor/profile";
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      // End the PHP session too; clearing localStorage alone is not logout.
+      await logoutUser();
+      localStorage.removeItem("user");
+      navigate("/login", { replace: true });
+    } catch {
+      alert("Logout failed. Please try again.");
+    }
   };
 
   const getPageTitle = () => {

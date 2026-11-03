@@ -80,7 +80,6 @@ try {
         exit();
     }
 
-
     // Role ke hisaab se extra ID lo
     $extra = [];
     if ($user['RoleName'] === 'Donor') {
@@ -95,6 +94,10 @@ try {
         $row = $stmt2->fetch(PDO::FETCH_ASSOC);
         $extra['needyID'] = $row ? $row['NeedyID'] : null;
     }
+
+    // Password is correct: remember this user on the PHP server.
+    session_regenerate_id(true);
+    $_SESSION = ['userID' => (int)$user['UserID']];
 
     // 6. Success response
     http_response_code(200);

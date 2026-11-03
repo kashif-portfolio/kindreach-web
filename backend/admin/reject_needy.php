@@ -3,6 +3,8 @@
 
 require_once '../db_connect.php';
 
+$currentUser = require_login(['Admin']);
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Only POST method is allowed"]);
