@@ -1,38 +1,17 @@
 <?php
 require_once '../db_connect.php';
-
-$currentUser = require_login();
-
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only GET allowed"]);
-    exit();
-}
-
+require_once 'chat_access.php';
+$user = require_login(['Donor','Needy']);
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') auth_error(405, 'Only GET allowed');
+$requestID = (int)($_GET['requestID'] ?? 0);
 try {
-    $stmt = $pdo->prepare("
-        SELECT 
-            m.MessageID,
-            m.Message,
-            m.CreatedAt,
-            u.Name,
-            u.UserID,
-            r.RoleName
-        FROM messages m
-        JOIN user u ON m.UserID = u.UserID
-        JOIN role r ON u.RoleID = r.RoleID
-        ORDER BY m.CreatedAt ASC
-        LIMIT 100
-    ");
-    $stmt->execute();
+    $request = require_chat_request($requestID,$user);
+    // FYP ke simple chat mein is conversation ki complete history lao.
+    // Request aur dono participants ka filter private access ko enforce karta hai.
+    $stmt = $pdo->prepare('SELECT MessageID, UserID, Message, CreatedAt FROM messages WHERE RequestID = ? AND UserID IN (?, ?) ORDER BY MessageID ASC');
+    $stmt->execute([$requestID,$request['DonorUserID'],$request['NeedyUserID']]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "data" => $rows
-    ]);
+    echo json_encode(['status'=>'success','data'=>$rows]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
+    auth_error(500,'Could not load private messages');
 }

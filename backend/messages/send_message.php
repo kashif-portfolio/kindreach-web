@@ -1,38 +1,21 @@
 <?php
 require_once '../db_connect.php';
-
-$currentUser = require_login();
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only POST allowed"]);
-    exit();
-}
-
-$data = json_decode(file_get_contents("php://input"), true);
-
-require_own_id($data['userID'] ?? 0, $currentUser['userID']);
-
-if (empty($data['userID']) || empty($data['message'])) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "userID and message are required"]);
-    exit();
-}
-
-$userID  = (int)$data['userID'];
-$message = trim($data['message']);
-
+require_once 'chat_access.php';
+$user = require_login(['Donor','Needy']);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') auth_error(405, 'Only POST allowed');
+$data = json_decode(file_get_contents('php://input'),true);
+$requestID = (int)($data['requestID'] ?? 0);
+$message = is_string($data['message'] ?? null) ? trim($data['message']) : '';
+if ($message === '' || mb_strlen($message,'UTF-8') > 2000) auth_error(400,'Message must contain 1 to 2000 characters');
 try {
-    $stmt = $pdo->prepare("INSERT INTO messages (UserID, Message) VALUES (?, ?)");
-    $stmt->execute([$userID, $message]);
-
-    http_response_code(201);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Message sent",
-        "data" => ["messageID" => $pdo->lastInsertId()]
-    ]);
+    require_chat_request($requestID,$user,true);
+    $stmt = $pdo->prepare('INSERT INTO messages (RequestID,UserID,Message) VALUES (?,?,?)');
+    $stmt->execute([$requestID,$user['userID'],$message]);
+    $messageID = $pdo->lastInsertId();
+    $stmt = $pdo->prepare('SELECT CreatedAt FROM messages WHERE MessageID = ?');
+    $stmt->execute([$messageID]);
+    $saved = $stmt->fetch(PDO::FETCH_ASSOC);
+    echo json_encode(['status'=>'success','message'=>'Message sent','data'=>['messageID'=>$messageID,'createdAt'=>$saved['CreatedAt']]]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
+    auth_error(500,'Could not send message. Please try again');
 }
