@@ -4,7 +4,7 @@ import { Eye, Pencil, Trash2, Plus, Package } from 'lucide-react';
 import DonationDetails from '../../components/donor/DonationDetailsModal';
 import EditDonationModal from '../../components/donor/EditDonationModal';
 import DeleteDonationModal from '../../components/donor/DeleteDonationModal';
-import { getMyDonations, updateDonation } from '../../services/donorService';
+import { getMyDonations, updateDonation, deleteDonation } from '../../services/donorService';
 
 export default function MyDonations() {
     const [donations, setDonations] = useState([]);
@@ -93,8 +93,12 @@ export default function MyDonations() {
     };
 
     // Jab modal ke andar "Delete" button par click ho
-    const handleDeleteConfirm = (id) => {
-        setDonations(donations.filter(d => d.id !== id));
+    const handleDeleteConfirm = async (id) => {
+        const result = await deleteDonation(id);
+        if (result.status !== 'success') throw new Error(result.message || 'Could not delete donation');
+        // Remove the row only after PHP confirms the database deletion.
+        setDonations((previous) => previous.filter((item) => String(item.id) !== String(id)));
+        setSelectedDonation(null);
     };
 
 

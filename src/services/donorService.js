@@ -1,5 +1,10 @@
 import api from './api';
 
+export const deleteDonation = async (donationID) => {
+  const response = await api.post('/donor/delete_donation.php', { donationID });
+  return response.data;
+};
+
 // Add new donation
 export const addDonation = async (donationData) => {
   const response = await api.post('/donor/add_donation.php', donationData);
