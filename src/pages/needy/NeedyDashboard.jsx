@@ -82,7 +82,12 @@ export default function NeedyDashboard() {
                 </p>
             </div>
 
-            {showVerifiedBanner && (
+            {user.verificationStatus !== 'Verified' && (
+                <p className="p-4 rounded-xl bg-amber-50 text-amber-800 text-sm">
+                    Verification: {user.verificationStatus || 'Pending'}. Admin verification is required before you can request help.
+                </p>
+            )}
+            {showVerifiedBanner && user.verificationStatus === 'Verified' && (
                 <div className="w-full bg-[#ECFDF5] border border-[#A7F3D0] rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
                     <div className="w-9 h-9 bg-[#D1FAE5] rounded-xl flex items-center justify-center text-[#009966] shrink-0">
                         <CheckCircle className="w-5 h-5" />

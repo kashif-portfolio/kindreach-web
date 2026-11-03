@@ -53,7 +53,7 @@ function require_login($allowedRoles = []) {
     $stmt = $pdo->prepare("
         SELECT u.UserID AS userID, u.Name AS name, u.Email AS email,
                u.Phone AS phone, u.Address AS address, u.Status AS status,
-               r.RoleName AS role, d.DonorID AS donorID, n.NeedyID AS needyID
+               r.RoleName AS role, d.DonorID AS donorID, n.NeedyID AS needyID, n.VerificationStatus AS verificationStatus
         FROM user u
         JOIN role r ON u.RoleID = r.RoleID
         LEFT JOIN donor d ON d.UserID = u.UserID

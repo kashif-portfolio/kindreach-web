@@ -17,7 +17,7 @@ export default function DonationHistory() {
             try {
                 const result = await getMyDonations(user.donorID);
                 if (result.status === "success") {
-                    const mapped = result.data.map((item) => {
+                    const mapped = result.data.filter((item) => item.Status === "Delivered").map((item) => {
                         let typeColor = "bg-slate-50 text-slate-700 border-slate-200";
                         if (item.TypeName === "Food") {
                             typeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";

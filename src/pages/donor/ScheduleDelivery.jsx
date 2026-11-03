@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle2 } from 'lucide-react';
 import {
     getAcceptedRequests,
+    completeDelivery,
     scheduleDelivery,
     getSchedules,
 } from '../../services/donorService';
@@ -17,6 +18,7 @@ export default function ScheduleDelivery() {
         deliveryNotes: '',
     });
 
+    const [completingID, setCompletingID] = useState(null);
     const [acceptedList, setAcceptedList] = useState([]);
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -45,6 +47,20 @@ export default function ScheduleDelivery() {
         load();
     }, []);
 
+
+    const handleComplete = async (scheduleID) => {
+        if (!window.confirm('Confirm that this donation has actually been handed over?')) return;
+        setCompletingID(scheduleID);
+        try {
+            const result = await completeDelivery(scheduleID);
+            if (result.status !== 'success') throw new Error(result.message || 'Could not complete delivery');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const refreshed = await getSchedules(user.donorID);
+            if (refreshed.status === 'success') setSchedules(refreshed.data);
+        } catch (err) {
+            alert(err.response?.data?.message || err.message || 'Could not complete delivery');
+        } finally { setCompletingID(null); }
+    };
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -93,6 +109,7 @@ export default function ScheduleDelivery() {
 
             if (result.status === 'success') {
                 alert('Delivery scheduled successfully!');
+                setAcceptedList((previous) => previous.filter((item) => String(item.RequestID) !== String(formData.acceptedRequest)));
                 setFormData({
                     acceptedRequest: '',
                     deliveryMethod: '',
@@ -294,6 +311,13 @@ export default function ScheduleDelivery() {
                                 <p className="text-[10px] text-slate-500 mt-0.5">
                                     Status: {s.Status}
                                 </p>
+                                {s.Status === 'Scheduled' && (
+                                    <button type="button" disabled={completingID !== null}
+                                        onClick={() => handleComplete(s.ScheduleID)}
+                                        className="mt-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs disabled:opacity-50">
+                                        {completingID === s.ScheduleID ? 'Saving...' : 'Mark as Delivered'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}

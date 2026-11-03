@@ -4,8 +4,12 @@
 // ============================================
 
 require_once '../db_connect.php';
+require_once '../donation_workflow.php';
 
 $currentUser = require_login(['Needy']);
+if (($currentUser['verificationStatus'] ?? '') !== 'Verified') {
+    auth_error(403, 'Your account must be verified by admin before requesting help');
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -28,8 +32,9 @@ $needyID    = (int)$data['needyID'];
 $message    = isset($data['message']) ? trim($data['message']) : null;
 
 try {
+    $pdo->beginTransaction();
     // Check donation available hai?
-    $stmt = $pdo->prepare("SELECT Status FROM donation WHERE DonationID = ?");
+    $stmt = $pdo->prepare("SELECT Status FROM donation WHERE DonationID = ? FOR UPDATE");
     $stmt->execute([$donationID]);
     $donation = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -38,6 +43,8 @@ try {
         echo json_encode(["status" => "error", "message" => "Donation not available"]);
         exit();
     }
+
+    verified_recipient($needyID);
 
     // Pehle se request to nahi bheji?
     $stmt = $pdo->prepare("
@@ -60,6 +67,7 @@ try {
 
     $requestID = $pdo->lastInsertId();
 
+    $pdo->commit();
     http_response_code(201);
     echo json_encode([
         "status" => "success",
@@ -68,6 +76,7 @@ try {
     ]);
 
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
 }

@@ -27,7 +27,7 @@ try {
         JOIN donation d ON dr.DonationID = d.DonationID
         JOIN needy_person np ON dr.NeedyID = np.NeedyID
         JOIN user u ON np.UserID = u.UserID
-        WHERE d.DonorID = ? AND dr.Status = 'Accepted'
+        WHERE d.DonorID = ? AND dr.Status IN ('Accepted', 'Approved') AND NOT EXISTS (SELECT 1 FROM delivery_schedule ds WHERE ds.RequestID = dr.RequestID)
         ORDER BY dr.RequestDate DESC
     ");
     $stmt->execute([$donorID]);

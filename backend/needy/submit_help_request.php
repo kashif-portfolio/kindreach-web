@@ -2,6 +2,9 @@
 require_once '../db_connect.php';
 
 $currentUser = require_login(['Needy']);
+if (($currentUser['verificationStatus'] ?? '') !== 'Verified') {
+    auth_error(403, 'Your account must be verified by admin before requesting help');
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

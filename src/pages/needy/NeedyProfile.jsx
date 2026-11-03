@@ -169,7 +169,7 @@ export default function NeedyProfile() {
 
                     <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] font-semibold text-[#009689]">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Verified
+                        {JSON.parse(localStorage.getItem('user') || '{}').verificationStatus || 'Pending'}
                     </div>
 
                     <div className="w-full border-t border-slate-100 mt-6 pt-6 flex flex-col gap-4 text-left">

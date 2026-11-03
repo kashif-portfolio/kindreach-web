@@ -1,5 +1,6 @@
 <?php
 require_once '../db_connect.php';
+require_once '../donation_workflow.php';
 
 $currentUser = require_login(['Donor']);
 
@@ -37,6 +38,17 @@ $notes           = isset($data['notes']) ? trim($data['notes']) : null;
 require_donor_request($requestID, $currentUser['donorID']);
 
 try {
+    $pdo->beginTransaction();
+    $donation = lock_donation(request_donation_id($requestID), $currentUser['donorID']);
+    if (!in_array($donation['Status'], ['Approved', 'Assigned'], true)) workflow_error(409, 'Donation is not allocated for delivery');
+    $check = $pdo->prepare("SELECT Status FROM donation_request WHERE RequestID = ? FOR UPDATE");
+    $check->execute([$requestID]);
+    $request = $check->fetch(PDO::FETCH_ASSOC);
+    if (!$request || !in_array($request['Status'], ['Accepted', 'Approved'], true)) workflow_error(409, 'Only accepted requests can be scheduled');
+    $check = $pdo->prepare('SELECT ScheduleID FROM delivery_schedule WHERE RequestID = ? FOR UPDATE');
+    $check->execute([$requestID]);
+    if ($check->fetch()) workflow_error(409, 'This request already has a delivery schedule');
+
     $stmt = $pdo->prepare("
         INSERT INTO delivery_schedule 
         (RequestID, DonorID, DeliveryMethod, DeliveryDate, DeliveryTime, Address, ContactPerson, Notes, Status)
@@ -47,6 +59,7 @@ try {
         $deliveryTime, $address, $contactPerson, $notes
     ]);
 
+    $pdo->commit();
     http_response_code(201);
     echo json_encode([
         "status" => "success",
@@ -54,6 +67,7 @@ try {
         "data" => ["scheduleID" => $pdo->lastInsertId()]
     ]);
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
 }

@@ -26,7 +26,7 @@ export default function MyRequests() {
 
                         // Step number status se
                         let currentStep = 1;
-                        if (status === "Accepted") currentStep = 2;
+                        if (status === "Accepted") currentStep = 3;
                         else if (status === "Approved") currentStep = 3;
                         else if (status === "Delivered") currentStep = 4;
                         else if (status === "Declined" || status === "Rejected") currentStep = 1;

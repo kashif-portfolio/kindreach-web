@@ -44,11 +44,7 @@ export default function AssignDonations() {
 
         if (needyRes.status === "success") {
           const all = needyRes.data || [];
-          const verified = all.filter((n) => {
-            const s = n.Status || n.status || "";
-            return s === "Approved" || s === "Verified" || s === "Active";
-          });
-          const source = verified.length ? verified : all;
+          const source = all.filter((n) => n.VerificationStatus === 'Verified' && n.Status === 'Active');
           setNeedyList(
             source.map((n) => ({
               id: n.NeedyID || n.needyID,
