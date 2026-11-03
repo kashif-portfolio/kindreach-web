@@ -25,6 +25,7 @@ try {
             u.Status,
             u.CreatedAt,
             np.CNIC,
+            np.SupportingDocuments,
             np.IncomeStatus,
             np.FamilyDetails,
             np.VerificationStatus,

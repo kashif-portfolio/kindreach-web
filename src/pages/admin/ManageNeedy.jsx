@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
     getAllNeedy,
+    registerNeedyByAdmin,
     verifyNeedy,
     rejectNeedy,
     deleteNeedy,
@@ -70,6 +71,10 @@ export default function ManageNeedyPersons() {
                         return {
                             id: item.NeedyID, // used for verify / reject / delete APIs
                             userID: item.UserID,
+                            hasDocument: Boolean(item.SupportingDocuments),
+                            phone: item.Phone || "", cnic: item.CNIC || "",
+                            householdSize: item.FamilyDetails || "",
+                            registered: item.CreatedAt || "", requestsMade: 0,
                             name,
                             email: item.Email || "",
                             location: item.Address || "",
@@ -152,11 +157,13 @@ export default function ManageNeedyPersons() {
         }
     };
 
-    // Register from modal - local only (no register-by-admin API yet)
-    const handleRegisterNewApplicant = (newPerson) => {
+    // Create a real account and profile before adding it to the list.
+    const handleRegisterNewApplicant = async (newPerson) => {
+        const result = await registerNeedyByAdmin(newPerson);
+        if (result.status !== 'success') throw new Error(result.message || 'Could not register applicant');
         const applicantWithMeta = {
-            id: Date.now(),
-            ...newPerson,
+            id: result.data.needyID,
+            name: newPerson.name, phone: newPerson.phone, cnic: newPerson.cnic,
             status: "Pending",
             initials: newPerson.name
                 .split(" ")

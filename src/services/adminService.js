@@ -119,3 +119,11 @@ export const resolveComplaint = async (complaintID, adminNote = "") => {
   });
   return res.data;
 };
+export const updateDonor = async (donor) => (await api.post('/admin/update_donor.php', {
+  userID: donor.id, name: donor.name, email: donor.email, phone: donor.phone, address: donor.location,
+})).data;
+export const deleteDonor = async (userID) => (await api.post('/admin/delete_donor.php', { userID })).data;
+export const updateDonationType = async (item) => (await api.post('/admin/update_donation_type.php', {
+  typeID: item.id, typeName: item.title, description: item.description,
+})).data;
+export const registerNeedyByAdmin = async (data) => (await api.post('/admin/register_needy.php', data)).data;

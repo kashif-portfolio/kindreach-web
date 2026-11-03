@@ -1,51 +1,20 @@
 <?php
 require_once '../db_connect.php';
-
-$currentUser = require_login(['Needy']);
-if (($currentUser['verificationStatus'] ?? '') !== 'Verified') {
-    auth_error(403, 'Your account must be verified by admin before requesting help');
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only POST allowed"]);
-    exit();
-}
-
-$data = json_decode(file_get_contents("php://input"), true);
-
-require_own_id($data['needyID'] ?? 0, $currentUser['needyID']);
-
-if (
-    empty($data['needyID']) ||
-    empty($data['helpType']) ||
-    empty($data['description'])
-) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "needyID, helpType and description are required"]);
-    exit();
-}
-
-$needyID     = (int)$data['needyID'];
-$helpType    = trim($data['helpType']);
-$description = trim($data['description']);
-$quantity    = isset($data['quantity']) ? trim($data['quantity']) : null;
-$urgency     = isset($data['urgency']) ? trim($data['urgency']) : 'Normal';
-
+require_once '../document_files.php';
+$user=require_login(['Needy']);
+if($_SERVER['REQUEST_METHOD']!=='POST') auth_error(405,'Only POST allowed');
+if(($user['verificationStatus']??'')!=='Verified') auth_error(403,'Admin verification is required before requesting help');
+// Multipart form allows the document bytes to travel with the help request.
+$data=$_POST ?: json_decode(file_get_contents('php://input'),true);
+require_own_id($data['needyID']??0,$user['needyID']);
+$type=trim($data['helpType']??''); $description=trim($data['description']??''); $quantity=trim($data['quantity']??''); $urgency=$data['urgency']??'Normal';
+if(!$type || !$description || !$quantity || !in_array($urgency,['Normal','Priority','Urgent'],true)) auth_error(400,'Valid help type, description, quantity and urgency required');
+$filename=save_supporting_file('document');
 try {
-    $stmt = $pdo->prepare("
-        INSERT INTO help_request (NeedyID, HelpType, Description, Quantity, Urgency, Status)
-        VALUES (?, ?, ?, ?, ?, 'Pending')
-    ");
-    $stmt->execute([$needyID, $helpType, $description, $quantity, $urgency]);
-
-    http_response_code(201);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Help request submitted successfully",
-        "data" => ["helpRequestID" => $pdo->lastInsertId()]
-    ]);
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
+    $stmt=$pdo->prepare("INSERT INTO help_request (NeedyID,HelpType,Description,Quantity,Urgency,Status,SupportingDocument) VALUES (?,?,?,?,?,'Pending',?)");
+    $stmt->execute([$user['needyID'],$type,$description,$quantity,$urgency,$filename]);
+    echo json_encode(['status'=>'success','message'=>'Help request submitted','data'=>['helpRequestID'=>$pdo->lastInsertId()]]);
+} catch(PDOException $e) {
+    if($filename) unlink(document_directory().'/'.$filename);
+    auth_error(500,'Could not save help request. Check the required database columns');
 }

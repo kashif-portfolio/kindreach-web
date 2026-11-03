@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
     getDonationTypes,
+    updateDonationType,
     addDonationType,
     deleteDonationType,
 } from "../../services/adminService";
@@ -91,7 +92,9 @@ export default function DonationTypes() {
         setDonationTypes(donationTypes.filter(item => item.id !== id));
     };
 
-    const handleUpdateDonationType = (updatedItem) => {
+    const handleUpdateDonationType = async (updatedItem) => {
+        const result = await updateDonationType(updatedItem);
+        if (result.status !== 'success') throw new Error(result.message || 'Could not update category');
         setDonationTypes(
             donationTypes.map((item) => (item.id === updatedItem.id ? updatedItem : item))
         );

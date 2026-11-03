@@ -1,4 +1,5 @@
 import React from 'react';
+import { downloadDocument } from '../../services/helpRequestService';
 import { X } from 'lucide-react';
 
 const NeedyDetailsModal = ({ isOpen, onClose, applicant }) => {
@@ -58,37 +59,38 @@ const NeedyDetailsModal = ({ isOpen, onClose, applicant }) => {
             </div>
           </div>
 
-          {/* Details List */}
+          {applicant.hasDocument && <button type="button" className="text-teal-700 underline" onClick={() => downloadDocument({ needyID: applicant.id }).catch((err) => alert(err.message))}>Download verification document</button>}
+                    {/* Details List */}
           <div className="flex flex-col divide-y divide-slate-100 text-[13px]">
             
             <div className="py-3 flex items-center justify-between">
               <span className="text-slate-500 font-medium">Phone</span>
-              <span className="text-slate-900 font-semibold">{applicant.phone || "+92 305 678 9012"}</span>
+              <span className="text-slate-900 font-semibold">{applicant.phone || "—"}</span>
             </div>
 
             <div className="py-3 flex items-center justify-between">
               <span className="text-slate-500 font-medium">Location</span>
-              <span className="text-slate-900 font-semibold">{applicant.location || "Karachi"}</span>
+              <span className="text-slate-900 font-semibold">{applicant.location || "—"}</span>
             </div>
 
             <div className="py-3 flex items-center justify-between">
               <span className="text-slate-500 font-medium">Reason</span>
-              <span className="text-slate-900 font-semibold">{applicant.reason || "Unemployment"}</span>
+              <span className="text-slate-900 font-semibold">{applicant.reason || "—"}</span>
             </div>
 
             <div className="py-3 flex items-center justify-between">
               <span className="text-slate-500 font-medium">Household Size</span>
-              <span className="text-slate-900 font-semibold">{applicant.householdSize || "5 members"}</span>
+              <span className="text-slate-900 font-semibold">{applicant.householdSize || "—"}</span>
             </div>
 
             <div className="py-3 flex items-center justify-between">
               <span className="text-slate-500 font-medium">Registered</span>
-              <span className="text-slate-900 font-semibold">{applicant.registered || "2024-01-20"}</span>
+              <span className="text-slate-900 font-semibold">{applicant.registered || "—"}</span>
             </div>
 
             <div className="py-3 flex items-center justify-between">
               <span className="text-slate-500 font-medium">Requests Made</span>
-              <span className="text-slate-900 font-semibold">{applicant.requestsMade || "3"}</span>
+              <span className="text-slate-900 font-semibold">{applicant.requestsMade ?? 0}</span>
             </div>
 
           </div>

@@ -19,6 +19,6 @@ export const getMyRequests = async (needyID) => {
 };
 
 export const submitHelpRequest = async (data) => {
-  const response = await api.post('/needy/submit_help_request.php', data);
+  const response = await api.post('/needy/submit_help_request.php', data, { headers: { 'Content-Type': undefined } });
   return response.data;
 };

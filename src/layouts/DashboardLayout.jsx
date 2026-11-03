@@ -133,6 +133,7 @@ export default function DashboardLayout() {
   };
 
   const getPageTitle = () => {
+    if (path.endsWith("/help-requests")) return "General Help Requests";
     if (path.includes("/donor/add-donation")) return "Add Donation";
     if (path.includes("/donor/my-donations")) return "My Donations";
     if (path.includes("/donor/donation-requests")) return "Donation Requests";
@@ -167,7 +168,7 @@ export default function DashboardLayout() {
   const hasUnread = notifications.length > 0;
 
   const linkClass = ({ isActive }) =>
-    `relative flex items-center w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive
+    `relative flex items-center shrink-0 w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive
       ? "bg-[#ECFDF5] text-[#009689]"
       : "text-slate-600 hover:bg-slate-50"
     }`;
@@ -188,7 +189,7 @@ export default function DashboardLayout() {
           />
         </div>
 
-        <div className="flex-1 px-3 py-6 flex flex-col overflow-y-auto">
+        <div className="sidebar-scroll flex-1 min-h-0 px-3 py-6 flex flex-col overflow-y-auto">
           {isDonor && (
             <>
               <NavLink to="/donor" end className={linkClass}>
@@ -224,6 +225,15 @@ export default function DashboardLayout() {
                     <ActiveBar isActive={isActive} />
                     <Clock className="w-4 h-4 shrink-0" />
                     <span>Donation Requests</span>
+                  </>
+                )}
+              </NavLink>
+              <NavLink to="/donor/help-requests" className={linkClass}>
+                {({ isActive }) => (
+                  <>
+                    <ActiveBar isActive={isActive} />
+                    <FileText className="w-4 h-4 shrink-0" />
+                    <span>General Help Requests</span>
                   </>
                 )}
               </NavLink>
@@ -322,6 +332,15 @@ export default function DashboardLayout() {
                   </>
                 )}
               </NavLink>
+              <NavLink to="/needy/help-requests" className={linkClass}>
+                {({ isActive }) => (
+                  <>
+                    <ActiveBar isActive={isActive} />
+                    <FileText className="w-4 h-4 shrink-0" />
+                    <span>General Help Requests</span>
+                  </>
+                )}
+              </NavLink>
               <NavLink to="/needy/messages" className={linkClass}>
                 {({ isActive }) => (
                   <>
@@ -407,6 +426,15 @@ export default function DashboardLayout() {
                     <ActiveBar isActive={isActive} />
                     <Clock className="w-4 h-4 shrink-0" />
                     <span>Donation Requests</span>
+                  </>
+                )}
+              </NavLink>
+              <NavLink to="/admin/help-requests" className={linkClass}>
+                {({ isActive }) => (
+                  <>
+                    <ActiveBar isActive={isActive} />
+                    <FileText className="w-4 h-4 shrink-0" />
+                    <span>General Help Requests</span>
                   </>
                 )}
               </NavLink>

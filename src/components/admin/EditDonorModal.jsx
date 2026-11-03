@@ -21,6 +21,9 @@ const EditDonorModal = ({ isOpen, onClose, donor, onSave }) => {
         }
     }, [donor]);
 
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
     if (!isOpen || !donor) return null;
 
     const handleChange = (e) => {
@@ -30,14 +33,19 @@ const EditDonorModal = ({ isOpen, onClose, donor, onSave }) => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSave({
+    if (saving) return;
+    setSaving(true); setError('');
+    try {
+        await onSave({
             ...donor,
             ...formData
         });
-        onClose();
-    };
+    onClose();
+    } catch (err) { setError(err.response?.data?.message || err.message || 'Could not save'); }
+    finally { setSaving(false); }
+  };
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
@@ -50,6 +58,7 @@ const EditDonorModal = ({ isOpen, onClose, donor, onSave }) => {
                     <button
                         type="button"
                         onClick={onClose}
+              disabled={saving}
                         className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
                     >
                         <X size={16} />
@@ -58,6 +67,7 @@ const EditDonorModal = ({ isOpen, onClose, donor, onSave }) => {
 
                 {/* Modal Form */}
                 <form onSubmit={handleSubmit}>
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
                     <div className="p-6 flex flex-col gap-4 text-[13px]">
 
                         {/* Full Name */}
@@ -119,6 +129,7 @@ const EditDonorModal = ({ isOpen, onClose, donor, onSave }) => {
                         <button
                             type="button"
                             onClick={onClose}
+              disabled={saving}
                             className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer shadow-2xs"
                         >
                             Cancel
@@ -126,6 +137,7 @@ const EditDonorModal = ({ isOpen, onClose, donor, onSave }) => {
 
                         <button
                             type="submit"
+              disabled={saving}
                             className="px-4 py-2 text-xs font-semibold text-white bg-[#009689] hover:bg-[#007d72] rounded-lg transition-colors shadow-xs cursor-pointer"
                         >
                             Save Changes

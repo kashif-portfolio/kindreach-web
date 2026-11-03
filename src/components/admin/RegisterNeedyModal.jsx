@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 
 const RegisterNeedyModal = ({ isOpen, onClose, onRegister }) => {
   const [formData, setFormData] = useState({
+    password: '',
+    cnic: '',
     name: '',
     email: '',
     phone: '',
@@ -11,13 +13,21 @@ const RegisterNeedyModal = ({ isOpen, onClose, onRegister }) => {
     householdSize: '',
   });
 
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onRegister(formData);
-    setFormData({ name: '', email: '', phone: '', location: '', reason: '', householdSize: '' });
+    if (saving) return;
+    setSaving(true); setError('');
+    try {
+    await onRegister(formData);
+    setFormData({ name: '', email: '', phone: '', location: '', reason: '', householdSize: '', cnic: '', password: '' });
     onClose();
+    } catch (err) { setError(err.response?.data?.message || err.message || 'Could not save'); }
+    finally { setSaving(false); }
   };
 
   return (
@@ -29,6 +39,7 @@ const RegisterNeedyModal = ({ isOpen, onClose, onRegister }) => {
           <h2 className="text-base font-bold text-slate-900">Register Needy Person</h2>
           <button 
             onClick={onClose}
+              disabled={saving}
             className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
           >
             <X size={16} />
@@ -36,7 +47,16 @@ const RegisterNeedyModal = ({ isOpen, onClose, onRegister }) => {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4 max-h-[75vh] overflow-y-auto">
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          <label className="text-xs font-semibold">CNIC *
+            <input required value={formData.cnic} onChange={(e) => setFormData({ ...formData, cnic: e.target.value })} className="w-full border rounded-xl p-2" />
+          </label>
+          <label className="text-xs font-semibold">Initial Password *
+            <input type="password" required minLength={6} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full border rounded-xl p-2" />
+          </label>
+          <p className="text-xs text-slate-500">Share the initial password with the applicant privately. They can change it in their profile.</p>
+
           
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-700">Full Name <span className="text-rose-500">*</span></label>
@@ -119,12 +139,14 @@ const RegisterNeedyModal = ({ isOpen, onClose, onRegister }) => {
             <button 
               type="button"
               onClick={onClose}
+              disabled={saving}
               className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button 
               type="submit"
+              disabled={saving}
               className="px-4 py-2 text-xs font-semibold text-white bg-[#009689] hover:bg-[#007f73] rounded-lg transition-colors shadow-sm cursor-pointer"
             >
               Register

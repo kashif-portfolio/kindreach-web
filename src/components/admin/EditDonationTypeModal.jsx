@@ -17,16 +17,24 @@ const EditDonationTypeModal = ({ isOpen, onClose, onSave, donationData }) => {
     }
   }, [donationData]);
 
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave({
+    if (saving) return;
+    setSaving(true); setError('');
+    try {
+    await onSave({
       ...donationData,
       title: formData.typeName,
       description: formData.description,
     });
     onClose();
+    } catch (err) { setError(err.response?.data?.message || err.message || 'Could not save'); }
+    finally { setSaving(false); }
   };
 
   return (
@@ -40,6 +48,7 @@ const EditDonationTypeModal = ({ isOpen, onClose, onSave, donationData }) => {
           <button 
             type="button"
             onClick={onClose}
+              disabled={saving}
             className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
           >
             <X size={16} />
@@ -48,6 +57,7 @@ const EditDonationTypeModal = ({ isOpen, onClose, onSave, donationData }) => {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           
           {/* Type Name Field */}
           <div className="flex flex-col gap-1.5">
@@ -82,12 +92,14 @@ const EditDonationTypeModal = ({ isOpen, onClose, onSave, donationData }) => {
             <button 
               type="button"
               onClick={onClose}
+              disabled={saving}
               className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button 
               type="submit"
+              disabled={saving}
               className="px-4 py-2 text-xs font-semibold text-white bg-[#009689] hover:bg-[#007f73] rounded-lg transition-colors shadow-sm cursor-pointer"
             >
               Save Changes

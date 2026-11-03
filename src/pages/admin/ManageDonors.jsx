@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getAllDonors, approveDonor, blockDonor } from "../../services/adminService";
+import { getAllDonors, approveDonor, blockDonor, updateDonor, deleteDonor } from "../../services/adminService";
 import BlockDonorModal from "../../components/admin/BlockDonorModal";
 import ApproveDonorModal from "../../components/admin/ApproveDonorModal";
 import UnblockDonorModal from "../../components/admin/UnblockDonorModal";
@@ -161,8 +161,10 @@ export default function ManageDonors() {
         }
     };
 
-    // Edit save - local only (no edit API yet)
-    const handleEditSave = (updatedDonor) => {
+    // Save donor changes through the admin API.
+    const handleEditSave = async (updatedDonor) => {
+        const result = await updateDonor(updatedDonor);
+        if (result.status !== 'success') throw new Error(result.message || 'Could not save donor');
         setDonors((prev) =>
             prev.map((donor) =>
                 donor.id === updatedDonor.id ? updatedDonor : donor
@@ -170,9 +172,13 @@ export default function ManageDonors() {
         );
     };
 
-    // Delete - local only (no delete API yet)
-    const handleDelete = (id) => {
-        setDonors((prev) => prev.filter((donor) => donor.id !== id));
+    // Delete unused accounts only; backend preserves donation history.
+    const handleDelete = async (id) => {
+        try {
+            const result = await deleteDonor(id);
+            if (result.status !== 'success') throw new Error(result.message || 'Could not delete donor');
+            setDonors((prev) => prev.filter((donor) => donor.id !== id));
+        } catch (err) { alert(err.response?.data?.message || err.message); }
     };
 
     return (

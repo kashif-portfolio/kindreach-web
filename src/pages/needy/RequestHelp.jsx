@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { submitHelpRequest } from "../../services/needyService";
 
 export default function RequestHelp() {
@@ -14,6 +14,7 @@ export default function RequestHelp() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   // Optional supporting document 
+  const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
 
   const handleChange = (e) => {
@@ -58,21 +59,17 @@ export default function RequestHelp() {
     if (formData.preferredDonor && formData.preferredDonor !== "Select...") {
       fullDescription += `\nPreferred: ${formData.preferredDonor}`;
     }
-    // Optional: mention selected file name in description for record
-    if (selectedFile) {
-      fullDescription += `\nDocument: ${selectedFile.name}`;
-    }
-
     setLoading(true);
 
     try {
-      const result = await submitHelpRequest({
-        needyID: user.needyID,
-        helpType: formData.helpType,
-        description: fullDescription,
-        quantity: formData.quantity.trim(),
-        urgency: urgency,
-      });
+      const payload = new FormData();
+      payload.append('needyID', user.needyID);
+      payload.append('helpType', formData.helpType);
+      payload.append('description', fullDescription);
+      payload.append('quantity', formData.quantity.trim());
+      payload.append('urgency', urgency);
+      if (selectedFile) payload.append('document', selectedFile);
+      const result = await submitHelpRequest(payload);
 
       if (result.status === "success") {
         setSuccess("Help request submitted successfully!");
@@ -85,6 +82,7 @@ export default function RequestHelp() {
           preferredDonor: "",
         });
         setSelectedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
         setError(result.message || "Failed to submit");
       }
@@ -105,6 +103,7 @@ export default function RequestHelp() {
       preferredDonor: "",
     });
     setSelectedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
     setError("");
     setSuccess("");
   };
@@ -220,11 +219,9 @@ export default function RequestHelp() {
               >
                 <option value="">Select...</option>
                 <option value="Any Suitable Donor">Any Suitable Donor</option>
-                <option value="Ahmad Khan - Lahore">Ahmad Khan - Lahore</option>
-                <option value="Sara Khan - Karachi">Sara Khan - Karachi</option>
-                <option value="Usman Ali - Islamabad">
-                  Usman Ali - Islamabad
-                </option>
+                
+                
+                
               </select>
             </div>
           </div>
@@ -255,13 +252,14 @@ export default function RequestHelp() {
                     drag and drop
                   </p>
                   <p className="text-[10px] text-slate-400 mt-0.5">
-                    PDF, PNG, JPG or DOC (MAX. 10MB) — optional
+                    PDF, PNG or JPG (MAX. 10MB) — optional
                   </p>
                 </div>
                 <input
                   type="file"
+                ref={fileInputRef}
                   className="hidden"
-                  accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                  accept=".pdf,.png,.jpg,.jpeg"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setSelectedFile(file);

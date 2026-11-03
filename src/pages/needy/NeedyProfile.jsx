@@ -1,3 +1,4 @@
+import SupportingDocumentUpload from "../../components/needy/SupportingDocumentUpload";
 import React, { useState, useEffect } from "react";
 import { updateProfile, changePassword } from "../../services/authService";
 import {
@@ -266,6 +267,8 @@ export default function NeedyProfile() {
                             </div>
                         )}
                     </div>
+
+                    <SupportingDocumentUpload />
 
                     {/* Password section (same API as donor) */}
                     <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">

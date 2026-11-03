@@ -1,4 +1,5 @@
 import React from "react";
+import GeneralHelpRequests from "../components/common/GeneralHelpRequests";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import AuthLayout from "../layouts/AuthLayout";
@@ -69,6 +70,7 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<DonorDashboard />} />
+        <Route path="help-requests" element={<GeneralHelpRequests />} />
         <Route path="add-donation" element={<PostDonation />} />
         <Route path="my-donations" element={<MyDonations />} />
         <Route path="donation-requests" element={<DonationRequests />} />
@@ -93,6 +95,7 @@ export default function AppRoutes() {
         <Route path="browse-donations" element={<BrowseDonations />} />
         <Route path="request-help" element={<RequestHelp />} />
         <Route path="requests" element={<NeedyRequests />} />
+        <Route path="help-requests" element={<GeneralHelpRequests />} />
         <Route path="messages" element={<NeedyMessages />} />
         <Route path="complaint" element={<NeedySubmitComplaint />} />
         <Route path="feedback" element={<NeedyFeedback />} />
@@ -109,6 +112,7 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<AdminDashboard />} />
+        <Route path="help-requests" element={<GeneralHelpRequests />} />
         <Route path="manage-donors" element={<ManageDonors />} />
         <Route path="manage-needy" element={<ManageNeedy />} />
         <Route path="donation-types" element={<DonationTypes />} />

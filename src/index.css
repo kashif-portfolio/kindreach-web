@@ -30,3 +30,12 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* Sidebar still scrolls with the wheel, touch and keyboard, without a visible bar. */
+.sidebar-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  display: none;
+}

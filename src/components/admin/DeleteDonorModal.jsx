@@ -8,7 +8,7 @@ const DeleteDonorModal = ({ isOpen, onClose, onConfirm }) => {
       onClose={onClose}
       onConfirm={onConfirm}
       title="Delete Donor Account"
-      description="This action is permanent. All donor data will be removed."
+      description="Only unused donor accounts can be deleted. Accounts with donations or complaint history must be blocked instead."
       confirmText="Delete"
       variant="danger"
     />
