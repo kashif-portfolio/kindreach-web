@@ -6,6 +6,12 @@ export const addDonation = async (donationData) => {
   return response.data;
 };
 
+// Save changes to an existing donation. PHP checks its owner using the session.
+export const updateDonation = async (donationData) => {
+  const response = await api.post('/donor/update_donation.php', donationData);
+  return response.data;
+};
+
 // Get my donations
 export const getMyDonations = async (donorID) => {
   const response = await api.get(`/donor/get_my_donations.php?donorID=${donorID}`);

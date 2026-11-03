@@ -27,6 +27,7 @@ try {
     $stmt = $pdo->prepare("
         SELECT 
             d.DonationID,
+            d.TypeID,
             d.Title,
             d.Description,
             d.Quantity,

@@ -4,7 +4,7 @@ import { Eye, Pencil, Trash2, Plus, Package } from 'lucide-react';
 import DonationDetails from '../../components/donor/DonationDetailsModal';
 import EditDonationModal from '../../components/donor/EditDonationModal';
 import DeleteDonationModal from '../../components/donor/DeleteDonationModal';
-import { getMyDonations } from '../../services/donorService';
+import { getMyDonations, updateDonation } from '../../services/donorService';
 
 export default function MyDonations() {
     const [donations, setDonations] = useState([]);
@@ -25,6 +25,7 @@ export default function MyDonations() {
                     // API fields ko UI format mein convert
                     const mapped = result.data.map((item) => ({
                         id: item.DonationID,
+                        typeID: item.TypeID,
                         title: item.Title,
                         category: item.TypeName,
                         quantity: item.Quantity,
@@ -63,8 +64,24 @@ export default function MyDonations() {
         setIsEditModalOpen(true);
     };
 
-    const handleSaveDonation = (updatedItem) => {
-        setDonations(donations.map(d => d.id === updatedItem.id ? updatedItem : d));
+    const handleSaveDonation = async (updatedItem) => {
+        // Update the table only after PHP confirms the database save.
+        const result = await updateDonation({
+            donationID: updatedItem.id,
+            title: updatedItem.title,
+            description: updatedItem.description,
+            typeID: updatedItem.typeID,
+            quantity: updatedItem.quantity,
+            location: updatedItem.location,
+        });
+        if (result.status !== 'success') {
+            throw new Error(result.message || 'Could not update donation');
+        }
+        const savedDonation = result.data;
+        setDonations((previous) => previous.map((item) =>
+            String(item.id) === String(savedDonation.id) ? savedDonation : item
+        ));
+        setSelectedDonation(savedDonation);
     };
 
 
@@ -189,6 +206,7 @@ export default function MyDonations() {
                 donation={selectedDonation}
                 onEdit={() => {
                     setIsViewModalOpen(false);
+                    setIsEditModalOpen(true);
                 }}
             />
 
