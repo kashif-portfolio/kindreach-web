@@ -3,6 +3,11 @@
 // Private chat ki ownership aur access
 // Har request ki chat uske donor aur needy ke darmiyan hoti hai.
 // Message bhejne wale ki ID PHP session se lo.
+/**
+ * @param int $requestID
+ * @param array $user
+ * @param bool $sending
+ */
 function require_chat_request($requestID, $user, $sending = false)
 {
   global $pdo;

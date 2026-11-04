@@ -6,6 +6,9 @@ function document_directory()
 {
   return dirname($_SERVER["DOCUMENT_ROOT"]) . "/kindreach_private_documents";
 }
+/**
+ * @param string $field
+ */
 function save_supporting_file($field)
 {
   if (empty($_FILES[$field]) || $_FILES[$field]["error"] === UPLOAD_ERR_NO_FILE) {

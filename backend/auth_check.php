@@ -42,6 +42,10 @@ session_set_cookie_params([
 ]);
 session_start();
 
+/**
+ * @param int $status
+ * @param string $message
+ */
 function auth_error($status, $message)
 {
   http_response_code($status);
@@ -51,6 +55,9 @@ function auth_error($status, $message)
 
 // Protected API ke shuru mein login check karo.
 // Role dene par sirf usi role ko access milta hai.
+/**
+ * @param array $allowedRoles
+ */
 function require_login($allowedRoles = [])
 {
   global $pdo;
@@ -82,6 +89,10 @@ function require_login($allowedRoles = [])
 }
 
 // Bheji hui ID session wale user se match honi chahiye.
+/**
+ * @param mixed $submittedID
+ * @param mixed $sessionID
+ */
 function require_own_id($submittedID, $sessionID)
 {
   if ((int) $sessionID <= 0 || (int) $submittedID !== (int) $sessionID) {
@@ -90,6 +101,10 @@ function require_own_id($submittedID, $sessionID)
 }
 
 // Request ke donor ki ownership bhi check karo.
+/**
+ * @param int|string $requestID
+ * @param int|string $donorID
+ */
 function require_donor_request($requestID, $donorID)
 {
   global $pdo;

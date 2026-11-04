@@ -3,6 +3,10 @@
 // Donation assign aur approve karne ke checks
 // Poori donation ek verified needy ko milti hai.
 // Assign ya deliver karte waqt pehle donation lock karo.
+/**
+ * @param int $status
+ * @param string $message
+ */
 function workflow_error($status, $message)
 {
   global $pdo;
@@ -12,6 +16,10 @@ function workflow_error($status, $message)
   auth_error($status, $message);
 }
 
+/**
+ * @param int|string $donationID
+ * @param int|string|null $donorID
+ */
 function lock_donation($donationID, $donorID = null)
 {
   global $pdo;
@@ -27,6 +35,9 @@ function lock_donation($donationID, $donorID = null)
   return $donation;
 }
 
+/**
+ * @param int|string $needyID
+ */
 function verified_recipient($needyID)
 {
   global $pdo;
@@ -41,6 +52,9 @@ function verified_recipient($needyID)
   return $recipient;
 }
 
+/**
+ * @param int|string $requestID
+ */
 function request_donation_id($requestID)
 {
   global $pdo;
@@ -55,6 +69,10 @@ function request_donation_id($requestID)
 
 // Donor accept aur admin assign mein yehi approval use hota hai.
 // Transaction ke andar request aur donation dono update hote hain.
+/**
+ * @param int|string $requestID
+ * @param int|string|null $donorID
+ */
 function approve_donation_request($requestID, $donorID = null)
 {
   global $pdo;
