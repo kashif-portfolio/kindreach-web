@@ -19,6 +19,13 @@ $title = is_string($data['title'] ?? null) ? trim($data['title']) : '';
 $description = is_string($data['description'] ?? null) ? trim($data['description']) : '';
 $location = is_string($data['location'] ?? null) ? trim($data['location']) : '';
 
+$urgencyLevel = $data['urgencyLevel'] ?? 'Normal';
+
+// Sirf dropdown ki teen valid urgency values save karein.
+if (!in_array($urgencyLevel, ['Normal', 'Priority', 'Urgent'], true)) {
+    auth_error(400, 'Please select Normal, Priority or Urgent');
+}
+
 if (!$donationID || !$typeID || !$quantity || $title === '' || $description === '' || $location === '') {
     auth_error(400, 'Title, description, category, positive whole-number quantity and location are required');
 }
@@ -55,14 +62,14 @@ try {
         auth_error(400, 'Please select an existing donation category');
     }
 
-    $stmt = $pdo->prepare('UPDATE donation SET Title = ?, Description = ?, TypeID = ?, Quantity = ?, Location = ? WHERE DonationID = ? AND DonorID = ? AND Status = \'Available\'');
-    $stmt->execute([$title, $description, $typeID, $quantity, $location, $donationID, $currentUser['donorID']]);
+    $stmt = $pdo->prepare('UPDATE donation SET Title = ?, Description = ?, TypeID = ?, Quantity = ?, Location = ?, UrgencyLevel = ? WHERE DonationID = ? AND DonorID = ? AND Status = \'Available\'');
+    $stmt->execute([$title, $description, $typeID, $quantity, $location, $urgencyLevel, $donationID, $currentUser['donorID']]);
 
     // Return saved values so the table shows exactly what is in the database.
     $stmt = $pdo->prepare("
         SELECT d.DonationID AS id, d.Title AS title, d.Description AS description,
                d.TypeID AS typeID, dt.TypeName AS category, d.Quantity AS quantity,
-               d.Location AS location, d.Status AS status, DATE(d.CreatedAt) AS date
+               d.Location AS location, d.UrgencyLevel AS urgencyLevel, d.Status AS status, DATE(d.CreatedAt) AS date
         FROM donation d JOIN donation_type dt ON dt.TypeID = d.TypeID
         WHERE d.DonationID = ?
     ");

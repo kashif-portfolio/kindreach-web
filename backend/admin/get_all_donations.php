@@ -11,6 +11,7 @@ try {
             d.Description,
             d.Quantity,
             d.Location,
+            d.UrgencyLevel,
             d.Status,
             d.CreatedAt,
             dt.TypeName,

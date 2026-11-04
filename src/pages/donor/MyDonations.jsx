@@ -30,6 +30,7 @@ export default function MyDonations() {
                         category: item.TypeName,
                         quantity: item.Quantity,
                         status: item.Status,
+                        urgencyLevel: item.UrgencyLevel || 'Normal',
                         date: item.CreatedAt ? item.CreatedAt.split(' ')[0] : '',
                         description: item.Description || '',
                         location: item.Location || '',
@@ -73,6 +74,7 @@ export default function MyDonations() {
             typeID: updatedItem.typeID,
             quantity: updatedItem.quantity,
             location: updatedItem.location,
+            urgencyLevel: updatedItem.urgencyLevel,
         });
         if (result.status !== 'success') {
             throw new Error(result.message || 'Could not update donation');
@@ -101,6 +103,17 @@ export default function MyDonations() {
         setSelectedDonation(null);
     };
 
+
+    // Badge ka rang urgency ke mutabiq hota hai.
+    function getUrgencyColor(urgency) {
+        if (urgency === 'Urgent') {
+            return 'bg-rose-50 text-rose-700 border-rose-200';
+        }
+        if (urgency === 'Priority') {
+            return 'bg-amber-50 text-amber-700 border-amber-200';
+        }
+        return 'bg-teal-50 text-teal-700 border-teal-200';
+    }
 
     return (
         <div className="max-w-6xl mx-auto p-6 bg-slate-50 min-h-screen">
@@ -135,6 +148,7 @@ export default function MyDonations() {
                             <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                 <th className="py-4 px-5">Item Title</th>
                                 <th className="py-4 px-5">Category</th>
+                                <th className="py-4 px-5">Urgency</th>
                                 <th className="py-4 px-5">Quantity</th>
                                 <th className="py-4 px-5">Status</th>
                                 <th className="py-4 px-5">Date</th>
@@ -151,6 +165,9 @@ export default function MyDonations() {
                                         {item.title}
                                     </td>
                                     <td className="py-4 px-5 text-slate-600">{item.category}</td>
+                                    <td className="py-4 px-5"><span className={`inline-flex px-2.5 py-1 border rounded-full text-xs font-medium ${getUrgencyColor(item.urgencyLevel)}`}>
+                                            {item.urgencyLevel}
+                                        </span></td>
                                     <td className="py-4 px-5 font-semibold text-slate-800">{item.quantity}</td>
                                     <td className="py-4 px-5">
                                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'Available'

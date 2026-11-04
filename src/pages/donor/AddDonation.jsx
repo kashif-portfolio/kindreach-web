@@ -14,6 +14,7 @@ export default function PostDonation() {
     quantity: "",
     location: "",
     notes: "",
+    urgencyLevel: "Normal",
   });
 
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ export default function PostDonation() {
         description: formData.notes || title,
         quantity, // string OK — "5 bags" or "20000"
         location,
-        urgencyLevel: "Normal",
+        urgencyLevel: formData.urgencyLevel,
       };
 
       const result = await addDonation(payload);
@@ -227,6 +228,23 @@ export default function PostDonation() {
               </div>
             </div>
 
+            {/* Urgency selected by the donor is saved with the donation. */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="donation-urgency" className="text-[13px] font-semibold text-slate-800">Urgency</label>
+              <select
+                id="donation-urgency"
+                name="urgencyLevel"
+                value={formData.urgencyLevel}
+                onChange={handleInputChange}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-[14px] focus:outline-none focus:border-[#009689] cursor-pointer"
+              >
+                <option value="Normal">Normal</option>
+                <option value="Priority">Priority</option>
+                <option value="Urgent">Urgent</option>
+              </select>
+              <p className="text-xs text-slate-500">Choose Urgent for items that need quick collection, such as fresh food.</p>
+            </div>
+
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-semibold text-slate-800">
                 Additional Notes (Optional)
@@ -313,7 +331,7 @@ export default function PostDonation() {
               </div>
               <div className="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#009689]"></span>
-                <span>Available · Posted by you</span>
+                <span>Available · {formData.urgencyLevel} urgency · Posted by you</span>
               </div>
             </div>
           </div>

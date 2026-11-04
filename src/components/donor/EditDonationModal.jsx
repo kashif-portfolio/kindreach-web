@@ -9,6 +9,7 @@ export default function EditDonationModal({ isOpen, onClose, donation, onSave })
     const [quantity, setQuantity] = useState('');
     const [location, setLocation] = useState('');
     const [typeID, setTypeID] = useState('');
+    const [urgencyLevel, setUrgencyLevel] = useState('Normal');
     const [categories, setCategories] = useState([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -21,6 +22,7 @@ export default function EditDonationModal({ isOpen, onClose, donation, onSave })
             setDescription(donation.description || '');
             setQuantity(donation.quantity || '');
             setLocation(donation.location || '');
+            setUrgencyLevel(donation.urgencyLevel || 'Normal');
             setTypeID(String(donation.typeID || ''));
             setError('');
         }
@@ -65,7 +67,7 @@ export default function EditDonationModal({ isOpen, onClose, donation, onSave })
         setSaving(true);
         try {
             await onSave({ ...donation, title: title.trim(), description: description.trim(),
-                quantity: Number(quantity), location: location.trim(), typeID: Number(typeID) });
+                quantity: Number(quantity), location: location.trim(), typeID: Number(typeID), urgencyLevel });
             onClose(); // Close only after the database save succeeds.
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Could not update donation');
@@ -140,6 +142,21 @@ export default function EditDonationModal({ isOpen, onClose, donation, onSave })
                             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                             required
                         ></textarea>
+                    </div>
+
+                    <div>
+                        <label htmlFor="edit-donation-urgency" className="block text-xs font-semibold text-slate-700 mb-1">Urgency</label>
+                        <select
+                            id="edit-donation-urgency"
+                            value={urgencyLevel}
+                            onChange={(e) => setUrgencyLevel(e.target.value)}
+                            disabled={saving}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
+                        >
+                            <option value="Normal">Normal</option>
+                <option value="Priority">Priority</option>
+                <option value="Urgent">Urgent</option>
+                        </select>
                     </div>
 
                     {/* Quantity Field */}

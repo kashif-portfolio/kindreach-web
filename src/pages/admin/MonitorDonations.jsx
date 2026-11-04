@@ -29,6 +29,7 @@ export default function MonitorDonations() {
                     const mapped = (result.data || []).map((item) => ({
                         id: item.DonationID,
                         donor: item.DonorName || "—",
+                        urgencyLevel: item.UrgencyLevel || 'Normal',
                         type: item.TypeName || "—",
                         description: item.Title || item.Description || "—",
                         quantity: item.Quantity || "—",
@@ -62,6 +63,17 @@ export default function MonitorDonations() {
         const matchesStatus = statusFilter === "All" || item.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+
+    // Badge ka rang urgency ke mutabiq hota hai.
+    function getUrgencyColor(urgency) {
+        if (urgency === 'Urgent') {
+            return 'bg-rose-50 text-rose-700 border-rose-200';
+        }
+        if (urgency === 'Priority') {
+            return 'bg-amber-50 text-amber-700 border-amber-200';
+        }
+        return 'bg-teal-50 text-teal-700 border-teal-200';
+    }
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
@@ -160,6 +172,7 @@ export default function MonitorDonations() {
                                 <th className="py-3.5 px-4">Quantity</th>
                                 <th className="py-3.5 px-4">Location</th>
                                 <th className="py-3.5 px-4">Date</th>
+                                <th className="py-3.5 px-6">Urgency</th>
                                 <th className="py-3.5 px-6">Status</th>
                             </tr>
                         </thead>
@@ -205,6 +218,10 @@ export default function MonitorDonations() {
                                     <td className="py-4 px-4 text-slate-500">
                                         {item.date}
                                     </td>
+
+                                    <td className="py-4 px-6"><span className={`inline-flex px-2.5 py-1 border rounded-full text-xs font-medium ${getUrgencyColor(item.urgencyLevel)}`}>
+                                            {item.urgencyLevel}
+                                        </span></td>
 
                                     {/* Status Badge */}
                                     <td className="py-4 px-6">

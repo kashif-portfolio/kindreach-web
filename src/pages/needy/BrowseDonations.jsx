@@ -13,6 +13,7 @@ import {
 export default function BrowseDonations() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [selectedUrgency, setSelectedUrgency] = useState("All");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDonation, setSelectedDonation] = useState(null);
 
@@ -50,6 +51,7 @@ export default function BrowseDonations() {
                             title: item.Title,
                             description: item.Description || "",
                             category: item.TypeName,
+                            urgencyLevel: item.UrgencyLevel || 'Normal',
                             qty: `Qty: ${item.Quantity}`,
                             location: item.Location || 'N/A',
                             donor: `${item.DonorName || 'Donor'} · ${item.CreatedAt ? item.CreatedAt.split(' ')[0] : ''}`,
@@ -77,8 +79,20 @@ export default function BrowseDonations() {
         const search = searchTerm.trim().toLowerCase();
         const matchesSearch = [item.title, item.description, item.donor, item.location]
             .some((value) => String(value || '').toLowerCase().includes(search));
-        return matchesCategory && matchesSearch;
+        const matchesUrgency = selectedUrgency === 'All' || item.urgencyLevel === selectedUrgency;
+        return matchesCategory && matchesSearch && matchesUrgency;
     });
+
+    // Badge ka rang urgency ke mutabiq hota hai.
+    function getUrgencyColor(urgency) {
+        if (urgency === 'Urgent') {
+            return 'bg-rose-50 text-rose-700 border-rose-200';
+        }
+        if (urgency === 'Priority') {
+            return 'bg-amber-50 text-amber-700 border-amber-200';
+        }
+        return 'bg-teal-50 text-teal-700 border-teal-200';
+    }
 
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
@@ -111,6 +125,21 @@ export default function BrowseDonations() {
                     />
                 </div>
 
+                <div className="flex items-center gap-3">
+                    <label htmlFor="browse-urgency" className="text-[13px] font-semibold text-slate-700">Urgency</label>
+                    <select
+                        id="browse-urgency"
+                        value={selectedUrgency}
+                        onChange={(e) => setSelectedUrgency(e.target.value)}
+                        className="h-10 px-3 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-700 focus:outline-none focus:border-[#009689] cursor-pointer"
+                    >
+                        <option value="All">All urgencies</option>
+                        <option value="Normal">Normal</option>
+                <option value="Priority">Priority</option>
+                <option value="Urgent">Urgent</option>
+                    </select>
+                </div>
+
                 <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
                     {categories.map((cat) => (
                         <button
@@ -136,11 +165,11 @@ export default function BrowseDonations() {
             )}
 
             {/* Donations Grid */}
-            <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {filteredDonations.map((item) => (
                     <div
                         key={item.id}
-                        className="w-[550.03px] h-[221.62px] bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between"
+                        className="w-full min-h-[240px] bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between"
                     >
                         {/* Top Section: Icon, Title, Badge */}
                         <div className="flex items-start justify-between">
@@ -153,9 +182,14 @@ export default function BrowseDonations() {
                                     <p className="text-[12px] text-slate-500 mt-0.5">{item.qty}</p>
                                 </div>
                             </div>
+                            <div className="flex flex-col items-end gap-2 shrink-0">
+                            <span className={`inline-flex px-2.5 py-1 border rounded-full text-xs font-medium ${getUrgencyColor(item.urgencyLevel)}`}>
+                                            {item.urgencyLevel}
+                                        </span>
                             <span className={`px-3 py-1 border rounded-full text-[12px] font-medium ${item.badgeBg}`}>
                                 {item.category}
                             </span>
+                            </div>
                         </div>
 
                         {/* Middle Section: Location & Donor Info (Aligned properly) */}

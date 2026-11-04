@@ -31,6 +31,11 @@ export default function DonationDetails({ isOpen, onClose, donation, onEdit }) {
                         </span>
                     </div>
 
+                    <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
+                        <span className="text-slate-500 font-medium">Urgency</span>
+                        <span className="text-slate-800 font-medium">{donation.urgencyLevel || 'Normal'}</span>
+                    </div>
+
                     {/* Description */}
                     <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
                         <span className="text-slate-500 font-medium flex items-center gap-2">

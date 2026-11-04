@@ -38,7 +38,14 @@ $title        = trim($data['title']);
 $description  = isset($data['description']) ? trim($data['description']) : null;
 $quantity     = (int)$data['quantity'];
 $location     = isset($data['location']) ? trim($data['location']) : null;
-$urgencyLevel = isset($data['urgencyLevel']) ? trim($data['urgencyLevel']) : 'Normal';
+$urgencyLevel = $data['urgencyLevel'] ?? 'Normal';
+
+// Sirf dropdown ki teen valid urgency values save karein.
+if (!in_array($urgencyLevel, ['Normal', 'Priority', 'Urgent'], true)) {
+    auth_error(400, 'Please select Normal, Priority or Urgent');
+}
+
+
 
 try {
     // Check donor exists
@@ -75,7 +82,8 @@ try {
             "donationID" => $donationID,
             "title"      => $title,
             "quantity"   => $quantity,
-            "status"     => "Available"
+            "status"     => "Available",
+            "urgencyLevel" => $urgencyLevel
         ]
     ]);
 
