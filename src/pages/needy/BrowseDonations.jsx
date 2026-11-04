@@ -48,6 +48,7 @@ export default function BrowseDonations() {
 
                         return {
                             id: item.DonationID,
+                            requestStatus: item.MyRequestStatus || '',
                             title: item.Title,
                             description: item.Description || "",
                             category: item.TypeName,
@@ -82,6 +83,16 @@ export default function BrowseDonations() {
         const matchesUrgency = selectedUrgency === 'All' || item.urgencyLevel === selectedUrgency;
         return matchesCategory && matchesSearch && matchesUrgency;
     });
+
+    // Request successful ho to isi card ka button foran update karein.
+    const handleRequestSent = (donationID) => {
+        setDonations((previous) => previous.map((item) => {
+            if (String(item.id) === String(donationID)) {
+                return { ...item, requestStatus: 'Pending' };
+            }
+            return item;
+        }));
+    };
 
     // Badge ka rang urgency ke mutabiq hota hai.
     function getUrgencyColor(urgency) {
@@ -203,15 +214,22 @@ export default function BrowseDonations() {
                             </div>
                         </div>
 
+                        {item.requestStatus === 'Pending' && (
+                            <p role="status" className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 my-2">
+                                Your request has been sent. Waiting for review.
+                            </p>
+                        )}
+
                         {/* Bottom Button */}
                         <button
+                            disabled={item.requestStatus === 'Pending'}
                             onClick={() => {
                                 setSelectedDonation(item);
                                 setIsModalOpen(true);
                             }}
 
-                            className="w-full h-10 bg-[#009689] hover:bg-[#007A6F] text-white rounded-xl text-[13px] font-semibold transition-all shadow-sm flex items-center justify-center cursor-pointer">
-                            Send Request
+                            className="w-full h-10 bg-[#009689] hover:bg-[#007A6F] text-white rounded-xl text-[13px] font-semibold transition-all shadow-sm flex items-center justify-center cursor-pointer disabled:bg-amber-50 disabled:text-amber-700 disabled:border disabled:border-amber-200 disabled:shadow-none disabled:cursor-not-allowed">
+                            {item.requestStatus === 'Pending' ? 'Request Pending' : 'Send Request'}
                         </button>
                     </div>
                 ))}
@@ -221,6 +239,7 @@ export default function BrowseDonations() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 donation={selectedDonation}
+                onRequestSent={handleRequestSent}
             />
 
         </div>

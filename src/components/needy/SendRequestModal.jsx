@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { X, Utensils, Send } from "lucide-react";
 import { sendRequest } from "../../services/needyService";
 
-export default function SendRequestModal({ isOpen, onClose, donation }) {
+export default function SendRequestModal({ isOpen, onClose, donation, onRequestSent }) {
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -11,6 +11,9 @@ export default function SendRequestModal({ isOpen, onClose, donation }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (loading) {
+            return;
+        }
         setError("");
 
         const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -35,6 +38,7 @@ export default function SendRequestModal({ isOpen, onClose, donation }) {
             });
 
             if (result.status === "success") {
+                onRequestSent(donation.id);
                 alert("Donation request submitted successfully!");
                 setMessage("");
                 onClose();
@@ -59,6 +63,7 @@ export default function SendRequestModal({ isOpen, onClose, donation }) {
                     <h3 className="text-[16px] font-bold text-slate-900">Send Donation Request</h3>
                     <button
                         onClick={onClose}
+                        disabled={loading}
                         className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors cursor-pointer"
                     >
                         <X className="w-4 h-4" />
@@ -111,6 +116,7 @@ export default function SendRequestModal({ isOpen, onClose, donation }) {
                         <button
                             type="button"
                             onClick={onClose}
+                            disabled={loading}
                             className="px-5 py-2.5 rounded-xl border border-slate-200 text-[13px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
                         >
                             Cancel
