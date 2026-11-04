@@ -2,9 +2,6 @@ import React, { useState, useEffect } from "react";
 import { getAvailableDonations } from "../../services/needyService";
 import SendRequestModal from "../../components/needy/SendRequestModal";
 import {
-    Utensils,
-    Shirt,
-    DollarSign,
     Package,
     Search,
     MapPin
@@ -27,24 +24,10 @@ export default function BrowseDonations() {
                 const result = await getAvailableDonations();
                 if (result.status === 'success') {
                     const mapped = result.data.map((item) => {
-                        // icon category ke hisaab se
-                        let icon = <Package className="w-5 h-5 text-[#7C3AED]" />;
-                        let iconBg = "bg-[#F3E8FF]";
-                        let badgeBg = "bg-[#F3E8FF] text-[#7C3AED] border-[#E9D5FF]";
-
-                        if (item.TypeName === 'Food') {
-                            icon = <Utensils className="w-5 h-5 text-[#E17100]" />;
-                            iconBg = "bg-[#FEF3C7]";
-                            badgeBg = "bg-[#FFFBEB] text-[#BB4D00] border-[#FEF3C7]";
-                        } else if (item.TypeName === 'Clothes') {
-                            icon = <Shirt className="w-5 h-5 text-[#155DFC]" />;
-                            iconBg = "bg-[#EFF6FF]";
-                            badgeBg = "bg-[#EFF6FF] text-[#155DFC] border-[#BFDBFE]";
-                        } else if (item.TypeName === 'Financial Support' || item.TypeName === 'Financial Aid') {
-                            icon = <DollarSign className="w-5 h-5 text-[#009966]" />;
-                            iconBg = "bg-[#ECFDF5]";
-                            badgeBg = "bg-[#ECFDF5] text-[#009966] border-[#A7F3D0]";
-                        }
+                        // Generic icon sab donation categories ke liye.
+                        const icon = <Package className="w-5 h-5 text-[#009689]" />;
+                        const iconBg = "bg-teal-50";
+                        const badgeBg = "bg-teal-50 text-teal-700 border-teal-200";
 
                         return {
                             id: item.DonationID,

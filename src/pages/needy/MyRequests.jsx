@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-    Utensils,
-    Shirt,
+    Package,
     Check
 } from 'lucide-react';
 import { getMyRequests } from "../../services/needyService";
@@ -31,15 +30,10 @@ export default function MyRequests() {
                         else if (status === "Delivered") currentStep = 4;
                         else if (status === "Declined" || status === "Rejected") currentStep = 1;
 
-                        // Icon
-                        let icon = <Utensils className="w-5 h-5" />;
-                        let iconBg = "bg-[#FEF3C7]";
-                        let iconColor = "text-[#E17100]";
-                        if (item.TypeName === "Clothes") {
-                            icon = <Shirt className="w-5 h-5" />;
-                            iconBg = "bg-[#EFF6FF]";
-                            iconColor = "text-[#155DFC]";
-                        }
+                        // Har donation ke liye simple Package icon.
+                        const icon = <Package className="w-5 h-5" />;
+                        const iconBg = "bg-teal-50";
+                        const iconColor = "text-[#009689]";
 
                         // Status colors
                         let statusColor = "text-[#BB4D00]";
@@ -131,8 +125,8 @@ export default function MyRequests() {
                                     <p className="text-[12px] text-slate-400 mt-0.5">Donor: {request.donor} · {request.date}</p>
                                 </div>
                             </div>
-                            <div className={`px-3 py-1 ${request.statusBg} border ${request.statusBorder} rounded-full flex items-center gap-1.5`}>
-                                <span className={`w-2 h-2 rounded-full ${request.status === 'Pending' ? 'bg-[#FE9A00]' : 'bg-[#009966]'}`}></span>
+                            <div className={`px-3 py-1 ${request.statusBg} ${request.statusColor} border ${request.statusBorder} rounded-full flex items-center gap-1.5`}>
+                                <span className="w-2 h-2 rounded-full bg-current"></span>
                                 <span className={`text-[12px] font-semibold ${request.statusColor}`}>{request.status}</span>
                             </div>
                         </div>

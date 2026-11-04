@@ -4,6 +4,7 @@ $user = require_login(['Donor','Needy']);
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') auth_error(405, 'Only GET allowed');
 try {
     $stmt = $pdo->prepare("SELECT dr.RequestID, dr.Status AS RequestStatus,
+        dn.UserID AS DonorUserID, np.UserID AS NeedyUserID,
         d.Title AS DonationTitle, du.Name AS DonorName, nu.Name AS NeedyName,
         du.Status AS DonorStatus, nu.Status AS NeedyStatus, np.VerificationStatus,
         latest.Message AS LastMessage, latest.CreatedAt AS LastMessageAt, dr.RequestDate
@@ -21,6 +22,7 @@ try {
     $stmt->execute([$user['userID'],$user['userID']]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as &$row) {
+        $row['OtherUserID'] = $user['role'] === 'Donor' ? $row['NeedyUserID'] : $row['DonorUserID'];
         $row['OtherName'] = $user['role'] === 'Donor' ? $row['NeedyName'] : $row['DonorName'];
         $row['OtherRole'] = $user['role'] === 'Donor' ? 'Recipient' : 'Donor';
         $row['CanSend'] = in_array($row['RequestStatus'], ['Pending','Accepted','Approved','Delivered'], true)

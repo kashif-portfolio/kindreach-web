@@ -5,8 +5,7 @@ import {
     ClipboardList,
     TrendingUp,
     ChevronRight,
-    Utensils,
-    Shirt,
+    Package,
     CheckCircle,
     Clock,
     MessageSquare,
@@ -246,7 +245,7 @@ export default function NeedyDashboard() {
                                     >
                                         <div className="flex items-center gap-3.5">
                                             <div className="w-10.5 h-10.5 bg-[#FEF3C7] rounded-[12px] flex items-center justify-center text-[#E17100]">
-                                                <Utensils className="w-5 h-5" />
+                                                <Package className="w-5 h-5" />
                                             </div>
                                             <div className="flex flex-col gap-0.5">
                                                 <h4 className="text-[14px] font-bold text-slate-900">
@@ -316,11 +315,7 @@ export default function NeedyDashboard() {
                                             <div
                                                 className={`w-10.5 h-10.5 rounded-[12px] flex items-center justify-center ${iconWrap}`}
                                             >
-                                                {isClothes ? (
-                                                    <Shirt className="w-5 h-5" />
-                                                ) : (
-                                                    <Utensils className="w-5 h-5" />
-                                                )}
+                                                <Package className="w-5 h-5" />
                                             </div>
                                             <div className="flex flex-col gap-0.5">
                                                 <h4 className="text-[14px] font-bold text-slate-900">

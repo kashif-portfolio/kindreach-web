@@ -13,9 +13,6 @@ import {
   Heart,
   TrendingDown,
   ChevronRight,
-  Utensils,
-  Shirt,
-  CreditCard,
   CheckCircle,
   XCircle,
   Clock,
@@ -127,23 +124,11 @@ export default function DonorDashboard() {
     }
   };
 
-  // Icon by donation type name
-  const getTypeIcon = (typeName) => {
-    if (typeName === "Clothes") {
-      return {
-        icon: <Shirt className="w-5 h-5" />,
-        wrap: "bg-[#EFF6FF] text-[#155DFC]",
-      };
-    }
-    if (typeName === "Financial Aid") {
-      return {
-        icon: <CreditCard className="w-5 h-5" />,
-        wrap: "bg-[#ECFDF5] text-[#009966]",
-      };
-    }
+  // Har donation ke liye generic Package icon.
+  const getTypeIcon = () => {
     return {
-      icon: <Utensils className="w-5 h-5" />,
-      wrap: "bg-[#FEF3C7] text-[#E17100]",
+      icon: <Package className="w-5 h-5" />,
+      wrap: "bg-teal-50 text-[#009689]",
     };
   };
 
@@ -270,7 +255,7 @@ export default function DonorDashboard() {
                   ? String(item.CreatedAt).split(" ")[0]
                   : "";
                 const status = item.Status || "Available";
-                const { icon, wrap } = getTypeIcon(item.TypeName);
+                const { icon, wrap } = getTypeIcon();
 
                 const isAvailable =
                   status === "Available" || status === "Approved";

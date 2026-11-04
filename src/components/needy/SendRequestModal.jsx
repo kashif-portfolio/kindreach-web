@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Utensils, Send } from "lucide-react";
+import { X, Package, Send } from "lucide-react";
 import { sendRequest } from "../../services/needyService";
 
 export default function SendRequestModal({ isOpen, onClose, donation, onRequestSent }) {
@@ -77,7 +77,7 @@ export default function SendRequestModal({ isOpen, onClose, donation, onRequestS
                     {donation && (
                         <div className="p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 flex items-start gap-3.5">
                             <div className="w-10 h-10 rounded-xl bg-[#FEF3C7] text-[#E17100] flex items-center justify-center shrink-0">
-                                <Utensils className="w-5 h-5" />
+                                <Package className="w-5 h-5" />
                             </div>
                             <div className="flex flex-col">
                                 <h4 className="text-[14px] font-bold text-slate-900">{donation.title}</h4>

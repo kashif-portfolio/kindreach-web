@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Trash2, Plus, Package } from 'lucide-react';
+import { Eye, Pencil, Trash2, Plus, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import DonationDetails from '../../components/donor/DonationDetailsModal';
 import EditDonationModal from '../../components/donor/EditDonationModal';
 import DeleteDonationModal from '../../components/donor/DeleteDonationModal';
@@ -9,6 +9,14 @@ import { getMyDonations, updateDonation, deleteDonation } from '../../services/d
 export default function MyDonations() {
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    // Sirf current page ki donations table mein dikhayein.
+    const totalPages = Math.max(1, Math.ceil(donations.length / itemsPerPage));
+    const pageNumber = Math.min(currentPage, totalPages);
+    const startIndex = (pageNumber - 1) * itemsPerPage;
+    const paginatedDonations = donations.slice(startIndex, startIndex + itemsPerPage);
 
     const navigate = useNavigate();
     useEffect(() => {
@@ -156,7 +164,7 @@ export default function MyDonations() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                            {donations.map((item) => (
+                            {paginatedDonations.map((item) => (
                                 <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="py-4 px-5 font-medium text-slate-900 flex items-center gap-3">
                                         <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
@@ -217,6 +225,20 @@ export default function MyDonations() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+                <div className="px-5 py-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/30">
+                    <span className="text-xs text-slate-500">Showing {donations.length === 0 ? 0 : startIndex + 1}–{Math.min(startIndex + itemsPerPage, donations.length)} of {donations.length} donations</span>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => setCurrentPage(pageNumber - 1)} disabled={pageNumber === 1}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                            <ChevronLeft className="w-3.5 h-3.5" /> Previous
+                        </button>
+                        <span className="px-3 py-1.5 bg-[#009689] text-white rounded-lg text-xs">{pageNumber} / {totalPages}</span>
+                        <button onClick={() => setCurrentPage(pageNumber + 1)} disabled={pageNumber === totalPages}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                            Next <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
