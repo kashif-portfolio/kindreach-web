@@ -3,12 +3,14 @@ import { submitComplaint } from "../../services/complaintService";
 import { Send } from "lucide-react";
 
 export default function DonorSubmitComplaint() {
+  // Page ki states
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
+  // Form submit karo.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -28,11 +30,7 @@ export default function DonorSubmitComplaint() {
 
     setLoading(true);
     try {
-      const result = await submitComplaint(
-        userID,
-        subject.trim(),
-        description.trim()
-      );
+      const result = await submitComplaint(userID, subject.trim(), description.trim());
       if (result.status === "success") {
         setSuccess("Complaint submitted. Admin will review it.");
         setSubject("");
@@ -75,7 +73,7 @@ export default function DonorSubmitComplaint() {
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1">
-            Description <span className="text-rose-500">*</span> 
+            Description <span className="text-rose-500">*</span>
           </label>
           <textarea
             rows={5}

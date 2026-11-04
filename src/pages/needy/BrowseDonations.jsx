@@ -1,230 +1,237 @@
 import React, { useState, useEffect } from "react";
 import { getAvailableDonations } from "../../services/needyService";
 import SendRequestModal from "../../components/needy/SendRequestModal";
-import {
-    Package,
-    Search,
-    MapPin
-} from 'lucide-react';
+import { Package, Search, MapPin } from "lucide-react";
 
 export default function BrowseDonations() {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("All");
-    const [selectedUrgency, setSelectedUrgency] = useState("All");
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedDonation, setSelectedDonation] = useState(null);
+  // Page ki states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedUrgency, setSelectedUrgency] = useState("All");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDonation, setSelectedDonation] = useState(null);
 
+  const [donations, setDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const [donations, setDonations] = useState([]);
-    const [loading, setLoading] = useState(true);
+  // Page ka data load aur update karo.
+  useEffect(() => {
+    const fetchDonations = async () => {
+      try {
+        const result = await getAvailableDonations();
+        if (result.status === "success") {
+          const mapped = result.data.map((item) => {
+            // Generic icon sab donation categories ke liye.
+            const icon = <Package className="w-5 h-5 text-[#009689]" />;
+            const iconBg = "bg-teal-50";
+            const badgeBg = "bg-teal-50 text-teal-700 border-teal-200";
 
-    useEffect(() => {
-        const fetchDonations = async () => {
-            try {
-                const result = await getAvailableDonations();
-                if (result.status === 'success') {
-                    const mapped = result.data.map((item) => {
-                        // Generic icon sab donation categories ke liye.
-                        const icon = <Package className="w-5 h-5 text-[#009689]" />;
-                        const iconBg = "bg-teal-50";
-                        const badgeBg = "bg-teal-50 text-teal-700 border-teal-200";
-
-                        return {
-                            id: item.DonationID,
-                            requestStatus: item.MyRequestStatus || '',
-                            title: item.Title,
-                            description: item.Description || "",
-                            category: item.TypeName,
-                            urgencyLevel: item.UrgencyLevel || 'Normal',
-                            qty: `Qty: ${item.Quantity}`,
-                            location: item.Location || 'N/A',
-                            donor: `${item.DonorName || 'Donor'} · ${item.CreatedAt ? item.CreatedAt.split(' ')[0] : ''}`,
-                            icon,
-                            iconBg,
-                            badgeBg,
-                        };
-                    });
-                    setDonations(mapped);
-                }
-            } catch (err) {
-                console.error('Failed to load donations:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDonations();
-    }, []);
-
-    // Use actual category names and combine category and text filtering.
-    const categories = ["All", ...new Set(donations.map((item) => item.category))];
-    const filteredDonations = donations.filter((item) => {
-        const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-        const search = searchTerm.trim().toLowerCase();
-        const matchesSearch = [item.title, item.description, item.donor, item.location]
-            .some((value) => String(value || '').toLowerCase().includes(search));
-        const matchesUrgency = selectedUrgency === 'All' || item.urgencyLevel === selectedUrgency;
-        return matchesCategory && matchesSearch && matchesUrgency;
-    });
-
-    // Request successful ho to isi card ka button foran update karein.
-    const handleRequestSent = (donationID) => {
-        setDonations((previous) => previous.map((item) => {
-            if (String(item.id) === String(donationID)) {
-                return { ...item, requestStatus: 'Pending' };
-            }
-            return item;
-        }));
+            return {
+              id: item.DonationID,
+              requestStatus: item.MyRequestStatus || "",
+              title: item.Title,
+              description: item.Description || "",
+              category: item.TypeName,
+              urgencyLevel: item.UrgencyLevel || "Normal",
+              qty: `Qty: ${item.Quantity}`,
+              location: item.Location || "N/A",
+              donor: `${item.DonorName || "Donor"} · ${item.CreatedAt ? item.CreatedAt.split(" ")[0] : ""}`,
+              icon,
+              iconBg,
+              badgeBg,
+            };
+          });
+          setDonations(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load donations:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Badge ka rang urgency ke mutabiq hota hai.
-    function getUrgencyColor(urgency) {
-        if (urgency === 'Urgent') {
-            return 'bg-rose-50 text-rose-700 border-rose-200';
-        }
-        if (urgency === 'Priority') {
-            return 'bg-amber-50 text-amber-700 border-amber-200';
-        }
-        return 'bg-teal-50 text-teal-700 border-teal-200';
-    }
+    fetchDonations();
+  }, []);
 
-    return (
-        <div className="w-full px-8 py-6 flex flex-col gap-6">
-
-            {/* Header Section */}
-            <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2 text-[13px] text-slate-400">
-                    <span>Home</span>
-                    <span>/</span>
-                    <span className="text-slate-900 font-medium">Browse Donations</span>
-                </div>
-                <h1 className="text-[22px] font-bold text-slate-900 tracking-tight mt-1">
-                    Browse Donations
-                </h1>
-                <p className="text-[13px] text-slate-500">
-                    Find and request available donations near you
-                </p>
-            </div>
-
-            {/* Search Bar & Filter Tabs */}
-            <div className="flex flex-col gap-4">
-                <div className="relative w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by description, donor or location..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200/80 rounded-xl text-[13px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#009689] shadow-sm"
-                    />
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <label htmlFor="browse-urgency" className="text-[13px] font-semibold text-slate-700">Urgency</label>
-                    <select
-                        id="browse-urgency"
-                        value={selectedUrgency}
-                        onChange={(e) => setSelectedUrgency(e.target.value)}
-                        className="h-10 px-3 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-700 focus:outline-none focus:border-[#009689] cursor-pointer"
-                    >
-                        <option value="All">All urgencies</option>
-                        <option value="Normal">Normal</option>
-                <option value="Priority">Priority</option>
-                <option value="Urgent">Urgent</option>
-                    </select>
-                </div>
-
-                <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all cursor-pointer ${selectedCategory === cat
-                                ? "bg-[#009689] text-white shadow-sm"
-                                : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50"
-                                }`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {loading && (
-                <p className="text-center text-slate-500 text-sm py-8">Loading donations...</p>
-            )}
-
-            {!loading && filteredDonations.length === 0 && (
-                <p className="text-center text-slate-500 text-sm py-8">No available donations right now.</p>
-            )}
-
-            {/* Donations Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                {filteredDonations.map((item) => (
-                    <div
-                        key={item.id}
-                        className="w-full min-h-[240px] bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between"
-                    >
-                        {/* Top Section: Icon, Title, Badge */}
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3.5">
-                                <div className={`w-11 h-11 ${item.iconBg} rounded-[14px] flex items-center justify-center`}>
-                                    {item.icon}
-                                </div>
-                                <div className="flex flex-col">
-                                    <h3 className="text-[15px] font-bold text-slate-900">{item.title}</h3>
-                                    <p className="text-[12px] text-slate-500 mt-0.5">{item.qty}</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-2 shrink-0">
-                            <span className={`inline-flex px-2.5 py-1 border rounded-full text-xs font-medium ${getUrgencyColor(item.urgencyLevel)}`}>
-                                            {item.urgencyLevel}
-                                        </span>
-                            <span className={`px-3 py-1 border rounded-full text-[12px] font-medium ${item.badgeBg}`}>
-                                {item.category}
-                            </span>
-                            </div>
-                        </div>
-
-                        {/* Middle Section: Location & Donor Info (Aligned properly) */}
-                        <div className="flex flex-col gap-1 text-[12px] text-slate-500">
-                            <div className="flex items-center gap-2">
-                                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                <span>{item.location}</span>
-                            </div>
-                            <div className="text-slate-400 pl-5.5">
-                                By {item.donor}
-                            </div>
-                        </div>
-
-                        {item.requestStatus === 'Pending' && (
-                            <p role="status" className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 my-2">
-                                Your request has been sent. Waiting for review.
-                            </p>
-                        )}
-
-                        {/* Bottom Button */}
-                        <button
-                            disabled={item.requestStatus === 'Pending'}
-                            onClick={() => {
-                                setSelectedDonation(item);
-                                setIsModalOpen(true);
-                            }}
-
-                            className="w-full h-10 bg-[#009689] hover:bg-[#007A6F] text-white rounded-xl text-[13px] font-semibold transition-all shadow-sm flex items-center justify-center cursor-pointer disabled:bg-amber-50 disabled:text-amber-700 disabled:border disabled:border-amber-200 disabled:shadow-none disabled:cursor-not-allowed">
-                            {item.requestStatus === 'Pending' ? 'Request Pending' : 'Send Request'}
-                        </button>
-                    </div>
-                ))}
-            </div>
-            {/* Send Request Modal Component */}
-            <SendRequestModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                donation={selectedDonation}
-                onRequestSent={handleRequestSent}
-            />
-
-        </div>
+  // Search aur category filters saath lagayein.
+  const categories = ["All", ...new Set(donations.map((item) => item.category))];
+  const filteredDonations = donations.filter((item) => {
+    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
+    const search = searchTerm.trim().toLowerCase();
+    const matchesSearch = [item.title, item.description, item.donor, item.location].some((value) =>
+      String(value || "")
+        .toLowerCase()
+        .includes(search)
     );
+    const matchesUrgency = selectedUrgency === "All" || item.urgencyLevel === selectedUrgency;
+    return matchesCategory && matchesSearch && matchesUrgency;
+  });
+
+  // Request successful ho to isi card ka button foran update karein.
+  const handleRequestSent = (donationID) => {
+    setDonations((previous) =>
+      previous.map((item) => {
+        if (String(item.id) === String(donationID)) {
+          return { ...item, requestStatus: "Pending" };
+        }
+        return item;
+      })
+    );
+  };
+
+  // Badge ka rang urgency ke mutabiq hota hai.
+  function getUrgencyColor(urgency) {
+    if (urgency === "Urgent") {
+      return "bg-rose-50 text-rose-700 border-rose-200";
+    }
+    if (urgency === "Priority") {
+      return "bg-amber-50 text-amber-700 border-amber-200";
+    }
+    return "bg-teal-50 text-teal-700 border-teal-200";
+  }
+
+  return (
+    <div className="w-full px-8 py-6 flex flex-col gap-6">
+      {/* Page ka title */}
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2 text-[13px] text-slate-400">
+          <span>Home</span>
+          <span>/</span>
+          <span className="text-slate-900 font-medium">Browse Donations</span>
+        </div>
+        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight mt-1">
+          Browse Donations
+        </h1>
+        <p className="text-[13px] text-slate-500">Find and request available donations near you</p>
+      </div>
+
+      {/* Search aur category filters */}
+      <div className="flex flex-col gap-4">
+        <div className="relative w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by description, donor or location..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200/80 rounded-xl text-[13px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#009689] shadow-sm"
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <label htmlFor="browse-urgency" className="text-[13px] font-semibold text-slate-700">
+            Urgency
+          </label>
+          <select
+            id="browse-urgency"
+            value={selectedUrgency}
+            onChange={(e) => setSelectedUrgency(e.target.value)}
+            className="h-10 px-3 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-700 focus:outline-none focus:border-[#009689] cursor-pointer"
+          >
+            <option value="All">All urgencies</option>
+            <option value="Normal">Normal</option>
+            <option value="Priority">Priority</option>
+            <option value="Urgent">Urgent</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all cursor-pointer ${
+                selectedCategory === cat
+                  ? "bg-[#009689] text-white shadow-sm"
+                  : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading && <p className="text-center text-slate-500 text-sm py-8">Loading donations...</p>}
+
+      {!loading && filteredDonations.length === 0 && (
+        <p className="text-center text-slate-500 text-sm py-8">No available donations right now.</p>
+      )}
+
+      {/* Donations ke cards */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {filteredDonations.map((item) => (
+          <div
+            key={item.id}
+            className="w-full min-h-[240px] bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between"
+          >
+            {/* Donation ka naam aur chips */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3.5">
+                <div
+                  className={`w-11 h-11 ${item.iconBg} rounded-[14px] flex items-center justify-center`}
+                >
+                  {item.icon}
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="text-[15px] font-bold text-slate-900">{item.title}</h3>
+                  <p className="text-[12px] text-slate-500 mt-0.5">{item.qty}</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <span
+                  className={`inline-flex px-2.5 py-1 border rounded-full text-xs font-medium ${getUrgencyColor(item.urgencyLevel)}`}
+                >
+                  {item.urgencyLevel}
+                </span>
+                <span
+                  className={`px-3 py-1 border rounded-full text-[12px] font-medium ${item.badgeBg}`}
+                >
+                  {item.category}
+                </span>
+              </div>
+            </div>
+
+            {/* Location aur donor ki details */}
+            <div className="flex flex-col gap-1 text-[12px] text-slate-500">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span>{item.location}</span>
+              </div>
+              <div className="text-slate-400 pl-5.5">By {item.donor}</div>
+            </div>
+
+            {item.requestStatus === "Pending" && (
+              <p
+                role="status"
+                className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 my-2"
+              >
+                Your request has been sent. Waiting for review.
+              </p>
+            )}
+
+            {/* Request ka button */}
+            <button
+              disabled={item.requestStatus === "Pending"}
+              onClick={() => {
+                setSelectedDonation(item);
+                setIsModalOpen(true);
+              }}
+
+              className="w-full h-10 bg-[#009689] hover:bg-[#007A6F] text-white rounded-xl text-[13px] font-semibold transition-all shadow-sm flex items-center justify-center cursor-pointer disabled:bg-amber-50 disabled:text-amber-700 disabled:border disabled:border-amber-200 disabled:shadow-none disabled:cursor-not-allowed"
+            >
+              {item.requestStatus === "Pending" ? "Request Pending" : "Send Request"}
+            </button>
+          </div>
+        ))}
+      </div>
+      {/* Request bhejne ka modal */}
+      <SendRequestModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        donation={selectedDonation}
+        onRequestSent={handleRequestSent}
+      />
+    </div>
+  );
 }

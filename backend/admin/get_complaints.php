@@ -1,10 +1,13 @@
 <?php
-require_once '../db_connect.php';
 
-$currentUser = require_login(['Admin']);
+// Admin ke liye complaints ki list
+require_once "../db_connect.php";
 
+$currentUser = require_login(["Admin"]);
+
+// Database ka kaam
 try {
-    $stmt = $pdo->query("
+  $stmt = $pdo->query("
         SELECT 
             c.ComplaintID,
             c.UserID,
@@ -22,10 +25,10 @@ try {
         LEFT JOIN role r ON u.RoleID = r.RoleID
         ORDER BY c.CreatedAt DESC
     ");
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(["status" => "success", "data" => $rows]);
+  echo json_encode(["status" => "success", "data" => $rows]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }

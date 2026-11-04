@@ -1,10 +1,13 @@
 <?php
-require_once '../db_connect.php';
+
+// Donation categories ki list
+require_once "../db_connect.php";
 
 $currentUser = require_login();
 
+// Database ka kaam
 try {
-    $stmt = $pdo->query("
+  $stmt = $pdo->query("
         SELECT 
             dt.TypeID,
             dt.TypeName,
@@ -15,10 +18,10 @@ try {
         GROUP BY dt.TypeID, dt.TypeName, dt.Description
         ORDER BY dt.TypeID ASC
     ");
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(["status" => "success", "data" => $rows]);
+  echo json_encode(["status" => "success", "data" => $rows]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }

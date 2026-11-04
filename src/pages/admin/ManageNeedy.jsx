@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
-    getAllNeedy,
-    registerNeedyByAdmin,
-    verifyNeedy,
-    rejectNeedy,
-    deleteNeedy,
+  getAllNeedy,
+  registerNeedyByAdmin,
+  verifyNeedy,
+  rejectNeedy,
+  deleteNeedy,
 } from "../../services/adminService";
 import NeedyDetailsModal from "../../components/admin/NeedyDetailsModal";
 import VerifyApplicantModal from "../../components/admin/VerifyApplicantModal";
@@ -12,422 +12,400 @@ import RejectApplicantModal from "../../components/admin/RejectApplicantModal";
 import DeleteRecordModal from "../../components/admin/DeleteRecordModal";
 import RegisterNeedyModal from "../../components/admin/RegisterNeedyModal";
 import {
-    Search,
-    Check,
-    X,
-    Trash2,
-    ChevronLeft,
-    ChevronRight as ChevronRightIcon,
-    Eye,
-    Plus,
+  Search,
+  Check,
+  X,
+  Trash2,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon,
+  Eye,
+  Plus,
 } from "lucide-react";
 
 export default function ManageNeedyPersons() {
-    // Search and pagination
-    const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
+  // Search aur current page
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-    // Applicants list from backend
-    const [applicants, setApplicants] = useState([]);
-    const [loading, setLoading] = useState(true);
+  // Needy users ki list
+  const [applicants, setApplicants] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    // Modal states
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-    const [selectedApplicantDetails, setSelectedApplicantDetails] = useState(null);
+  // Modals ki states
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedApplicantDetails, setSelectedApplicantDetails] = useState(null);
 
-    const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
-    const [selectedVerifyId, setSelectedVerifyId] = useState(null);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+  const [selectedVerifyId, setSelectedVerifyId] = useState(null);
 
-    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-    const [selectedRejectId, setSelectedRejectId] = useState(null);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [selectedRejectId, setSelectedRejectId] = useState(null);
 
-    const [isDeleteRecordModalOpen, setIsDeleteRecordModalOpen] = useState(false);
-    const [selectedDeleteRecordId, setSelectedDeleteRecordId] = useState(null);
+  const [isDeleteRecordModalOpen, setIsDeleteRecordModalOpen] = useState(false);
+  const [selectedDeleteRecordId, setSelectedDeleteRecordId] = useState(null);
 
-    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
-    // Load all needy persons when page opens
-    useEffect(() => {
-        const fetchNeedy = async () => {
-            try {
-                const result = await getAllNeedy();
-                if (result.status === "success") {
-                    // Convert API data to UI format
-                    const mapped = result.data.map((item) => {
-                        const name = item.Name || "Needy";
-                        const initials = name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .substring(0, 2)
-                            .toUpperCase();
+  // Page khulne par needy users load karo.
+  useEffect(() => {
+    const fetchNeedy = async () => {
+      try {
+        const result = await getAllNeedy();
+        if (result.status === "success") {
+          // API ka data table ke format mein lao.
+          const mapped = result.data.map((item) => {
+            const name = item.Name || "Needy";
+            const initials = name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .substring(0, 2)
+              .toUpperCase();
 
-                        // Backend VerificationStatus → UI status
-                        let status = item.VerificationStatus || "Pending";
-                        if (status !== "Verified" && status !== "Rejected") {
-                            status = "Pending";
-                        }
-
-                        return {
-                            id: item.NeedyID, // used for verify / reject / delete APIs
-                            userID: item.UserID,
-                            hasDocument: Boolean(item.SupportingDocuments),
-                            phone: item.Phone || "", cnic: item.CNIC || "",
-                            householdSize: item.FamilyDetails || "",
-                            registered: item.CreatedAt || "", requestsMade: 0,
-                            name,
-                            email: item.Email || "",
-                            location: item.Address || "",
-                            reason: item.IncomeStatus || "N/A",
-                            household: item.FamilyDetails || "—",
-                            requests: 0,
-                            status,
-                            initials,
-                            color: "bg-[#009689]",
-                        };
-                    });
-                    setApplicants(mapped);
-                }
-            } catch (err) {
-                console.error("Failed to load needy persons:", err);
-            } finally {
-                setLoading(false);
+            // Verification ka status UI ke liye set karo.
+            let status = item.VerificationStatus || "Pending";
+            if (status !== "Verified" && status !== "Rejected") {
+              status = "Pending";
             }
-        };
 
-        fetchNeedy();
-    }, []);
-
-    // Filter by name, location or reason
-    const filteredApplicants = applicants.filter((app) => {
-        return (
-            app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            app.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            String(app.reason).toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    });
-
-    // Verify applicant - API call then update list
-    const handleVerify = async (id) => {
-        try {
-            const result = await verifyNeedy(id);
-            if (result.status === "success") {
-                setApplicants((prev) =>
-                    prev.map((app) =>
-                        app.id === id ? { ...app, status: "Verified" } : app
-                    )
-                );
-            } else {
-                alert(result.message || "Failed to verify");
-            }
-        } catch (err) {
-            alert(err.response?.data?.message || "Something went wrong");
+            return {
+              id: item.NeedyID, // Verify, reject aur delete ke liye ID
+              userID: item.UserID,
+              hasDocument: Boolean(item.SupportingDocuments),
+              phone: item.Phone || "",
+              cnic: item.CNIC || "",
+              householdSize: item.FamilyDetails || "",
+              registered: item.CreatedAt || "",
+              requestsMade: 0,
+              name,
+              email: item.Email || "",
+              location: item.Address || "",
+              reason: item.IncomeStatus || "N/A",
+              household: item.FamilyDetails || "—",
+              requests: 0,
+              status,
+              initials,
+              color: "bg-[#009689]",
+            };
+          });
+          setApplicants(mapped);
         }
+      } catch (err) {
+        console.error("Failed to load needy persons:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Reject applicant - API call then update list
-    const handleReject = async (id) => {
-        try {
-            const result = await rejectNeedy(id);
-            if (result.status === "success") {
-                setApplicants((prev) =>
-                    prev.map((app) =>
-                        app.id === id ? { ...app, status: "Rejected" } : app
-                    )
-                );
-            } else {
-                alert(result.message || "Failed to reject");
-            }
-        } catch (err) {
-            alert(err.response?.data?.message || "Something went wrong");
-        }
-    };
+    fetchNeedy();
+  }, []);
 
-    // Delete applicant - API call then remove from list
-    const handleDeleteRecord = async (id) => {
-        try {
-            const result = await deleteNeedy(id);
-            if (result.status === "success") {
-                setApplicants((prev) => prev.filter((app) => app.id !== id));
-            } else {
-                alert(result.message || "Failed to delete");
-            }
-        } catch (err) {
-            alert(err.response?.data?.message || "Something went wrong");
-        }
-    };
-
-    // Create a real account and profile before adding it to the list.
-    const handleRegisterNewApplicant = async (newPerson) => {
-        const result = await registerNeedyByAdmin(newPerson);
-        if (result.status !== 'success') throw new Error(result.message || 'Could not register applicant');
-        const applicantWithMeta = {
-            id: result.data.needyID,
-            name: newPerson.name, phone: newPerson.phone, cnic: newPerson.cnic,
-            status: "Pending",
-            initials: newPerson.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2),
-            color: "bg-[#009689]",
-            requests: 0,
-            reason: newPerson.reason || "N/A",
-            household: newPerson.household || "—",
-            location: newPerson.location || "",
-            email: newPerson.email || "",
-        };
-        setApplicants((prev) => [applicantWithMeta, ...prev]);
-    };
-
+  // Naam, location ya zaroorat se filter karo.
+  const filteredApplicants = applicants.filter((app) => {
     return (
-        <div className="w-full px-8 py-0 flex flex-col gap-6">
-            {/* Page Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
-                        Manage Needy Persons
-                    </h1>
-                    <p className="text-[13px] text-slate-500">
-                        {applicants.length} applicants on record
-                    </p>
-                </div>
-
-                <button
-                    onClick={() => setIsRegisterModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[#009689] hover:bg-[#007f73] text-white rounded-xl text-[13px] font-semibold transition-colors shadow-xs cursor-pointer"
-                >
-                    <Plus className="w-4 h-4" />
-                    Register Needy Person
-                </button>
-            </div>
-
-            {/* Search Bar */}
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, location or reason..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#009689] shadow-2xs transition-all"
-                    />
-                </div>
-            </div>
-
-            {/* Loading message */}
-            {loading && (
-                <p className="text-center text-slate-500 text-sm py-8">
-                    Loading applicants...
-                </p>
-            )}
-
-            {/* Applicants Table */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                                <th className="py-3.5 px-6">Person</th>
-                                <th className="py-3.5 px-4">Location</th>
-                                <th className="py-3.5 px-4">Reason</th>
-                                <th className="py-3.5 px-4">Household</th>
-                                <th className="py-3.5 px-4">Requests</th>
-                                <th className="py-3.5 px-4">Status</th>
-                                <th className="py-3.5 px-6 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-[13px]">
-                            {filteredApplicants.map((applicant) => (
-                                <tr
-                                    key={applicant.id}
-                                    className="hover:bg-slate-50/60 transition-colors"
-                                >
-                                    {/* Person info */}
-                                    <td className="py-4 px-6">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className={`w-9 h-9 ${applicant.color} text-white font-bold text-[12px] rounded-full flex items-center justify-center shrink-0 shadow-sm`}
-                                            >
-                                                {applicant.initials}
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="font-semibold text-slate-900">
-                                                    {applicant.name}
-                                                </span>
-                                                <span className="text-[12px] text-slate-400">
-                                                    {applicant.email}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td className="py-4 px-4 text-slate-600 font-medium">
-                                        {applicant.location}
-                                    </td>
-
-                                    <td className="py-4 px-4 text-slate-600 font-medium">
-                                        {applicant.reason}
-                                    </td>
-
-                                    <td className="py-4 px-4 font-semibold text-slate-800">
-                                        {applicant.household}
-                                    </td>
-
-                                    <td className="py-4 px-4 font-semibold text-slate-800">
-                                        {applicant.requests}
-                                    </td>
-
-                                    {/* Status badge */}
-                                    <td className="py-4 px-4">
-                                        {applicant.status === "Verified" && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                Verified
-                                            </span>
-                                        )}
-                                        {applicant.status === "Pending" && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-600 border border-amber-200/60">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                                Pending
-                                            </span>
-                                        )}
-                                        {applicant.status === "Rejected" && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/60">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                                Rejected
-                                            </span>
-                                        )}
-                                    </td>
-
-                                    {/* Actions */}
-                                    <td className="py-4 px-6 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            {/* Show Verify / Reject only when Pending */}
-                                            {applicant.status === "Pending" && (
-                                                <>
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedVerifyId(applicant.id);
-                                                            setIsVerifyModalOpen(true);
-                                                        }}
-                                                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
-                                                    >
-                                                        <Check className="w-3 h-3" />
-                                                        Verify
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedRejectId(applicant.id);
-                                                            setIsRejectModalOpen(true);
-                                                        }}
-                                                        className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
-                                                    >
-                                                        <X className="w-3 h-3" />
-                                                        Reject
-                                                    </button>
-                                                </>
-                                            )}
-
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedApplicantDetails(applicant);
-                                                    setIsDetailsModalOpen(true);
-                                                }}
-                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
-                                            >
-                                                <Eye className="w-3.5 h-3.5" />
-                                            </button>
-
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedDeleteRecordId(applicant.id);
-                                                    setIsDeleteRecordModalOpen(true);
-                                                }}
-                                                className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
-                    <span className="text-[12px] text-slate-500 font-medium">
-                        Showing{" "}
-                        <span className="font-semibold text-slate-700">
-                            {filteredApplicants.length}
-                        </span>{" "}
-                        results
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                        <button
-                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
-                        >
-                            <ChevronLeft className="w-3.5 h-3.5" />
-                            Previous
-                        </button>
-                        <button className="px-3 py-1.5 bg-[#009689] text-white rounded-lg text-[12px] font-medium shadow-2xs">
-                            1
-                        </button>
-                        <button
-                            onClick={() => setCurrentPage((prev) => prev + 1)}
-                            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
-                        >
-                            Next
-                            <ChevronRightIcon className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Modals */}
-            <NeedyDetailsModal
-                isOpen={isDetailsModalOpen}
-                onClose={() => setIsDetailsModalOpen(false)}
-                applicant={selectedApplicantDetails}
-            />
-
-            <VerifyApplicantModal
-                isOpen={isVerifyModalOpen}
-                onClose={() => setIsVerifyModalOpen(false)}
-                onConfirm={() => {
-                    handleVerify(selectedVerifyId);
-                    setIsVerifyModalOpen(false);
-                }}
-            />
-
-            <RejectApplicantModal
-                isOpen={isRejectModalOpen}
-                onClose={() => setIsRejectModalOpen(false)}
-                onConfirm={() => {
-                    handleReject(selectedRejectId);
-                    setIsRejectModalOpen(false);
-                }}
-            />
-
-            <DeleteRecordModal
-                isOpen={isDeleteRecordModalOpen}
-                onClose={() => setIsDeleteRecordModalOpen(false)}
-                onConfirm={() => {
-                    handleDeleteRecord(selectedDeleteRecordId);
-                    setIsDeleteRecordModalOpen(false);
-                }}
-            />
-
-            <RegisterNeedyModal
-                isOpen={isRegisterModalOpen}
-                onClose={() => setIsRegisterModalOpen(false)}
-                onRegister={handleRegisterNewApplicant}
-            />
-        </div>
+      app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(app.reason).toLowerCase().includes(searchTerm.toLowerCase())
     );
+  });
+
+  // Verify karke list update karo.
+  const handleVerify = async (id) => {
+    try {
+      const result = await verifyNeedy(id);
+      if (result.status === "success") {
+        setApplicants((prev) =>
+          prev.map((app) => (app.id === id ? { ...app, status: "Verified" } : app))
+        );
+      } else {
+        alert(result.message || "Failed to verify");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  // Reject karke list update karo.
+  const handleReject = async (id) => {
+    try {
+      const result = await rejectNeedy(id);
+      if (result.status === "success") {
+        setApplicants((prev) =>
+          prev.map((app) => (app.id === id ? { ...app, status: "Rejected" } : app))
+        );
+      } else {
+        alert(result.message || "Failed to reject");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  // Delete hone par list se hatao.
+  const handleDeleteRecord = async (id) => {
+    try {
+      const result = await deleteNeedy(id);
+      if (result.status === "success") {
+        setApplicants((prev) => prev.filter((app) => app.id !== id));
+      } else {
+        alert(result.message || "Failed to delete");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  // Pehle account save karo, phir list update karo.
+  const handleRegisterNewApplicant = async (newPerson) => {
+    const result = await registerNeedyByAdmin(newPerson);
+    if (result.status !== "success")
+      throw new Error(result.message || "Could not register applicant");
+    const applicantWithMeta = {
+      id: result.data.needyID,
+      name: newPerson.name,
+      phone: newPerson.phone,
+      cnic: newPerson.cnic,
+      status: "Pending",
+      initials: newPerson.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2),
+      color: "bg-[#009689]",
+      requests: 0,
+      reason: newPerson.reason || "N/A",
+      household: newPerson.household || "—",
+      location: newPerson.location || "",
+      email: newPerson.email || "",
+    };
+    setApplicants((prev) => [applicantWithMeta, ...prev]);
+  };
+
+  return (
+    <div className="w-full px-8 py-0 flex flex-col gap-6">
+      {/* Page ka title */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
+            Manage Needy Persons
+          </h1>
+          <p className="text-[13px] text-slate-500">{applicants.length} applicants on record</p>
+        </div>
+
+        <button
+          onClick={() => setIsRegisterModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#009689] hover:bg-[#007f73] text-white rounded-xl text-[13px] font-semibold transition-colors shadow-xs cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          Register Needy Person
+        </button>
+      </div>
+
+      {/* Search ka field */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by name, location or reason..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#009689] shadow-2xs transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Loading ka message */}
+      {loading && <p className="text-center text-slate-500 text-sm py-8">Loading applicants...</p>}
+
+      {/* Needy users ki table */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
+                <th className="py-3.5 px-6">Person</th>
+                <th className="py-3.5 px-4">Location</th>
+                <th className="py-3.5 px-4">Reason</th>
+                <th className="py-3.5 px-4">Household</th>
+                <th className="py-3.5 px-4">Requests</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-6 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-[13px]">
+              {filteredApplicants.map((applicant) => (
+                <tr key={applicant.id} className="hover:bg-slate-50/60 transition-colors">
+                  {/* User ki details */}
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-9 h-9 ${applicant.color} text-white font-bold text-[12px] rounded-full flex items-center justify-center shrink-0 shadow-sm`}
+                      >
+                        {applicant.initials}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-900">{applicant.name}</span>
+                        <span className="text-[12px] text-slate-400">{applicant.email}</span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="py-4 px-4 text-slate-600 font-medium">{applicant.location}</td>
+
+                  <td className="py-4 px-4 text-slate-600 font-medium">{applicant.reason}</td>
+
+                  <td className="py-4 px-4 font-semibold text-slate-800">{applicant.household}</td>
+
+                  <td className="py-4 px-4 font-semibold text-slate-800">{applicant.requests}</td>
+
+                  {/* Status ki chip */}
+                  <td className="py-4 px-4">
+                    {applicant.status === "Verified" && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Verified
+                      </span>
+                    )}
+                    {applicant.status === "Pending" && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-600 border border-amber-200/60">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        Pending
+                      </span>
+                    )}
+                    {applicant.status === "Rejected" && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/60">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                        Rejected
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Action buttons */}
+                  <td className="py-4 px-6 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      {/* Pending par hi verify aur reject dikhayein. */}
+                      {applicant.status === "Pending" && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setSelectedVerifyId(applicant.id);
+                              setIsVerifyModalOpen(true);
+                            }}
+                            className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                          >
+                            <Check className="w-3 h-3" />
+                            Verify
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedRejectId(applicant.id);
+                              setIsRejectModalOpen(true);
+                            }}
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                          >
+                            <X className="w-3 h-3" />
+                            Reject
+                          </button>
+                        </>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setSelectedApplicantDetails(applicant);
+                          setIsDetailsModalOpen(true);
+                        }}
+                        className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedDeleteRecordId(applicant.id);
+                          setIsDeleteRecordModalOpen(true);
+                        }}
+                        className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pages ke buttons */}
+        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
+          <span className="text-[12px] text-slate-500 font-medium">
+            Showing{" "}
+            <span className="font-semibold text-slate-700">{filteredApplicants.length}</span>{" "}
+            results
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              Previous
+            </button>
+            <button className="px-3 py-1.5 bg-[#009689] text-white rounded-lg text-[12px] font-medium shadow-2xs">
+              1
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+            >
+              Next
+              <ChevronRightIcon className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Page ke modals */}
+      <NeedyDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        applicant={selectedApplicantDetails}
+      />
+
+      <VerifyApplicantModal
+        isOpen={isVerifyModalOpen}
+        onClose={() => setIsVerifyModalOpen(false)}
+        onConfirm={() => {
+          handleVerify(selectedVerifyId);
+          setIsVerifyModalOpen(false);
+        }}
+      />
+
+      <RejectApplicantModal
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onConfirm={() => {
+          handleReject(selectedRejectId);
+          setIsRejectModalOpen(false);
+        }}
+      />
+
+      <DeleteRecordModal
+        isOpen={isDeleteRecordModalOpen}
+        onClose={() => setIsDeleteRecordModalOpen(false)}
+        onConfirm={() => {
+          handleDeleteRecord(selectedDeleteRecordId);
+          setIsDeleteRecordModalOpen(false);
+        }}
+      />
+
+      <RegisterNeedyModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        onRegister={handleRegisterNewApplicant}
+      />
+    </div>
+  );
 }

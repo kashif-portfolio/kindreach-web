@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardLayout() {
+  // Page ki states
   const [user] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("user") || "{}");
@@ -52,6 +53,7 @@ export default function DashboardLayout() {
 
   const userId = user.userID || user.id || user.UserID;
 
+  // Page ka data load aur update karo.
   useEffect(() => {
     const onClickOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -100,8 +102,7 @@ export default function DashboardLayout() {
     }
   };
 
-  const displayName =
-    user.name || (isAdmin ? "Admin" : isNeedy ? "Needy" : "Donor");
+  const displayName = user.name || (isAdmin ? "Admin" : isNeedy ? "Needy" : "Donor");
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
@@ -109,21 +110,14 @@ export default function DashboardLayout() {
     .substring(0, 2)
     .toUpperCase();
 
-  const roleLabel = isAdmin
-    ? "Administrator"
-    : isNeedy
-      ? "Needy Person"
-      : "Donor Account";
+  const roleLabel = isAdmin ? "Administrator" : isNeedy ? "Needy Person" : "Donor Account";
 
-  const profilePath = isAdmin
-    ? "/admin/profile"
-    : isNeedy
-      ? "/needy/profile"
-      : "/donor/profile";
+  const profilePath = isAdmin ? "/admin/profile" : isNeedy ? "/needy/profile" : "/donor/profile";
 
+  // Page ke action handlers
   const handleLogout = async () => {
     try {
-      // End the PHP session too; clearing localStorage alone is not logout.
+      // Logout par PHP session bhi band karo.
       await logoutUser();
       localStorage.removeItem("user");
       navigate("/login", { replace: true });
@@ -168,9 +162,8 @@ export default function DashboardLayout() {
   const hasUnread = notifications.length > 0;
 
   const linkClass = ({ isActive }) =>
-    `relative flex items-center shrink-0 w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${isActive
-      ? "bg-[#ECFDF5] text-[#009689]"
-      : "text-slate-600 hover:bg-slate-50"
+    `relative flex items-center shrink-0 w-full h-[42.24px] py-2.5 px-3 gap-3 text-[14px] font-medium transition-all rounded-r-lg ${
+      isActive ? "bg-[#ECFDF5] text-[#009689]" : "text-slate-600 hover:bg-slate-50"
     }`;
 
   const ActiveBar = ({ isActive }) =>
@@ -182,11 +175,7 @@ export default function DashboardLayout() {
     <div className="flex w-full h-screen bg-white overflow-hidden">
       <aside className="w-65 h-full bg-white border-r border-slate-200/80 flex flex-col shrink-0">
         <div className="w-65 px-6 py-6 border-b border-slate-200/80 flex items-center gap-3">
-          <img
-            src={logoGreen}
-            alt="Kind Reach Logo"
-            className="w-auto h-12 object-contain"
-          />
+          <img src={logoGreen} alt="Kind Reach Logo" className="w-auto h-12 object-contain" />
         </div>
 
         <div className="sidebar-scroll flex-1 min-h-0 px-3 py-6 flex flex-col overflow-y-auto">
@@ -505,9 +494,7 @@ export default function DashboardLayout() {
               <span className="text-[13px] font-semibold text-slate-800 truncate">
                 {displayName}
               </span>
-              <span className="text-[11px] text-slate-400 font-medium truncate">
-                {roleLabel}
-              </span>
+              <span className="text-[11px] text-slate-400 font-medium truncate">{roleLabel}</span>
             </div>
           </div>
           <button
@@ -549,15 +536,11 @@ export default function DashboardLayout() {
               {openNotif && (
                 <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-slate-100">
-                    <p className="text-[13px] font-bold text-slate-900">
-                      Notifications
-                    </p>
+                    <p className="text-[13px] font-bold text-slate-900">Notifications</p>
                   </div>
                   <div className="max-h-72 overflow-y-auto">
                     {notifLoading && (
-                      <p className="px-4 py-6 text-center text-[12px] text-slate-500">
-                        Loading...
-                      </p>
+                      <p className="px-4 py-6 text-center text-[12px] text-slate-500">Loading...</p>
                     )}
                     {!notifLoading && notifications.length === 0 && (
                       <p className="px-4 py-6 text-center text-[12px] text-slate-500">
@@ -570,16 +553,12 @@ export default function DashboardLayout() {
                           key={n.NotificationID}
                           className="px-4 py-3 border-b border-slate-50 hover:bg-slate-50"
                         >
-                          <p className="text-[12px] font-semibold text-slate-900">
-                            {n.Title}
-                          </p>
+                          <p className="text-[12px] font-semibold text-slate-900">{n.Title}</p>
                           <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
                             {n.Message}
                           </p>
                           <p className="text-[10px] text-slate-400 mt-1">
-                            {n.CreatedAt
-                              ? String(n.CreatedAt).split(" ")[0]
-                              : ""}
+                            {n.CreatedAt ? String(n.CreatedAt).split(" ")[0] : ""}
                           </p>
                         </div>
                       ))}

@@ -1,3 +1,4 @@
+// Har role ke pages uske protected routes mein rakhe hain.
 import React from "react";
 import DonorHelpRequests from "../pages/donor/GeneralHelpRequests";
 import NeedyHelpRequests from "../pages/needy/GeneralHelpRequests";
@@ -52,7 +53,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* public auth */}
+      {/* Login aur signup ke routes */}
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
@@ -62,7 +63,7 @@ export default function AppRoutes() {
         <Route path="signup" element={<SignUp />} />
       </Route>
 
-      {/* donor only */}
+      {/* Sirf donor ke routes */}
       <Route
         path="/donor"
         element={
@@ -84,7 +85,7 @@ export default function AppRoutes() {
         <Route path="profile" element={<MyProfile />} />
       </Route>
 
-      {/* needy only */}
+      {/* Sirf needy ke routes */}
       <Route
         path="/needy"
         element={
@@ -104,7 +105,7 @@ export default function AppRoutes() {
         <Route path="profile" element={<NeedyProfile />} />
       </Route>
 
-      {/* admin only */}
+      {/* Sirf admin ke routes */}
       <Route
         path="/admin"
         element={

@@ -4,6 +4,7 @@ import { getComplaints, resolveComplaint } from "../../services/adminService";
 import { AlertTriangle, CheckCircle2, Check } from "lucide-react";
 
 export default function ResolveComplaints() {
+  // Page ki states
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
@@ -16,12 +17,8 @@ export default function ResolveComplaints() {
         const mapped = (result.data || []).map((item) => ({
           id: item.ComplaintID,
           title: item.Subject,
-          from: `${item.UserName || "User"}${
-            item.RoleName ? ` (${item.RoleName})` : ""
-          }`,
-          date: item.CreatedAt
-            ? String(item.CreatedAt).split(" ")[0]
-            : "",
+          from: `${item.UserName || "User"}${item.RoleName ? ` (${item.RoleName})` : ""}`,
+          date: item.CreatedAt ? String(item.CreatedAt).split(" ")[0] : "",
           message: item.Description || "",
           description: item.Description || "",
           status: item.Status === "Resolved" ? "Resolved" : "Open",
@@ -36,10 +33,12 @@ export default function ResolveComplaints() {
     }
   };
 
+  // Page ka data load aur update karo.
   useEffect(() => {
     loadComplaints();
   }, []);
 
+  // Page ke action handlers
   const handleResolveComplaint = async (id, resolutionNote) => {
     if (!resolutionNote || !resolutionNote.trim()) {
       alert("Please enter a resolution note");
@@ -64,26 +63,19 @@ export default function ResolveComplaints() {
   return (
     <div className="w-full px-8 py-6 flex flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
-          Resolve Complaints
-        </h1>
+        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Resolve Complaints</h1>
         <p className="text-[13px] text-slate-500">
-          {loading
-            ? "Loading..."
-            : `${openCount} open complaints need attention`}
+          {loading ? "Loading..." : `${openCount} open complaints need attention`}
         </p>
       </div>
 
-      {/* Open */}
+      {/* Khuli complaints */}
       <div className="flex flex-col gap-4">
         <h2 className="text-[15px] font-bold text-slate-900">Open Complaints</h2>
         <div className="flex flex-col gap-4">
-          {!loading &&
-            complaints.filter((c) => c.status === "Open").length === 0 && (
-              <p className="text-[13px] text-slate-400 italic">
-                No open complaints at the moment.
-              </p>
-            )}
+          {!loading && complaints.filter((c) => c.status === "Open").length === 0 && (
+            <p className="text-[13px] text-slate-400 italic">No open complaints at the moment.</p>
+          )}
           {complaints
             .filter((c) => c.status === "Open")
             .map((item) => (
@@ -97,9 +89,7 @@ export default function ResolveComplaints() {
                       <AlertTriangle className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <h3 className="text-[14px] font-bold text-slate-900">
-                        {item.title}
-                      </h3>
+                      <h3 className="text-[14px] font-bold text-slate-900">{item.title}</h3>
                       <p className="text-[12px] text-slate-500">
                         From: {item.from} · {item.date}
                       </p>
@@ -129,11 +119,9 @@ export default function ResolveComplaints() {
         </div>
       </div>
 
-      {/* Resolved */}
+      {/* Hal ho chuki complaints */}
       <div className="flex flex-col gap-4 pt-2">
-        <h2 className="text-[15px] font-bold text-slate-900">
-          Resolved Complaints
-        </h2>
+        <h2 className="text-[15px] font-bold text-slate-900">Resolved Complaints</h2>
         <div className="flex flex-col gap-4">
           {complaints
             .filter((c) => c.status === "Resolved")
@@ -148,9 +136,7 @@ export default function ResolveComplaints() {
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <h3 className="text-[14px] font-bold text-slate-900">
-                        {item.title}
-                      </h3>
+                      <h3 className="text-[14px] font-bold text-slate-900">{item.title}</h3>
                       <p className="text-[12px] text-slate-500">
                         From: {item.from} · {item.date}
                       </p>

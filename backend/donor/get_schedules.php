@@ -1,18 +1,21 @@
 <?php
-require_once '../db_connect.php';
 
-$currentUser = require_login(['Donor']);
-require_own_id($_GET['donorID'] ?? 0, $currentUser['donorID']);
+// Apni scheduled deliveries
+require_once "../db_connect.php";
 
-$donorID = isset($_GET['donorID']) ? (int)$_GET['donorID'] : 0;
+$currentUser = require_login(["Donor"]);
+require_own_id($_GET["donorID"] ?? 0, $currentUser["donorID"]);
+
+$donorID = isset($_GET["donorID"]) ? (int) $_GET["donorID"] : 0;
 if (!$donorID) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "donorID required"]);
-    exit();
+  http_response_code(400);
+  echo json_encode(["status" => "error", "message" => "donorID required"]);
+  exit();
 }
 
+// Database ka kaam
 try {
-    $stmt = $pdo->prepare("
+  $stmt = $pdo->prepare("
         SELECT 
             ds.*,
             d.Title AS DonationTitle,
@@ -25,12 +28,12 @@ try {
         WHERE ds.DonorID = ?
         ORDER BY ds.DeliveryDate DESC
     ");
-    $stmt->execute([$donorID]);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt->execute([$donorID]);
+  $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    http_response_code(200);
-    echo json_encode(["status" => "success", "data" => $rows]);
+  http_response_code(200);
+  echo json_encode(["status" => "success", "data" => $rows]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
 }

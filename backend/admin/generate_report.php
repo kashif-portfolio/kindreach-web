@@ -1,36 +1,43 @@
 <?php
-require_once '../db_connect.php';
 
-$currentUser = require_login(['Admin']);
+// Selected dates ki report lao.
+require_once "../db_connect.php";
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only POST"]);
-    exit();
+$currentUser = require_login(["Admin"]);
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+  http_response_code(405);
+  echo json_encode(["status" => "error", "message" => "Only POST"]);
+  exit();
 }
 
+// Frontend se aaya data
 $data = json_decode(file_get_contents("php://input"), true);
-
-$reportType = isset($data['reportType']) ? trim($data['reportType']) : '';
-$fromDate = isset($data['fromDate']) ? trim($data['fromDate']) : '';
-$toDate = isset($data['toDate']) ? trim($data['toDate']) : '';
+$reportType = isset($data["reportType"]) ? trim($data["reportType"]) : "";
+$fromDate = isset($data["fromDate"]) ? trim($data["fromDate"]) : "";
+$toDate = isset($data["toDate"]) ? trim($data["toDate"]) : "";
 
 if (!$reportType) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "reportType required"]);
-    exit();
+  http_response_code(400);
+  echo json_encode(["status" => "error", "message" => "reportType required"]);
+  exit();
 }
 
-// Default date range if empty
-if (!$fromDate) $fromDate = '2020-01-01';
-if (!$toDate) $toDate = date('Y-m-d');
+// Dates na hon to default range lo.
+if (!$fromDate) {
+  $fromDate = "2020-01-01";
+}
+if (!$toDate) {
+  $toDate = date("Y-m-d");
+}
 
+// Database ka kaam
 try {
-    $rows = [];
+  $rows = [];
 
-    // 1) Total Donations
-    if ($reportType === 'total_donations' || $reportType === 'Total Donations') {
-        $stmt = $pdo->prepare("
+  // Donations ki tadaad
+  if ($reportType === "total_donations" || $reportType === "Total Donations") {
+    $stmt = $pdo->prepare("
             SELECT 
                 d.DonationID AS id,
                 d.Title AS title,
@@ -44,13 +51,13 @@ try {
             WHERE DATE(d.CreatedAt) BETWEEN ? AND ?
             ORDER BY d.CreatedAt DESC
         ");
-        $stmt->execute([$fromDate, $toDate]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $stmt->execute([$fromDate, $toDate]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
 
-    // 2) Active Donors
-    elseif ($reportType === 'active_donors' || $reportType === 'Active Donors') {
-        $stmt = $pdo->prepare("
+  // Active donors ki tadaad
+  elseif ($reportType === "active_donors" || $reportType === "Active Donors") {
+    $stmt = $pdo->prepare("
             SELECT 
                 dn.DonorID AS id,
                 u.Name AS name,
@@ -65,13 +72,13 @@ try {
             GROUP BY dn.DonorID, u.Name, u.Email, u.Status
             ORDER BY totalDonations DESC
         ");
-        $stmt->execute([$fromDate, $toDate]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $stmt->execute([$fromDate, $toDate]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
 
-    // 3) Completed Charity Requests
-    elseif ($reportType === 'completed_requests' || $reportType === 'Completed Charity Requests') {
-        $stmt = $pdo->prepare("
+  // Delivered requests ki tadaad
+  elseif ($reportType === "completed_requests" || $reportType === "Completed Charity Requests") {
+    $stmt = $pdo->prepare("
             SELECT 
                 dr.RequestID AS id,
                 d.Title AS title,
@@ -88,25 +95,23 @@ try {
               AND DATE(dr.RequestDate) BETWEEN ? AND ?
             ORDER BY dr.RequestDate DESC
         ");
-        $stmt->execute([$fromDate, $toDate]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $stmt->execute([$fromDate, $toDate]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  } else {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "Unknown reportType"]);
+    exit();
+  }
 
-    else {
-        http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "Unknown reportType"]);
-        exit();
-    }
-
-    echo json_encode([
-        "status" => "success",
-        "reportType" => $reportType,
-        "fromDate" => $fromDate,
-        "toDate" => $toDate,
-        "count" => count($rows),
-        "data" => $rows
-    ]);
+  echo json_encode([
+    "status" => "success",
+    "reportType" => $reportType,
+    "fromDate" => $fromDate,
+    "toDate" => $toDate,
+    "count" => count($rows),
+    "data" => $rows,
+  ]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }

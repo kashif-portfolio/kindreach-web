@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  getAllDonations,
-  getAllNeedy,
-  assignDonation,
-} from "../../services/adminService";
+import { getAllDonations, getAllNeedy, assignDonation } from "../../services/adminService";
 import { UserCheck, ChevronDown } from "lucide-react";
 
 export default function AssignDonations() {
+  // Page ki states
   const [selectedDonationId, setSelectedDonationId] = useState("");
   const [selectedNeedyId, setSelectedNeedyId] = useState("");
   const [selectedRowId, setSelectedRowId] = useState(null);
@@ -16,13 +13,11 @@ export default function AssignDonations() {
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
 
+  // Page ka data load aur update karo.
   useEffect(() => {
     const load = async () => {
       try {
-        const [donRes, needyRes] = await Promise.all([
-          getAllDonations(),
-          getAllNeedy(),
-        ]);
+        const [donRes, needyRes] = await Promise.all([getAllDonations(), getAllNeedy()]);
 
         if (donRes.status === "success") {
           const available = (donRes.data || [])
@@ -30,9 +25,7 @@ export default function AssignDonations() {
             .map((d) => ({
               id: d.DonationID,
               title: d.Title || "Donation",
-              postedDate: d.CreatedAt
-                ? `Posted ${String(d.CreatedAt).split(" ")[0]}`
-                : "",
+              postedDate: d.CreatedAt ? `Posted ${String(d.CreatedAt).split(" ")[0]}` : "",
               donor: d.DonorName || "—",
               category: d.TypeName || "—",
               quantity: d.Quantity || "—",
@@ -44,7 +37,9 @@ export default function AssignDonations() {
 
         if (needyRes.status === "success") {
           const all = needyRes.data || [];
-          const source = all.filter((n) => n.VerificationStatus === 'Verified' && n.Status === 'Active');
+          const source = all.filter(
+            (n) => n.VerificationStatus === "Verified" && n.Status === "Active"
+          );
           setNeedyList(
             source.map((n) => ({
               id: n.NeedyID || n.needyID,
@@ -63,6 +58,7 @@ export default function AssignDonations() {
     load();
   }, []);
 
+  // Page ke action handlers
   const handleRowClick = (item) => {
     setSelectedRowId(item.id);
     setSelectedDonationId(String(item.id));
@@ -80,15 +76,10 @@ export default function AssignDonations() {
 
     setAssigning(true);
     try {
-      const result = await assignDonation(
-        Number(selectedDonationId),
-        Number(selectedNeedyId)
-      );
+      const result = await assignDonation(Number(selectedDonationId), Number(selectedNeedyId));
       if (result.status === "success") {
         alert("Donation assigned successfully!");
-        setAvailableDonations((prev) =>
-          prev.filter((d) => d.id !== Number(selectedDonationId))
-        );
+        setAvailableDonations((prev) => prev.filter((d) => d.id !== Number(selectedDonationId)));
         setSelectedDonationId("");
         setSelectedNeedyId("");
         setSelectedRowId(null);
@@ -105,9 +96,7 @@ export default function AssignDonations() {
   return (
     <div className="w-full px-8 py-6 flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
-          Assign Donations
-        </h1>
+        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Assign Donations</h1>
         <p className="text-[13px] text-slate-500">
           Match available donations with verified needy persons
         </p>
@@ -116,12 +105,9 @@ export default function AssignDonations() {
       <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-5">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-0.5">
-            <h3 className="text-[15px] font-bold text-slate-900">
-              Create Assignment
-            </h3>
+            <h3 className="text-[15px] font-bold text-slate-900">Create Assignment</h3>
             <p className="text-[12px] text-slate-500">
-              Select a donation and a verified recipient, then confirm the
-              assignment.
+              Select a donation and a verified recipient, then confirm the assignment.
             </p>
           </div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
@@ -132,17 +118,13 @@ export default function AssignDonations() {
 
         <div className="grid grid-cols-12 gap-4 items-end">
           <div className="col-span-4 flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-slate-700">
-              Available donation
-            </label>
+            <label className="text-[12px] font-semibold text-slate-700">Available donation</label>
             <div className="relative">
               <select
                 value={selectedDonationId}
                 onChange={(e) => {
                   setSelectedDonationId(e.target.value);
-                  setSelectedRowId(
-                    e.target.value ? Number(e.target.value) : null
-                  );
+                  setSelectedRowId(e.target.value ? Number(e.target.value) : null);
                 }}
                 className="w-full h-11 px-3.5 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-700 focus:outline-none focus:border-[#009689] shadow-2xs appearance-none cursor-pointer"
               >
@@ -158,9 +140,7 @@ export default function AssignDonations() {
           </div>
 
           <div className="col-span-5 flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-slate-700">
-              Verified recipient
-            </label>
+            <label className="text-[12px] font-semibold text-slate-700">Verified recipient</label>
             <div className="relative">
               <select
                 value={selectedNeedyId}
@@ -194,12 +174,8 @@ export default function AssignDonations() {
 
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-slate-100 flex flex-col gap-0.5 bg-slate-50/40">
-          <h3 className="text-[14px] font-bold text-slate-900">
-            Available Donations
-          </h3>
-          <p className="text-[12px] text-slate-500">
-            Click a row to select it for assignment.
-          </p>
+          <h3 className="text-[14px] font-bold text-slate-900">Available Donations</h3>
+          <p className="text-[12px] text-slate-500">Click a row to select it for assignment.</p>
         </div>
 
         <div className="overflow-x-auto">
@@ -249,21 +225,13 @@ export default function AssignDonations() {
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex flex-col">
-                      <span className="font-semibold text-slate-900">
-                        {item.title}
-                      </span>
-                      <span className="text-[11px] text-slate-400">
-                        {item.postedDate}
-                      </span>
+                      <span className="font-semibold text-slate-900">{item.title}</span>
+                      <span className="text-[11px] text-slate-400">{item.postedDate}</span>
                     </div>
                   </td>
-                  <td className="py-4 px-4 text-slate-700 font-medium">
-                    {item.donor}
-                  </td>
+                  <td className="py-4 px-4 text-slate-700 font-medium">{item.donor}</td>
                   <td className="py-4 px-4 text-slate-600">{item.category}</td>
-                  <td className="py-4 px-4 font-semibold text-slate-800">
-                    {item.quantity}
-                  </td>
+                  <td className="py-4 px-4 font-semibold text-slate-800">{item.quantity}</td>
                   <td className="py-4 px-4 text-slate-600">{item.location}</td>
                   <td className="py-4 px-6">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">

@@ -1,20 +1,19 @@
 <?php
-// ============================================
-// KindReach - Get Available Donations (for Needy)
-// ============================================
 
-require_once '../db_connect.php';
+// Available donations aur apni pending request ka status
+require_once "../db_connect.php";
 
-$currentUser = require_login(['Needy']);
+$currentUser = require_login(["Needy"]);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only GET method is allowed"]);
-    exit();
+if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+  http_response_code(405);
+  echo json_encode(["status" => "error", "message" => "Only GET method is allowed"]);
+  exit();
 }
 
+// Database ka kaam
 try {
-    $stmt = $pdo->prepare("
+  $stmt = $pdo->prepare("
         SELECT 
             d.DonationID,
             d.Title,
@@ -36,18 +35,17 @@ try {
         WHERE d.Status = 'Available'
         ORDER BY d.CreatedAt DESC
     ");
-    // Sirf logged-in needy ki pending request ka status dikhayein.
-    $stmt->execute([$currentUser['needyID']]);
-    $donations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  // Sirf logged-in needy ki pending request ka status dikhayein.
+  $stmt->execute([$currentUser["needyID"]]);
+  $donations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Available donations fetched",
-        "data" => $donations
-    ]);
-
+  http_response_code(200);
+  echo json_encode([
+    "status" => "success",
+    "message" => "Available donations fetched",
+    "data" => $donations,
+  ]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
 }

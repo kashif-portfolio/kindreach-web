@@ -1,7 +1,6 @@
-import { configureStore } from '@reduxjs/toolkit';
+// App ka Redux store
+import { configureStore } from "@reduxjs/toolkit";
 
 export const store = configureStore({
-  reducer: {
-    // slicer will be added later
-  },
+  reducer: {},
 });

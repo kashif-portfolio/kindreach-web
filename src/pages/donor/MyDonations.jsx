@@ -1,272 +1,290 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Trash2, Plus, Package, ChevronLeft, ChevronRight } from 'lucide-react';
-import DonationDetails from '../../components/donor/DonationDetailsModal';
-import EditDonationModal from '../../components/donor/EditDonationModal';
-import DeleteDonationModal from '../../components/donor/DeleteDonationModal';
-import { getMyDonations, updateDonation, deleteDonation } from '../../services/donorService';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Eye, Pencil, Trash2, Plus, Package, ChevronLeft, ChevronRight } from "lucide-react";
+import DonationDetails from "../../components/donor/DonationDetailsModal";
+import EditDonationModal from "../../components/donor/EditDonationModal";
+import DeleteDonationModal from "../../components/donor/DeleteDonationModal";
+import { getMyDonations, updateDonation, deleteDonation } from "../../services/donorService";
 
 export default function MyDonations() {
-    const [donations, setDonations] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+  // Page ki states
+  const [donations, setDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-    // Sirf current page ki donations table mein dikhayein.
-    const totalPages = Math.max(1, Math.ceil(donations.length / itemsPerPage));
-    const pageNumber = Math.min(currentPage, totalPages);
-    const startIndex = (pageNumber - 1) * itemsPerPage;
-    const paginatedDonations = donations.slice(startIndex, startIndex + itemsPerPage);
+  // Sirf current page ki donations table mein dikhayein.
+  const totalPages = Math.max(1, Math.ceil(donations.length / itemsPerPage));
+  const pageNumber = Math.min(currentPage, totalPages);
+  const startIndex = (pageNumber - 1) * itemsPerPage;
+  const paginatedDonations = donations.slice(startIndex, startIndex + itemsPerPage);
 
-    const navigate = useNavigate();
-    useEffect(() => {
-        const fetchDonations = async () => {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (!user.donorID) {
-                setLoading(false);
-                return;
-            }
+  const navigate = useNavigate();
+  // Page ka data load aur update karo.
+  useEffect(() => {
+    const fetchDonations = async () => {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user.donorID) {
+        setLoading(false);
+        return;
+      }
 
-            try {
-                const result = await getMyDonations(user.donorID);
-                if (result.status === 'success') {
-                    // API fields ko UI format mein convert
-                    const mapped = result.data.map((item) => ({
-                        id: item.DonationID,
-                        typeID: item.TypeID,
-                        title: item.Title,
-                        category: item.TypeName,
-                        quantity: item.Quantity,
-                        status: item.Status,
-                        urgencyLevel: item.UrgencyLevel || 'Normal',
-                        date: item.CreatedAt ? item.CreatedAt.split(' ')[0] : '',
-                        description: item.Description || '',
-                        location: item.Location || '',
-                    }));
-                    setDonations(mapped);
-                }
-            } catch (err) {
-                console.error('Failed to load donations:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDonations();
-    }, []);
-
-
-    // Modal States
-    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-    const [selectedDonation, setSelectedDonation] = useState(null);
-
-    // Open View Modal Handler
-    const handleViewClick = (item) => {
-        setSelectedDonation(item);
-        setIsViewModalOpen(true);
-    };
-
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-    const handleEditClick = (item) => {
-        setSelectedDonation(item);
-        setIsEditModalOpen(true);
-    };
-
-    const handleSaveDonation = async (updatedItem) => {
-        // Update the table only after PHP confirms the database save.
-        const result = await updateDonation({
-            donationID: updatedItem.id,
-            title: updatedItem.title,
-            description: updatedItem.description,
-            typeID: updatedItem.typeID,
-            quantity: updatedItem.quantity,
-            location: updatedItem.location,
-            urgencyLevel: updatedItem.urgencyLevel,
-        });
-        if (result.status !== 'success') {
-            throw new Error(result.message || 'Could not update donation');
+      try {
+        const result = await getMyDonations(user.donorID);
+        if (result.status === "success") {
+          // API fields ko UI format mein convert
+          const mapped = result.data.map((item) => ({
+            id: item.DonationID,
+            typeID: item.TypeID,
+            title: item.Title,
+            category: item.TypeName,
+            quantity: item.Quantity,
+            status: item.Status,
+            urgencyLevel: item.UrgencyLevel || "Normal",
+            date: item.CreatedAt ? item.CreatedAt.split(" ")[0] : "",
+            description: item.Description || "",
+            location: item.Location || "",
+          }));
+          setDonations(mapped);
         }
-        const savedDonation = result.data;
-        setDonations((previous) => previous.map((item) =>
-            String(item.id) === String(savedDonation.id) ? savedDonation : item
-        ));
-        setSelectedDonation(savedDonation);
+      } catch (err) {
+        console.error("Failed to load donations:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
+    fetchDonations();
+  }, []);
 
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    // Jab user trash/delete icon par click kare
-    const handleDeleteClick = (item) => {
-        setSelectedDonation(item);
-        setIsDeleteModalOpen(true);
-    };
+  // Modals ki states
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedDonation, setSelectedDonation] = useState(null);
 
-    // Jab modal ke andar "Delete" button par click ho
-    const handleDeleteConfirm = async (id) => {
-        const result = await deleteDonation(id);
-        if (result.status !== 'success') throw new Error(result.message || 'Could not delete donation');
-        // Remove the row only after PHP confirms the database deletion.
-        setDonations((previous) => previous.filter((item) => String(item.id) !== String(id)));
-        setSelectedDonation(null);
-    };
+  // Donation ki details kholo.
+  const handleViewClick = (item) => {
+    setSelectedDonation(item);
+    setIsViewModalOpen(true);
+  };
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    // Badge ka rang urgency ke mutabiq hota hai.
-    function getUrgencyColor(urgency) {
-        if (urgency === 'Urgent') {
-            return 'bg-rose-50 text-rose-700 border-rose-200';
-        }
-        if (urgency === 'Priority') {
-            return 'bg-amber-50 text-amber-700 border-amber-200';
-        }
-        return 'bg-teal-50 text-teal-700 border-teal-200';
+  const handleEditClick = (item) => {
+    setSelectedDonation(item);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveDonation = async (updatedItem) => {
+    // Save hone ke baad table update karo.
+    const result = await updateDonation({
+      donationID: updatedItem.id,
+      title: updatedItem.title,
+      description: updatedItem.description,
+      typeID: updatedItem.typeID,
+      quantity: updatedItem.quantity,
+      location: updatedItem.location,
+      urgencyLevel: updatedItem.urgencyLevel,
+    });
+    if (result.status !== "success") {
+      throw new Error(result.message || "Could not update donation");
     }
-
-    return (
-        <div className="max-w-6xl mx-auto p-6 bg-slate-50 min-h-screen">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800">My Donations</h1>
-                    <p className="text-sm text-slate-500">Manage and track all your generous contributions.</p>
-                </div>
-                <button
-                    onClick={() => navigate('/donor/add-donation')}
-                    className="flex items-center justify-center gap-2 bg-[#009689] hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm cursor-pointer"
-                >
-                    <Plus className="w-4 h-4" />
-                    <span>Add New Donation</span>
-                </button>
-            </div>
-
-            {loading && (
-                <p className="text-slate-500 text-sm py-8 text-center">Loading donations...</p>
-            )}
-
-            {!loading && donations.length === 0 && (
-                <p className="text-slate-500 text-sm py-8 text-center">No donations yet. Post your first donation!</p>
-            )}
-
-            {/* Table Container */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                <th className="py-4 px-5">Item Title</th>
-                                <th className="py-4 px-5">Category</th>
-                                <th className="py-4 px-5">Urgency</th>
-                                <th className="py-4 px-5">Quantity</th>
-                                <th className="py-4 px-5">Status</th>
-                                <th className="py-4 px-5">Date</th>
-                                <th className="py-4 px-5 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                            {paginatedDonations.map((item) => (
-                                <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="py-4 px-5 font-medium text-slate-900 flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                                            <Package className="w-4 h-4" />
-                                        </div>
-                                        {item.title}
-                                    </td>
-                                    <td className="py-4 px-5 text-slate-600">{item.category}</td>
-                                    <td className="py-4 px-5"><span className={`inline-flex px-2.5 py-1 border rounded-full text-xs font-medium ${getUrgencyColor(item.urgencyLevel)}`}>
-                                            {item.urgencyLevel}
-                                        </span></td>
-                                    <td className="py-4 px-5 font-semibold text-slate-800">{item.quantity}</td>
-                                    <td className="py-4 px-5">
-                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'Available'
-                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                            : item.status === 'Delivered'
-                                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                                            }`}>
-                                            {item.status}
-                                        </span>
-                                    </td>
-                                    <td className="py-4 px-5 text-slate-500">{item.date}</td>
-
-                                    {/* Actions Section */}
-                                    <td className="py-4 px-5 text-right">
-                                        <div className="flex items-center justify-end gap-1.5">
-                                            {/* View Button - Yahan onClick add kar diya hai */}
-                                            <button
-                                                onClick={() => handleViewClick(item)}
-                                                title="View Details"
-                                                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
-                                            >
-                                                <Eye className="w-3.5 h-3.5" />
-                                            </button>
-
-                                            {item.status === "Available" && (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleEditClick(item)}
-                                                        title="Edit"
-                                                        className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
-                                                    >
-                                                        <Pencil className="w-3.5 h-3.5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteClick(item)}
-                                                        title="Delete"
-                                                        className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-colors cursor-pointer"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-                <div className="px-5 py-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/30">
-                    <span className="text-xs text-slate-500">Showing {donations.length === 0 ? 0 : startIndex + 1}–{Math.min(startIndex + itemsPerPage, donations.length)} of {donations.length} donations</span>
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => setCurrentPage(pageNumber - 1)} disabled={pageNumber === 1}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                            <ChevronLeft className="w-3.5 h-3.5" /> Previous
-                        </button>
-                        <span className="px-3 py-1.5 bg-[#009689] text-white rounded-lg text-xs">{pageNumber} / {totalPages}</span>
-                        <button onClick={() => setCurrentPage(pageNumber + 1)} disabled={pageNumber === totalPages}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                            Next <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Render Donation Details Modal Component */}
-            <DonationDetails
-                isOpen={isViewModalOpen}
-                onClose={() => setIsViewModalOpen(false)}
-                donation={selectedDonation}
-                onEdit={() => {
-                    setIsViewModalOpen(false);
-                    setIsEditModalOpen(true);
-                }}
-            />
-
-            <EditDonationModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                donation={selectedDonation}
-                onSave={handleSaveDonation}
-            />
-
-            <DeleteDonationModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                donation={selectedDonation}
-                onDelete={handleDeleteConfirm}
-            />
-
-        </div>
+    const savedDonation = result.data;
+    setDonations((previous) =>
+      previous.map((item) => (String(item.id) === String(savedDonation.id) ? savedDonation : item))
     );
+    setSelectedDonation(savedDonation);
+  };
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  // Jab user trash/delete icon par click kare
+  const handleDeleteClick = (item) => {
+    setSelectedDonation(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Jab modal ke andar "Delete" button par click ho
+  const handleDeleteConfirm = async (id) => {
+    const result = await deleteDonation(id);
+    if (result.status !== "success") throw new Error(result.message || "Could not delete donation");
+    // Delete hone ke baad row hatao.
+    setDonations((previous) => previous.filter((item) => String(item.id) !== String(id)));
+    setSelectedDonation(null);
+  };
+
+  // Badge ka rang urgency ke mutabiq hota hai.
+  function getUrgencyColor(urgency) {
+    if (urgency === "Urgent") {
+      return "bg-rose-50 text-rose-700 border-rose-200";
+    }
+    if (urgency === "Priority") {
+      return "bg-amber-50 text-amber-700 border-amber-200";
+    }
+    return "bg-teal-50 text-teal-700 border-teal-200";
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto p-6 bg-slate-50 min-h-screen">
+      {/* Page ka title */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">My Donations</h1>
+          <p className="text-sm text-slate-500">
+            Manage and track all your generous contributions.
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/donor/add-donation")}
+          className="flex items-center justify-center gap-2 bg-[#009689] hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Add New Donation</span>
+        </button>
+      </div>
+
+      {loading && <p className="text-slate-500 text-sm py-8 text-center">Loading donations...</p>}
+
+      {!loading && donations.length === 0 && (
+        <p className="text-slate-500 text-sm py-8 text-center">
+          No donations yet. Post your first donation!
+        </p>
+      )}
+
+      {/* Donations ki table */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-4 px-5">Item Title</th>
+                <th className="py-4 px-5">Category</th>
+                <th className="py-4 px-5">Urgency</th>
+                <th className="py-4 px-5">Quantity</th>
+                <th className="py-4 px-5">Status</th>
+                <th className="py-4 px-5">Date</th>
+                <th className="py-4 px-5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+              {paginatedDonations.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="py-4 px-5 font-medium text-slate-900 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                      <Package className="w-4 h-4" />
+                    </div>
+                    {item.title}
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">{item.category}</td>
+                  <td className="py-4 px-5">
+                    <span
+                      className={`inline-flex px-2.5 py-1 border rounded-full text-xs font-medium ${getUrgencyColor(item.urgencyLevel)}`}
+                    >
+                      {item.urgencyLevel}
+                    </span>
+                  </td>
+                  <td className="py-4 px-5 font-semibold text-slate-800">{item.quantity}</td>
+                  <td className="py-4 px-5">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                        item.status === "Available"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : item.status === "Delivered"
+                            ? "bg-blue-50 text-blue-700 border border-blue-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                  <td className="py-4 px-5 text-slate-500">{item.date}</td>
+
+                  {/* Action buttons */}
+                  <td className="py-4 px-5 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      {/* Details ka button */}
+                      <button
+                        onClick={() => handleViewClick(item)}
+                        title="View Details"
+                        className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+
+                      {item.status === "Available" && (
+                        <>
+                          <button
+                            onClick={() => handleEditClick(item)}
+                            title="Edit"
+                            className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(item)}
+                            title="Delete"
+                            className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-5 py-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/30">
+          <span className="text-xs text-slate-500">
+            Showing {donations.length === 0 ? 0 : startIndex + 1}–
+            {Math.min(startIndex + itemsPerPage, donations.length)} of {donations.length} donations
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(pageNumber - 1)}
+              disabled={pageNumber === 1}
+              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" /> Previous
+            </button>
+            <span className="px-3 py-1.5 bg-[#009689] text-white rounded-lg text-xs">
+              {pageNumber} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(pageNumber + 1)}
+              disabled={pageNumber === totalPages}
+              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Donation ki details ka modal */}
+      <DonationDetails
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        donation={selectedDonation}
+        onEdit={() => {
+          setIsViewModalOpen(false);
+          setIsEditModalOpen(true);
+        }}
+      />
+
+      <EditDonationModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        donation={selectedDonation}
+        onSave={handleSaveDonation}
+      />
+
+      <DeleteDonationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        donation={selectedDonation}
+        onDelete={handleDeleteConfirm}
+      />
+    </div>
+  );
 }

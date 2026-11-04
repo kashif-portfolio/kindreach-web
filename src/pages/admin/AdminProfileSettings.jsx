@@ -3,6 +3,7 @@ import { User, Shield, Edit3 } from "lucide-react";
 import { updateProfile, changePassword } from "../../services/authService";
 
 export default function ProfileSettings() {
+  // Page ki states
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,6 +35,7 @@ export default function ProfileSettings() {
     confirmPassword: "",
   });
 
+  // Page ka data load aur update karo.
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem("user") || "{}");
     if (u.name || u.email) {
@@ -48,6 +50,7 @@ export default function ProfileSettings() {
     }
   }, []);
 
+  // Page ke action handlers
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
@@ -136,12 +139,8 @@ export default function ProfileSettings() {
   return (
     <div className="w-full px-8 py-6 flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
-          Profile & Settings
-        </h1>
-        <p className="text-[13px] text-slate-500">
-          Manage your account and security
-        </p>
+        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Profile & Settings</h1>
+        <p className="text-[13px] text-slate-500">Manage your account and security</p>
       </div>
 
       <div className="grid grid-cols-12 gap-6 items-start">
@@ -155,12 +154,8 @@ export default function ProfileSettings() {
               .toUpperCase()}
           </div>
           <div className="flex flex-col gap-1">
-            <h3 className="text-[16px] font-bold text-slate-900">
-              {profileData.fullName}
-            </h3>
-            <p className="text-[12px] text-slate-500">
-              {profileData.designation}
-            </p>
+            <h3 className="text-[16px] font-bold text-slate-900">{profileData.fullName}</h3>
+            <p className="text-[12px] text-slate-500">{profileData.designation}</p>
           </div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -169,15 +164,11 @@ export default function ProfileSettings() {
           <div className="w-full border-t border-slate-100 pt-4 flex flex-col gap-3 text-left">
             <div className="flex items-center justify-between text-[12px]">
               <span className="text-slate-500">Organization</span>
-              <span className="font-semibold text-slate-800">
-                {profileData.organization}
-              </span>
+              <span className="font-semibold text-slate-800">{profileData.organization}</span>
             </div>
             <div className="flex items-center justify-between text-[12px]">
               <span className="text-slate-500">Member since</span>
-              <span className="font-semibold text-slate-800">
-                {profileData.memberSince}
-              </span>
+              <span className="font-semibold text-slate-800">{profileData.memberSince}</span>
             </div>
           </div>
         </div>
@@ -218,9 +209,7 @@ export default function ProfileSettings() {
               <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-[15px] font-bold text-slate-900">
-                      Account Information
-                    </h3>
+                    <h3 className="text-[15px] font-bold text-slate-900">Account Information</h3>
                     <p className="text-[12px] text-slate-500">
                       Basic contact details used for your admin account
                     </p>
@@ -265,9 +254,7 @@ export default function ProfileSettings() {
                     ["officeAddress", "Office Address"],
                   ].map(([name, label]) => (
                     <div key={name} className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-semibold text-slate-700">
-                        {label}
-                      </label>
+                      <label className="text-[12px] font-semibold text-slate-700">{label}</label>
                       <input
                         type={name === "email" ? "email" : "text"}
                         name={name}
@@ -287,34 +274,24 @@ export default function ProfileSettings() {
 
               <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-4">
                 <div>
-                  <h3 className="text-[15px] font-bold text-slate-900">
-                    Account Overview
-                  </h3>
+                  <h3 className="text-[15px] font-bold text-slate-900">Account Overview</h3>
                   <p className="text-[12px] text-slate-500">
                     Administrator role and account status
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-1">
-                    <span className="text-[11px] text-slate-400 font-medium">
-                      Role
-                    </span>
-                    <span className="text-[13px] font-bold text-slate-800">
-                      {profileData.role}
-                    </span>
+                    <span className="text-[11px] text-slate-400 font-medium">Role</span>
+                    <span className="text-[13px] font-bold text-slate-800">{profileData.role}</span>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-1">
-                    <span className="text-[11px] text-slate-400 font-medium">
-                      Account Status
-                    </span>
+                    <span className="text-[11px] text-slate-400 font-medium">Account Status</span>
                     <span className="text-[13px] font-bold text-emerald-600">
                       {profileData.status}
                     </span>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-1">
-                    <span className="text-[11px] text-slate-400 font-medium">
-                      Member Since
-                    </span>
+                    <span className="text-[11px] text-slate-400 font-medium">Member Since</span>
                     <span className="text-[13px] font-bold text-slate-800">
                       {profileData.memberSince}
                     </span>
@@ -327,18 +304,13 @@ export default function ProfileSettings() {
           {activeTab === "security" && (
             <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-6">
               <div>
-                <h3 className="text-[15px] font-bold text-slate-900">
-                  Change Password
-                </h3>
+                <h3 className="text-[15px] font-bold text-slate-900">Change Password</h3>
                 <p className="text-[12px] text-slate-500">
                   Use at least 6 characters for account security
                 </p>
               </div>
 
-              <form
-                onSubmit={handleUpdatePassword}
-                className="flex flex-col gap-4"
-              >
+              <form onSubmit={handleUpdatePassword} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[12px] font-semibold text-slate-700">
                     Current Password *

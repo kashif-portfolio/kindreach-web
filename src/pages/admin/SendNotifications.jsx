@@ -2,14 +2,15 @@ import React, { useState, useEffect } from "react";
 import { sendNotification, getNotifications } from "../../services/adminService";
 import { Send, ChevronDown } from "lucide-react";
 
-// UI label → API sendTo value
+// API ke liye users ka group select karo.
 const mapSendTo = (value) => {
   if (value === "All Donors") return "Donors";
   if (value === "All Needy Persons") return "Needy";
-  return "All"; // All Users
+  return "All"; // Sab users
 };
 
 export default function SendNotifications() {
+  // Page ki states
   const [sendTo, setSendTo] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -18,41 +19,42 @@ export default function SendNotifications() {
   const [sending, setSending] = useState(false);
 
   const loadHistory = async () => {
-  try {
-    const result = await getNotifications(); // no userID
-    if (result.status === "success") {
-      const rows = result.data || [];
+    try {
+      const result = await getNotifications(); // User ID nahi mili.
+      if (result.status === "success") {
+        const rows = result.data || [];
 
-      // Same title + same date → ek hi entry (broadcast)
-      const seen = new Map();
-      rows.forEach((item) => {
-        const date = item.CreatedAt
-          ? String(item.CreatedAt).split(" ")[0]
-          : "";
-        const key = `${item.Title}|${date}`;
-        if (!seen.has(key)) {
-          seen.set(key, {
-            id: item.NotificationID,
-            title: item.Title,
-            target: "Users",
-            date,
-            status: "Sent",
-          });
-        }
-      });
+        // Ek broadcast ko history mein ek baar dikhao.
+        const seen = new Map();
+        rows.forEach((item) => {
+          const date = item.CreatedAt ? String(item.CreatedAt).split(" ")[0] : "";
+          const key = `${item.Title}|${date}`;
+          if (!seen.has(key)) {
+            seen.set(key, {
+              id: item.NotificationID,
+              title: item.Title,
+              target: "Users",
+              date,
+              status: "Sent",
+            });
+          }
+        });
 
-      setHistory(Array.from(seen.values()));
+        setHistory(Array.from(seen.values()));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
+  // Page ka data load aur update karo.
   useEffect(() => {
     loadHistory();
   }, []);
 
+  // Page ke action handlers
   const handleSend = async () => {
     if (!sendTo || !subject || !message) {
       alert("Please fill in all required fields!");
@@ -61,11 +63,7 @@ export default function SendNotifications() {
 
     setSending(true);
     try {
-      const result = await sendNotification(
-        subject,
-        message,
-        mapSendTo(sendTo)
-      );
+      const result = await sendNotification(subject, message, mapSendTo(sendTo));
       if (result.status === "success") {
         alert(
           result.count
@@ -89,20 +87,14 @@ export default function SendNotifications() {
   return (
     <div className="w-full px-8 py-6 flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
-          Send Notifications
-        </h1>
-        <p className="text-[13px] text-slate-500">
-          Broadcast messages to platform users
-        </p>
+        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Send Notifications</h1>
+        <p className="text-[13px] text-slate-500">Broadcast messages to platform users</p>
       </div>
 
       <div className="grid grid-cols-12 gap-6 items-start">
-        {/* Compose */}
+        {/* Notification ka form */}
         <div className="col-span-7 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-5">
-          <h3 className="text-[15px] font-bold text-slate-900">
-            Compose Notification
-          </h3>
+          <h3 className="text-[15px] font-bold text-slate-900">Compose Notification</h3>
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
@@ -162,14 +154,12 @@ export default function SendNotifications() {
           </div>
         </div>
 
-        {/* History */}
+        {/* Purani notifications */}
         <div className="col-span-5 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-5">
           <h3 className="text-[15px] font-bold text-slate-900">Sent History</h3>
 
           <div className="flex flex-col divide-y divide-slate-100">
-            {loading && (
-              <p className="text-[13px] text-slate-400">Loading...</p>
-            )}
+            {loading && <p className="text-[13px] text-slate-400">Loading...</p>}
             {!loading && history.length === 0 && (
               <p className="text-[13px] text-slate-400">No notifications yet.</p>
             )}
@@ -179,12 +169,8 @@ export default function SendNotifications() {
                 className="py-4 first:pt-0 last:pb-0 flex items-start justify-between gap-4"
               >
                 <div className="flex flex-col gap-1">
-                  <h4 className="text-[13px] font-bold text-slate-900">
-                    {item.title}
-                  </h4>
-                  <span className="text-[12px] text-slate-500">
-                    To: {item.target}
-                  </span>
+                  <h4 className="text-[13px] font-bold text-slate-900">{item.title}</h4>
+                  <span className="text-[12px] text-slate-500">To: {item.target}</span>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">

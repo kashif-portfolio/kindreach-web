@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { getAllDonors, registerDonorByAdmin, approveDonor, blockDonor, updateDonor, deleteDonor } from "../../services/adminService";
+import {
+  getAllDonors,
+  registerDonorByAdmin,
+  approveDonor,
+  blockDonor,
+  updateDonor,
+  deleteDonor,
+} from "../../services/adminService";
 import RegisterDonorModal from "../../components/admin/RegisterDonorModal";
 import BlockDonorModal from "../../components/admin/BlockDonorModal";
 import ApproveDonorModal from "../../components/admin/ApproveDonorModal";
@@ -8,487 +15,467 @@ import DonorDetailsModal from "../../components/admin/DonorDetailsModal";
 import EditDonorModal from "../../components/admin/EditDonorModal";
 import DeleteDonorModal from "../../components/admin/DeleteDonorModal";
 import {
-    Search,
-    Plus,
-    Phone,
-    Ban,
-    Check,
-    Edit,
-    Trash2,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight as ChevronRightIcon,
-    Eye,
+  Search,
+  Plus,
+  Phone,
+  Ban,
+  Check,
+  Edit,
+  Trash2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon,
+  Eye,
 } from "lucide-react";
 
 export default function ManageDonors() {
-    // Search and filter states
-    const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("All");
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+  // Search aur filter ki values
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-    // Donors list from backend
-    const [donors, setDonors] = useState([]);
-    const [loading, setLoading] = useState(true);
+  // Donors ki list aur loading
+  const [donors, setDonors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-    const [refreshNumber, setRefreshNumber] = useState(0);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [refreshNumber, setRefreshNumber] = useState(0);
 
-    // Modal states
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedDonorId, setSelectedDonorId] = useState(null);
+  // Modals ki states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDonorId, setSelectedDonorId] = useState(null);
 
-    const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
-    const [selectedApproveId, setSelectedApproveId] = useState(null);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [selectedApproveId, setSelectedApproveId] = useState(null);
 
-    const [isUnblockModalOpen, setIsUnblockModalOpen] = useState(false);
-    const [selectedUnblockId, setSelectedUnblockId] = useState(null);
+  const [isUnblockModalOpen, setIsUnblockModalOpen] = useState(false);
+  const [selectedUnblockId, setSelectedUnblockId] = useState(null);
 
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-    const [selectedDonorDetails, setSelectedDonorDetails] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedDonorDetails, setSelectedDonorDetails] = useState(null);
 
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedDonorToEdit, setSelectedDonorToEdit] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedDonorToEdit, setSelectedDonorToEdit] = useState(null);
 
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [selectedDeleteId, setSelectedDeleteId] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
-    // Load all donors when page opens
-    useEffect(() => {
-        const fetchDonors = async () => {
-            try {
-                const result = await getAllDonors();
-                if (result.status === "success") {
-                    // Convert API data to UI format
-                    const mapped = result.data.map((item) => {
-                        const name = item.Name || "Donor";
-                        const initials = name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .substring(0, 2)
-                            .toUpperCase();
+  // Page khulne par donors load karo.
+  useEffect(() => {
+    const fetchDonors = async () => {
+      try {
+        const result = await getAllDonors();
+        if (result.status === "success") {
+          // API ka data table ke format mein lao.
+          const mapped = result.data.map((item) => {
+            const name = item.Name || "Donor";
+            const initials = name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .substring(0, 2)
+              .toUpperCase();
 
-                        // Backend: Active / Blocked  →  UI: Approved / Blocked
-                        let status = "Pending";
-                        if (item.Status === "Active") status = "Approved";
-                        else if (item.Status === "Blocked") status = "Blocked";
+            // Active account ko UI mein Approved dikhate hain.
+            let status = "Pending";
+            if (item.Status === "Active") status = "Approved";
+            else if (item.Status === "Blocked") status = "Blocked";
 
-                        return {
-                            id: item.UserID, // UserID for approve/block API
-                            donorID: item.DonorID,
-                            name,
-                            email: item.Email,
-                            phone: item.Phone || "",
-                            location: item.Address || "",
-                            donations: 0,
-                            joined: item.CreatedAt ? item.CreatedAt.split(" ")[0] : "",
-                            status,
-                            initials,
-                            color: "bg-[#009689]",
-                        };
-                    });
-                    setDonors(mapped);
-                }
-            } catch (err) {
-                console.error("Failed to load donors:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDonors();
-    }, [refreshNumber]);
-
-    // Pehle API save karegi, phir donors ki list dobara load hogi.
-    const handleRegister = async (formData) => {
-        const result = await registerDonorByAdmin(formData);
-        if (result.status !== "success") {
-            throw new Error(result.message || "Could not register donor");
+            return {
+              id: item.UserID, // Approve aur block ke liye user ID
+              donorID: item.DonorID,
+              name,
+              email: item.Email,
+              phone: item.Phone || "",
+              location: item.Address || "",
+              donations: 0,
+              joined: item.CreatedAt ? item.CreatedAt.split(" ")[0] : "",
+              status,
+              initials,
+              color: "bg-[#009689]",
+            };
+          });
+          setDonors(mapped);
         }
-        setSearchTerm("");
-        setStatusFilter("All");
-        setCurrentPage(1);
-        setRefreshNumber((number) => number + 1);
+      } catch (err) {
+        console.error("Failed to load donors:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Filter by search text and status
-    const filteredDonors = donors.filter((donor) => {
-        const matchesSearch =
-            donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            donor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            donor.location.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus =
-            statusFilter === "All" || donor.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
+    fetchDonors();
+  }, [refreshNumber]);
 
-    // Block donor - call API then update list
-    const handleBlock = async (id) => {
-        try {
-            const result = await blockDonor(id);
-            if (result.status === "success") {
-                setDonors((prev) =>
-                    prev.map((donor) =>
-                        donor.id === id ? { ...donor, status: "Blocked" } : donor
-                    )
-                );
-            } else {
-                alert(result.message || "Failed to block donor");
-            }
-        } catch (err) {
-            alert(err.response?.data?.message || "Something went wrong");
-        }
-    };
+  // Pehle API save karegi, phir donors ki list dobara load hogi.
+  const handleRegister = async (formData) => {
+    const result = await registerDonorByAdmin(formData);
+    if (result.status !== "success") {
+      throw new Error(result.message || "Could not register donor");
+    }
+    setSearchTerm("");
+    setStatusFilter("All");
+    setCurrentPage(1);
+    setRefreshNumber((number) => number + 1);
+  };
 
-    // Approve donor - call API then update list
-    const handleApprove = async (id) => {
-        try {
-            const result = await approveDonor(id);
-            if (result.status === "success") {
-                setDonors((prev) =>
-                    prev.map((donor) =>
-                        donor.id === id ? { ...donor, status: "Approved" } : donor
-                    )
-                );
-            } else {
-                alert(result.message || "Failed to approve donor");
-            }
-        } catch (err) {
-            alert(err.response?.data?.message || "Something went wrong");
-        }
-    };
+  // Naam aur status se list filter karo.
+  const filteredDonors = donors.filter((donor) => {
+    const matchesSearch =
+      donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      donor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      donor.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "All" || donor.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
-    // Unblock donor - same as approve (set Active again)
-    const handleUnblock = async (id) => {
-        try {
-            const result = await approveDonor(id);
-            if (result.status === "success") {
-                setDonors((prev) =>
-                    prev.map((donor) =>
-                        donor.id === id ? { ...donor, status: "Approved" } : donor
-                    )
-                );
-            } else {
-                alert(result.message || "Failed to unblock donor");
-            }
-        } catch (err) {
-            alert(err.response?.data?.message || "Something went wrong");
-        }
-    };
-
-    // Save donor changes through the admin API.
-    const handleEditSave = async (updatedDonor) => {
-        const result = await updateDonor(updatedDonor);
-        if (result.status !== 'success') throw new Error(result.message || 'Could not save donor');
+  // Donor block karke list update karo.
+  const handleBlock = async (id) => {
+    try {
+      const result = await blockDonor(id);
+      if (result.status === "success") {
         setDonors((prev) =>
-            prev.map((donor) =>
-                donor.id === updatedDonor.id ? updatedDonor : donor
-            )
+          prev.map((donor) => (donor.id === id ? { ...donor, status: "Blocked" } : donor))
         );
-    };
+      } else {
+        alert(result.message || "Failed to block donor");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    }
+  };
 
-    // Delete unused accounts only; backend preserves donation history.
-    const handleDelete = async (id) => {
-        try {
-            const result = await deleteDonor(id);
-            if (result.status !== 'success') throw new Error(result.message || 'Could not delete donor');
-            setDonors((prev) => prev.filter((donor) => donor.id !== id));
-        } catch (err) { alert(err.response?.data?.message || err.message); }
-    };
+  // Donor approve karke list update karo.
+  const handleApprove = async (id) => {
+    try {
+      const result = await approveDonor(id);
+      if (result.status === "success") {
+        setDonors((prev) =>
+          prev.map((donor) => (donor.id === id ? { ...donor, status: "Approved" } : donor))
+        );
+      } else {
+        alert(result.message || "Failed to approve donor");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    }
+  };
 
-    return (
-        <div className="w-full px-8 py-6 flex flex-col gap-6">
-            {/* Page Header */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
-                    Manage Donors
-                </h1>
-                <p className="text-[13px] text-slate-500">
-                    {donors.length} registered donors
-                </p>
-                </div>
-                <button onClick={() => setIsRegisterModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[#009689] hover:bg-[#007f73] text-white rounded-xl text-[13px] font-semibold transition-colors shadow-xs cursor-pointer">
-                    <Plus className="w-4 h-4" />
-                    Register Donor
-                </button>
-            </div>
+  // Unblock par account dobara Active hota hai.
+  const handleUnblock = async (id) => {
+    try {
+      const result = await approveDonor(id);
+      if (result.status === "success") {
+        setDonors((prev) =>
+          prev.map((donor) => (donor.id === id ? { ...donor, status: "Approved" } : donor))
+        );
+      } else {
+        alert(result.message || "Failed to unblock donor");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    }
+  };
 
-            {/* Filters Bar */}
-            <div className="flex items-center justify-between gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, email or location..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#009689] shadow-2xs transition-all"
-                    />
-                </div>
+  // Donor ki changes API se save karo.
+  const handleEditSave = async (updatedDonor) => {
+    const result = await updateDonor(updatedDonor);
+    if (result.status !== "success") throw new Error(result.message || "Could not save donor");
+    setDonors((prev) => prev.map((donor) => (donor.id === updatedDonor.id ? updatedDonor : donor)));
+  };
 
-                <div className="relative shrink-0">
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="h-11 px-4 pr-10 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#009689] shadow-2xs appearance-none cursor-pointer transition-all"
-                    >
-                        <option value="All">Select...</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Blocked">Blocked</option>
-                    </select>
-                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
-            </div>
+  // Sirf bina history wala account delete hota hai.
+  const handleDelete = async (id) => {
+    try {
+      const result = await deleteDonor(id);
+      if (result.status !== "success") throw new Error(result.message || "Could not delete donor");
+      setDonors((prev) => prev.filter((donor) => donor.id !== id));
+    } catch (err) {
+      alert(err.response?.data?.message || err.message);
+    }
+  };
 
-            {/* Loading */}
-            {loading && (
-                <p className="text-center text-slate-500 text-sm py-8">Loading donors...</p>
-            )}
-
-            {/* Donors Table Card */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                                <th className="py-3.5 px-6">Donor</th>
-                                <th className="py-3.5 px-4">Phone</th>
-                                <th className="py-3.5 px-4">Location</th>
-                                <th className="py-3.5 px-4">Donations</th>
-                                <th className="py-3.5 px-4">Joined</th>
-                                <th className="py-3.5 px-4">Status</th>
-                                <th className="py-3.5 px-6 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-[13px]">
-                            {filteredDonors.map((donor) => (
-                                <tr key={donor.id} className="hover:bg-slate-50/60 transition-colors">
-                                    {/* Donor Info */}
-                                    <td className="py-4 px-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-9 h-9 ${donor.color} text-white font-bold text-[12px] rounded-full flex items-center justify-center shrink-0 shadow-sm`}>
-                                                {donor.initials}
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="font-semibold text-slate-900">{donor.name}</span>
-                                                <span className="text-[12px] text-slate-400">{donor.email}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    {/* Phone */}
-                                    <td className="py-4 px-4">
-                                        <div className="flex items-center gap-1.5 text-slate-600 font-medium">
-                                            <Phone className="w-3.5 h-3.5 text-slate-400" />
-                                            <span>{donor.phone}</span>
-                                        </div>
-                                    </td>
-
-                                    {/* Location */}
-                                    <td className="py-4 px-4 text-slate-600 font-medium">
-                                        {donor.location}
-                                    </td>
-
-                                    {/* Donations Count */}
-                                    <td className="py-4 px-4 font-semibold text-slate-800">
-                                        {donor.donations}
-                                    </td>
-
-                                    {/* Joined Date */}
-                                    <td className="py-4 px-4 text-slate-500 font-medium">
-                                        {donor.joined}
-                                    </td>
-
-                                    {/* Status Badge */}
-                                    <td className="py-4 px-4">
-                                        {donor.status === "Approved" && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                Approved
-                                            </span>
-                                        )}
-                                        {donor.status === "Pending" && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-600 border border-amber-200/60">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                                Pending
-                                            </span>
-                                        )}
-                                        {donor.status === "Blocked" && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/60">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                                Blocked
-                                            </span>
-                                        )}
-                                    </td>
-
-                                    {/* Actions */}
-                                    <td className="py-4 px-6 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            {donor.status === "Approved" && (
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedDonorId(donor.id);
-                                                        setIsModalOpen(true);
-                                                    }}
-                                                    className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
-                                                >
-                                                    <Ban className="w-3 h-3" />
-                                                    Block
-                                                </button>
-                                            )}
-                                            {donor.status === "Blocked" && (
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedUnblockId(donor.id);
-                                                        setIsUnblockModalOpen(true);
-                                                    }}
-                                                    className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
-                                                >
-                                                    <Check className="w-3 h-3" />
-                                                    Unblock
-                                                </button>
-                                            )}
-                                            {donor.status === "Pending" && (
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedApproveId(donor.id);
-                                                        setIsApproveModalOpen(true);
-                                                    }}
-                                                    className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
-                                                >
-                                                    <Check className="w-3 h-3" />
-                                                    Approve
-                                                </button>
-                                            )}
-
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedDonorDetails(donor);
-                                                    setIsDetailsModalOpen(true);
-                                                }}
-                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
-                                            >
-                                                <Eye className="w-3.5 h-3.5" />
-                                            </button>
-
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedDonorToEdit(donor);
-                                                    setIsEditModalOpen(true);
-                                                }}
-                                                className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
-                                            >
-                                                <Edit className="w-3.5 h-3.5" />
-                                            </button>
-
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedDeleteId(donor.id);
-                                                    setIsDeleteModalOpen(true);
-                                                }}
-                                                className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination Footer */}
-                <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
-                    <span className="text-[12px] text-slate-500 font-medium">
-                        Showing{" "}
-                        <span className="font-semibold text-slate-700">
-                            {filteredDonors.length}
-                        </span>{" "}
-                        results
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                        <button
-                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
-                        >
-                            <ChevronLeft className="w-3.5 h-3.5" />
-                            Previous
-                        </button>
-                        <button className="px-3 py-1.5 bg-[#009689] text-white rounded-lg text-[12px] font-medium shadow-2xs">
-                            1
-                        </button>
-                        <button
-                            onClick={() => setCurrentPage((prev) => prev + 1)}
-                            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
-                        >
-                            Next
-                            <ChevronRightIcon className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Modals */}
-            {isRegisterModalOpen && (
-                <RegisterDonorModal
-                    onClose={() => setIsRegisterModalOpen(false)}
-                    onRegister={handleRegister}
-                />
-            )}
-            <BlockDonorModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onConfirm={() => {
-                    handleBlock(selectedDonorId);
-                    setIsModalOpen(false);
-                }}
-            />
-
-            <ApproveDonorModal
-                isOpen={isApproveModalOpen}
-                onClose={() => setIsApproveModalOpen(false)}
-                onConfirm={() => {
-                    handleApprove(selectedApproveId);
-                    setIsApproveModalOpen(false);
-                }}
-            />
-
-            <UnblockDonorModal
-                isOpen={isUnblockModalOpen}
-                onClose={() => setIsUnblockModalOpen(false)}
-                onConfirm={() => {
-                    handleUnblock(selectedUnblockId);
-                    setIsUnblockModalOpen(false);
-                }}
-            />
-
-            <DonorDetailsModal
-                isOpen={isDetailsModalOpen}
-                onClose={() => setIsDetailsModalOpen(false)}
-                donor={selectedDonorDetails}
-            />
-
-            <EditDonorModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                donor={selectedDonorToEdit}
-                onSave={handleEditSave}
-            />
-
-            <DeleteDonorModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={() => {
-                    handleDelete(selectedDeleteId);
-                    setIsDeleteModalOpen(false);
-                }}
-            />
+  return (
+    <div className="w-full px-8 py-6 flex flex-col gap-6">
+      {/* Page ka title */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Manage Donors</h1>
+          <p className="text-[13px] text-slate-500">{donors.length} registered donors</p>
         </div>
-    );
+        <button
+          onClick={() => setIsRegisterModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#009689] hover:bg-[#007f73] text-white rounded-xl text-[13px] font-semibold transition-colors shadow-xs cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          Register Donor
+        </button>
+      </div>
+
+      {/* Search aur filters */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by name, email or location..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#009689] shadow-2xs transition-all"
+          />
+        </div>
+
+        <div className="relative shrink-0">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-11 px-4 pr-10 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#009689] shadow-2xs appearance-none cursor-pointer transition-all"
+          >
+            <option value="All">Select...</option>
+            <option value="Approved">Approved</option>
+            <option value="Pending">Pending</option>
+            <option value="Blocked">Blocked</option>
+          </select>
+          <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Data load ho raha hai. */}
+      {loading && <p className="text-center text-slate-500 text-sm py-8">Loading donors...</p>}
+
+      {/* Donors ki table */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
+                <th className="py-3.5 px-6">Donor</th>
+                <th className="py-3.5 px-4">Phone</th>
+                <th className="py-3.5 px-4">Location</th>
+                <th className="py-3.5 px-4">Donations</th>
+                <th className="py-3.5 px-4">Joined</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-6 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-[13px]">
+              {filteredDonors.map((donor) => (
+                <tr key={donor.id} className="hover:bg-slate-50/60 transition-colors">
+                  {/* Donor ki details */}
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-9 h-9 ${donor.color} text-white font-bold text-[12px] rounded-full flex items-center justify-center shrink-0 shadow-sm`}
+                      >
+                        {donor.initials}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-900">{donor.name}</span>
+                        <span className="text-[12px] text-slate-400">{donor.email}</span>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Phone number */}
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-1.5 text-slate-600 font-medium">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{donor.phone}</span>
+                    </div>
+                  </td>
+
+                  {/* Location */}
+                  <td className="py-4 px-4 text-slate-600 font-medium">{donor.location}</td>
+
+                  {/* Donations ki tadaad */}
+                  <td className="py-4 px-4 font-semibold text-slate-800">{donor.donations}</td>
+
+                  {/* Account banne ki tareekh */}
+                  <td className="py-4 px-4 text-slate-500 font-medium">{donor.joined}</td>
+
+                  {/* Status ki chip */}
+                  <td className="py-4 px-4">
+                    {donor.status === "Approved" && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Approved
+                      </span>
+                    )}
+                    {donor.status === "Pending" && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-600 border border-amber-200/60">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        Pending
+                      </span>
+                    )}
+                    {donor.status === "Blocked" && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/60">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                        Blocked
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Action buttons */}
+                  <td className="py-4 px-6 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      {donor.status === "Approved" && (
+                        <button
+                          onClick={() => {
+                            setSelectedDonorId(donor.id);
+                            setIsModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <Ban className="w-3 h-3" />
+                          Block
+                        </button>
+                      )}
+                      {donor.status === "Blocked" && (
+                        <button
+                          onClick={() => {
+                            setSelectedUnblockId(donor.id);
+                            setIsUnblockModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <Check className="w-3 h-3" />
+                          Unblock
+                        </button>
+                      )}
+                      {donor.status === "Pending" && (
+                        <button
+                          onClick={() => {
+                            setSelectedApproveId(donor.id);
+                            setIsApproveModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <Check className="w-3 h-3" />
+                          Approve
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setSelectedDonorDetails(donor);
+                          setIsDetailsModalOpen(true);
+                        }}
+                        className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedDonorToEdit(donor);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="p-1.5 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedDeleteId(donor.id);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pages ke buttons */}
+        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
+          <span className="text-[12px] text-slate-500 font-medium">
+            Showing <span className="font-semibold text-slate-700">{filteredDonors.length}</span>{" "}
+            results
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              Previous
+            </button>
+            <button className="px-3 py-1.5 bg-[#009689] text-white rounded-lg text-[12px] font-medium shadow-2xs">
+              1
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+            >
+              Next
+              <ChevronRightIcon className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Page ke modals */}
+      {isRegisterModalOpen && (
+        <RegisterDonorModal
+          onClose={() => setIsRegisterModalOpen(false)}
+          onRegister={handleRegister}
+        />
+      )}
+      <BlockDonorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          handleBlock(selectedDonorId);
+          setIsModalOpen(false);
+        }}
+      />
+
+      <ApproveDonorModal
+        isOpen={isApproveModalOpen}
+        onClose={() => setIsApproveModalOpen(false)}
+        onConfirm={() => {
+          handleApprove(selectedApproveId);
+          setIsApproveModalOpen(false);
+        }}
+      />
+
+      <UnblockDonorModal
+        isOpen={isUnblockModalOpen}
+        onClose={() => setIsUnblockModalOpen(false)}
+        onConfirm={() => {
+          handleUnblock(selectedUnblockId);
+          setIsUnblockModalOpen(false);
+        }}
+      />
+
+      <DonorDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        donor={selectedDonorDetails}
+      />
+
+      <EditDonorModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        donor={selectedDonorToEdit}
+        onSave={handleEditSave}
+      />
+
+      <DeleteDonorModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          handleDelete(selectedDeleteId);
+          setIsDeleteModalOpen(false);
+        }}
+      />
+    </div>
+  );
 }

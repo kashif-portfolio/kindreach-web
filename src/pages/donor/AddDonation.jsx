@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getDonationTypes } from "../../services/adminService";
 import { addDonation } from "../../services/donorService";
-import {
-  Heart,
-  Lightbulb,
-} from "lucide-react";
+import { Heart, Lightbulb } from "lucide-react";
 
 export default function PostDonation() {
+  // Page ki states
   const [selectedCategory, setSelectedCategory] = useState("");
   const [formData, setFormData] = useState({
     description: "",
@@ -23,22 +21,30 @@ export default function PostDonation() {
 
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  // Page ka data load aur update karo.
   useEffect(() => {
     const loadCategories = async () => {
       try {
         const result = await getDonationTypes();
-        if (result.status !== 'success') throw new Error('Could not load categories');
-        setCategories((result.data || []).map((item) => ({
-          id: String(item.TypeID), name: item.TypeName, desc: item.Description || '',
-          icon: <Heart className="w-6 h-6 text-emerald-500" />,
-        })));
+        if (result.status !== "success") throw new Error("Could not load categories");
+        setCategories(
+          (result.data || []).map((item) => ({
+            id: String(item.TypeID),
+            name: item.TypeName,
+            desc: item.Description || "",
+            icon: <Heart className="w-6 h-6 text-emerald-500" />,
+          }))
+        );
       } catch (err) {
-        setError(err.response?.data?.message || err.message || 'Could not load categories');
-      } finally { setCategoriesLoading(false); }
+        setError(err.response?.data?.message || err.message || "Could not load categories");
+      } finally {
+        setCategoriesLoading(false);
+      }
     };
     loadCategories();
   }, []);
 
+  // Page ke action handlers
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -87,7 +93,7 @@ export default function PostDonation() {
         typeID: Number(typeID),
         title,
         description: formData.notes || title,
-        quantity, // string OK — "5 bags" or "20000"
+        quantity,
         location,
         urgencyLevel: formData.urgencyLevel,
       };
@@ -101,8 +107,7 @@ export default function PostDonation() {
         setError(result.message || "Failed to post donation");
       }
     } catch (err) {
-      const msg =
-        err.response?.data?.message || "Something went wrong. Try again.";
+      const msg = err.response?.data?.message || "Something went wrong. Try again.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -131,14 +136,14 @@ export default function PostDonation() {
           <span className="w-6 h-6 rounded-full bg-[#009689] text-white flex items-center justify-center text-[12px] font-bold">
             1
           </span>
-          <h2 className="text-[15px] font-bold text-slate-900">
-            Choose a Category
-          </h2>
+          <h2 className="text-[15px] font-bold text-slate-900">Choose a Category</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {categoriesLoading && <p>Loading categories...</p>}
-          {!categoriesLoading && categories.length === 0 && <p>No categories available. Contact admin.</p>}
+          {!categoriesLoading && categories.length === 0 && (
+            <p>No categories available. Contact admin.</p>
+          )}
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             return (
@@ -154,9 +159,7 @@ export default function PostDonation() {
                 <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-1">
                   {cat.icon}
                 </div>
-                <h4 className="text-[14px] font-bold text-slate-900">
-                  {cat.name}
-                </h4>
+                <h4 className="text-[14px] font-bold text-slate-900">{cat.name}</h4>
                 <p className="text-[12px] text-slate-500">{cat.desc}</p>
                 {isSelected && (
                   <span className="text-[11px] font-semibold text-[#E17100] bg-[#FFFBEB] px-2.5 py-0.5 rounded-full mt-2 border border-amber-200">
@@ -175,9 +178,7 @@ export default function PostDonation() {
             <span className="w-6 h-6 rounded-full bg-[#009689] text-white flex items-center justify-center text-[12px] font-bold">
               2
             </span>
-            <h2 className="text-[15px] font-bold text-slate-900">
-              Donation Details
-            </h2>
+            <h2 className="text-[15px] font-bold text-slate-900">Donation Details</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -228,9 +229,14 @@ export default function PostDonation() {
               </div>
             </div>
 
-            {/* Urgency selected by the donor is saved with the donation. */}
+            {/* Selected urgency donation ke saath save hoti hai. */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="donation-urgency" className="text-[13px] font-semibold text-slate-800">Urgency</label>
+              <label
+                htmlFor="donation-urgency"
+                className="text-[13px] font-semibold text-slate-800"
+              >
+                Urgency
+              </label>
               <select
                 id="donation-urgency"
                 name="urgencyLevel"
@@ -242,7 +248,9 @@ export default function PostDonation() {
                 <option value="Priority">Priority</option>
                 <option value="Urgent">Urgent</option>
               </select>
-              <p className="text-xs text-slate-500">Choose Urgent for items that need quick collection, such as fresh food.</p>
+              <p className="text-xs text-slate-500">
+                Choose Urgent for items that need quick collection, such as fresh food.
+              </p>
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -300,7 +308,8 @@ export default function PostDonation() {
                 Live Preview
               </span>
               <span className="text-[11px] font-semibold text-[#E17100] bg-[#FFFBEB] px-2.5 py-1 rounded-md border border-amber-200">
-                {categories.find((item) => item.id === selectedCategory)?.name || 'Select a category'}
+                {categories.find((item) => item.id === selectedCategory)?.name ||
+                  "Select a category"}
               </span>
             </div>
             <div className="flex flex-col gap-2">
@@ -345,9 +354,7 @@ export default function PostDonation() {
                 <span className="w-6 h-6 rounded-full bg-[#00BC7D] text-white flex items-center justify-center text-[12px] font-bold shrink-0">
                   1
                 </span>
-                <span className="text-[13px] text-slate-700 font-medium">
-                  Post your donation
-                </span>
+                <span className="text-[13px] text-slate-700 font-medium">Post your donation</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="w-6 h-6 rounded-full bg-[#00BBA7] text-white flex items-center justify-center text-[12px] font-bold shrink-0">
@@ -369,9 +376,7 @@ export default function PostDonation() {
                 <span className="w-6 h-6 rounded-full bg-[#AD46FF] text-white flex items-center justify-center text-[12px] font-bold shrink-0">
                   4
                 </span>
-                <span className="text-[13px] text-slate-700 font-medium">
-                  Coordinate delivery
-                </span>
+                <span className="text-[13px] text-slate-700 font-medium">Coordinate delivery</span>
               </div>
             </div>
           </div>

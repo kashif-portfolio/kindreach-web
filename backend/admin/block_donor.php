@@ -1,45 +1,44 @@
 <?php
-// ============================================
-// KindReach - Block Donor (Admin)
-// ============================================
 
-require_once '../db_connect.php';
+// Donor account block karo.
+require_once "../db_connect.php";
 
-$currentUser = require_login(['Admin']);
+$currentUser = require_login(["Admin"]);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only POST method is allowed"]);
-    exit();
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+  http_response_code(405);
+  echo json_encode(["status" => "error", "message" => "Only POST method is allowed"]);
+  exit();
 }
 
+// Frontend se aaya data
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (empty($data['userID'])) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "userID is required"]);
-    exit();
+if (empty($data["userID"])) {
+  http_response_code(400);
+  echo json_encode(["status" => "error", "message" => "userID is required"]);
+  exit();
 }
 
-$userID = (int)$data['userID'];
+$userID = (int) $data["userID"];
 
+// Database ka kaam
 try {
-    $stmt = $pdo->prepare("UPDATE user SET Status = 'Blocked' WHERE UserID = ?");
-    $stmt->execute([$userID]);
+  $stmt = $pdo->prepare("UPDATE user SET Status = 'Blocked' WHERE UserID = ?");
+  $stmt->execute([$userID]);
 
-    if ($stmt->rowCount() === 0) {
-        http_response_code(404);
-        echo json_encode(["status" => "error", "message" => "User not found"]);
-        exit();
-    }
+  if ($stmt->rowCount() === 0) {
+    http_response_code(404);
+    echo json_encode(["status" => "error", "message" => "User not found"]);
+    exit();
+  }
 
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Donor blocked successfully"
-    ]);
-
+  http_response_code(200);
+  echo json_encode([
+    "status" => "success",
+    "message" => "Donor blocked successfully",
+  ]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
 }

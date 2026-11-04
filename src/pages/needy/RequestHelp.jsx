@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { submitHelpRequest } from "../../services/needyService";
 
 export default function RequestHelp() {
+  // Page ki states
   const [formData, setFormData] = useState({
     helpType: "",
     description: "",
@@ -13,10 +14,11 @@ export default function RequestHelp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  // Optional supporting document 
+  // Supporting document
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // Input ki value update karo.
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -46,12 +48,12 @@ export default function RequestHelp() {
       return;
     }
 
-    // Map long urgency label to short value for database
+    // Urgency ko database ki value mein badlo.
     let urgency = "Normal";
     if (formData.urgency.includes("Priority")) urgency = "Priority";
     else if (formData.urgency.includes("Urgent")) urgency = "Urgent";
 
-    // Append optional location and preferred donor into description text
+    // Location aur donor preference description mein rakho.
     let fullDescription = formData.description.trim();
     if (formData.location.trim()) {
       fullDescription += `\nLocation: ${formData.location.trim()}`;
@@ -63,12 +65,12 @@ export default function RequestHelp() {
 
     try {
       const payload = new FormData();
-      payload.append('needyID', user.needyID);
-      payload.append('helpType', formData.helpType);
-      payload.append('description', fullDescription);
-      payload.append('quantity', formData.quantity.trim());
-      payload.append('urgency', urgency);
-      if (selectedFile) payload.append('document', selectedFile);
+      payload.append("needyID", user.needyID);
+      payload.append("helpType", formData.helpType);
+      payload.append("description", fullDescription);
+      payload.append("quantity", formData.quantity.trim());
+      payload.append("urgency", urgency);
+      if (selectedFile) payload.append("document", selectedFile);
       const result = await submitHelpRequest(payload);
 
       if (result.status === "success") {
@@ -103,7 +105,7 @@ export default function RequestHelp() {
       preferredDonor: "",
     });
     setSelectedFile(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setError("");
     setSuccess("");
   };
@@ -113,9 +115,7 @@ export default function RequestHelp() {
       <div>
         <p className="text-xs text-slate-400 mb-1">Home / Request Help</p>
         <h1 className="text-xl font-bold text-slate-800">Request Help</h1>
-        <p className="text-sm text-slate-500">
-          Request a specific item or financial assistance
-        </p>
+        <p className="text-sm text-slate-500">Request a specific item or financial assistance</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -124,9 +124,7 @@ export default function RequestHelp() {
           className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm space-y-5"
         >
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Help Type *
-            </label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Help Type *</label>
             <select
               name="helpType"
               value={formData.helpType}
@@ -186,9 +184,7 @@ export default function RequestHelp() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Urgency *
-              </label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Urgency *</label>
               <select
                 name="urgency"
                 value={formData.urgency}
@@ -196,15 +192,9 @@ export default function RequestHelp() {
                 className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:border-[#009689]"
               >
                 <option value="">Select...</option>
-                <option value="Normal - within 7 days">
-                  Normal - within 7 days
-                </option>
-                <option value="Priority - within 3 days">
-                  Priority - within 3 days
-                </option>
-                <option value="Urgent - within 24 Hours">
-                  Urgent - within 24 Hours
-                </option>
+                <option value="Normal - within 7 days">Normal - within 7 days</option>
+                <option value="Priority - within 3 days">Priority - within 3 days</option>
+                <option value="Urgent - within 24 Hours">Urgent - within 24 Hours</option>
               </select>
             </div>
             <div>
@@ -219,14 +209,11 @@ export default function RequestHelp() {
               >
                 <option value="">Select...</option>
                 <option value="Any Suitable Donor">Any Suitable Donor</option>
-                
-                
-                
               </select>
             </div>
           </div>
 
-          {/* Supporting document — shows selected file name */}
+          {/* Selected document ka naam */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               Supporting Document (Optional)
@@ -248,8 +235,7 @@ export default function RequestHelp() {
                     ></path>
                   </svg>
                   <p className="text-xs text-slate-500 font-medium">
-                    <span className="text-[#009689]">Click to upload</span> or
-                    drag and drop
+                    <span className="text-[#009689]">Click to upload</span> or drag and drop
                   </p>
                   <p className="text-[10px] text-slate-400 mt-0.5">
                     PDF, PNG or JPG (MAX. 10MB) — optional
@@ -257,7 +243,7 @@ export default function RequestHelp() {
                 </div>
                 <input
                   type="file"
-                ref={fileInputRef}
+                  ref={fileInputRef}
                   className="hidden"
                   accept=".pdf,.png,.jpg,.jpeg"
                   onChange={(e) => {
@@ -267,7 +253,7 @@ export default function RequestHelp() {
                 />
               </label>
 
-              {/* Show selected file name so user knows upload picked a file */}
+              {/* Upload ke liye select hui file ka naam dikhao. */}
               {selectedFile && (
                 <p className="mt-2 text-xs text-[#009689] font-medium">
                   Selected: {selectedFile.name}

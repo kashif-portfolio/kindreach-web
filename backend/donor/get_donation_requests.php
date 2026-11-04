@@ -1,29 +1,28 @@
 <?php
-// ============================================
-// KindReach - Get Donation Requests (for Donor)
-// ============================================
 
-require_once '../db_connect.php';
+// Donor ko aayi requests
+require_once "../db_connect.php";
 
-$currentUser = require_login(['Donor']);
-require_own_id($_GET['donorID'] ?? 0, $currentUser['donorID']);
+$currentUser = require_login(["Donor"]);
+require_own_id($_GET["donorID"] ?? 0, $currentUser["donorID"]);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only GET method is allowed"]);
-    exit();
+if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+  http_response_code(405);
+  echo json_encode(["status" => "error", "message" => "Only GET method is allowed"]);
+  exit();
 }
 
-if (empty($_GET['donorID'])) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "donorID is required"]);
-    exit();
+if (empty($_GET["donorID"])) {
+  http_response_code(400);
+  echo json_encode(["status" => "error", "message" => "donorID is required"]);
+  exit();
 }
 
-$donorID = (int)$_GET['donorID'];
+$donorID = (int) $_GET["donorID"];
 
+// Database ka kaam
 try {
-    $stmt = $pdo->prepare("
+  $stmt = $pdo->prepare("
         SELECT 
             dr.RequestID,
             dr.Message,
@@ -40,20 +39,19 @@ try {
         WHERE d.DonorID = ?
         ORDER BY dr.RequestDate DESC
     ");
-    $stmt->execute([$donorID]);
-    $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt->execute([$donorID]);
+  $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Requests fetched successfully",
-        "data" => $requests
-    ]);
-
+  http_response_code(200);
+  echo json_encode([
+    "status" => "success",
+    "message" => "Requests fetched successfully",
+    "data" => $requests,
+  ]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode([
-        "status" => "error",
-        "message" => "Failed to fetch requests: " . $e->getMessage()
-    ]);
+  http_response_code(500);
+  echo json_encode([
+    "status" => "error",
+    "message" => "Failed to fetch requests: " . $e->getMessage(),
+  ]);
 }

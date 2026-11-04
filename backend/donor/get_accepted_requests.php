@@ -1,24 +1,27 @@
 <?php
-require_once '../db_connect.php';
 
-$currentUser = require_login(['Donor']);
-require_own_id($_GET['donorID'] ?? 0, $currentUser['donorID']);
+// Delivery ke liye accepted requests
+require_once "../db_connect.php";
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only GET allowed"]);
-    exit();
+$currentUser = require_login(["Donor"]);
+require_own_id($_GET["donorID"] ?? 0, $currentUser["donorID"]);
+
+if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+  http_response_code(405);
+  echo json_encode(["status" => "error", "message" => "Only GET allowed"]);
+  exit();
 }
 
-$donorID = isset($_GET['donorID']) ? (int)$_GET['donorID'] : 0;
+$donorID = isset($_GET["donorID"]) ? (int) $_GET["donorID"] : 0;
 if (!$donorID) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "donorID required"]);
-    exit();
+  http_response_code(400);
+  echo json_encode(["status" => "error", "message" => "donorID required"]);
+  exit();
 }
 
+// Database ka kaam
 try {
-    $stmt = $pdo->prepare("
+  $stmt = $pdo->prepare("
         SELECT 
             dr.RequestID,
             d.Title AS DonationTitle,
@@ -30,12 +33,12 @@ try {
         WHERE d.DonorID = ? AND dr.Status IN ('Accepted', 'Approved') AND NOT EXISTS (SELECT 1 FROM delivery_schedule ds WHERE ds.RequestID = dr.RequestID)
         ORDER BY dr.RequestDate DESC
     ");
-    $stmt->execute([$donorID]);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt->execute([$donorID]);
+  $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    http_response_code(200);
-    echo json_encode(["status" => "success", "data" => $rows]);
+  http_response_code(200);
+  echo json_encode(["status" => "success", "data" => $rows]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
 }

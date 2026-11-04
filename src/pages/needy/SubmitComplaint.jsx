@@ -3,12 +3,14 @@ import { submitComplaint } from "../../services/complaintService";
 import { Send } from "lucide-react";
 
 export default function NeedySubmitComplaint() {
+  // Page ki states
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
+  // Form submit karo.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -28,11 +30,7 @@ export default function NeedySubmitComplaint() {
 
     setLoading(true);
     try {
-      const result = await submitComplaint(
-        userID,
-        subject.trim(),
-        description.trim()
-      );
+      const result = await submitComplaint(userID, subject.trim(), description.trim());
       if (result.status === "success") {
         setSuccess("Complaint submitted. Admin will review it.");
         setSubject("");

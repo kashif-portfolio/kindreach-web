@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: "Inter", sans-serif;
 
-  /* Brand Theme Colors */
+  /* Theme ke colors */
   --color-primary: #059669;
   --color-primary-hover: #047857;
-  --color-secondary: #0D9488;
-  --color-urgent: #D97706;
+  --color-secondary: #0d9488;
+  --color-urgent: #d97706;
 
-  /* Neutral Colors */
-  --color-app-bg: #FAFAFA;
-  --color-card-bg: #FFFFFF;
-  --color-border-subtle: #E2E8F0;
+  /* Background aur border ke colors */
+  --color-app-bg: #fafafa;
+  --color-card-bg: #ffffff;
+  --color-border-subtle: #e2e8f0;
 
-  /* Text Colors */
-  --color-text-dark: #0F172A;
-  --color-text-muted: #64748B;
+  /* Text ke colors */
+  --color-text-dark: #0f172a;
+  --color-text-muted: #64748b;
 
-  /* Radius & Shadows */
+  /* Corners ki roundness */
   --radius-card: 12px;
   --radius-btn: 8px;
 }
@@ -31,7 +31,7 @@ body {
   padding: 0;
 }
 
-/* Sidebar still scrolls with the wheel, touch and keyboard, without a visible bar. */
+/* Scroll chalta rahe, sirf scrollbar chhupao. */
 .sidebar-scroll {
   scrollbar-width: none;
   -ms-overflow-style: none;

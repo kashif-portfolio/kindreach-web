@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { updateProfile, changePassword } from "../../services/authService";
-import {
-  Edit3,
-  Camera,
-  Save,
-  X,
-  CheckCircle2,
-} from "lucide-react";
+import { Edit3, Camera, Save, X, CheckCircle2 } from "lucide-react";
 
 export default function MyProfile() {
+  // Page ki states
   const [isEditing, setIsEditing] = useState(false);
 
   const [profileData, setProfileData] = useState({
@@ -28,7 +23,7 @@ export default function MyProfile() {
     confirmPassword: "",
   });
 
-  // Load profile from localStorage (set at login)
+  // Login par save hui profile ki values lao.
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (!user.userID) return;
@@ -52,6 +47,7 @@ export default function MyProfile() {
     .substring(0, 2)
     .toUpperCase();
 
+  // Input ki value update karo.
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfileData((prev) => ({ ...prev, [name]: value }));
@@ -62,7 +58,7 @@ export default function MyProfile() {
     setPasswords((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Save profile to database + localStorage
+  // Profile API aur localStorage mein update karo.
   const handleSave = async (e) => {
     e.preventDefault();
 
@@ -98,7 +94,7 @@ export default function MyProfile() {
     }
   };
 
-  // Change password in database
+  // API se password change karo.
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
 
@@ -153,7 +149,7 @@ export default function MyProfile() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* LEFT: Summary */}
+        {/* Profile ki summary */}
         <div className="lg:col-span-4 bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm flex flex-col items-center text-center h-fit">
           <div className="w-20 h-20 rounded-full bg-[#009689] flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-md relative group">
             {initials}
@@ -184,7 +180,7 @@ export default function MyProfile() {
           </div>
         </div>
 
-        {/* RIGHT: Form */}
+        {/* Profile ka form */}
         <div className="lg:col-span-8 flex flex-col gap-4">
           <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
@@ -222,43 +218,103 @@ export default function MyProfile() {
               <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-semibold text-slate-600">Full Name</label>
-                  <input type="text" name="fullName" value={profileData.fullName} onChange={handleChange} className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]" />
+                  <input
+                    type="text"
+                    name="fullName"
+                    value={profileData.fullName}
+                    onChange={handleChange}
+                    className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]"
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-semibold text-slate-600">Email Address</label>
-                  <input type="email" name="email" value={profileData.email} disabled className="p-2 rounded-lg border border-slate-200 text-[12px] bg-slate-50 text-slate-500" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={profileData.email}
+                    disabled
+                    className="p-2 rounded-lg border border-slate-200 text-[12px] bg-slate-50 text-slate-500"
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-semibold text-slate-600">Phone Number</label>
-                  <input type="text" name="phone" value={profileData.phone} onChange={handleChange} className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]" />
+                  <input
+                    type="text"
+                    name="phone"
+                    value={profileData.phone}
+                    onChange={handleChange}
+                    className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]"
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-semibold text-slate-600">Physical Address</label>
-                  <input type="text" name="physicalAddress" value={profileData.physicalAddress} onChange={handleChange} className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]" />
+                  <label className="text-[11px] font-semibold text-slate-600">
+                    Physical Address
+                  </label>
+                  <input
+                    type="text"
+                    name="physicalAddress"
+                    value={profileData.physicalAddress}
+                    onChange={handleChange}
+                    className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]"
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-semibold text-slate-600">ID Type</label>
-                  <input type="text" name="idType" value={profileData.idType} onChange={handleChange} className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]" />
+                  <input
+                    type="text"
+                    name="idType"
+                    value={profileData.idType}
+                    onChange={handleChange}
+                    className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]"
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-semibold text-slate-600">ID Number</label>
-                  <input type="text" name="idNumber" value={profileData.idNumber} onChange={handleChange} className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]" />
+                  <input
+                    type="text"
+                    name="idNumber"
+                    value={profileData.idNumber}
+                    onChange={handleChange}
+                    className="p-2 rounded-lg border border-slate-200 text-[12px] focus:outline-none focus:border-[#009689]"
+                  />
                 </div>
               </form>
             ) : (
               <div className="flex flex-col divide-y divide-slate-100 text-[12px]">
-                <div className="py-2.5 flex justify-between items-center"><span className="text-slate-500">Full Name</span><span className="font-semibold text-slate-800">{profileData.fullName}</span></div>
-                <div className="py-2.5 flex justify-between items-center"><span className="text-slate-500">Email Address</span><span className="font-semibold text-slate-800">{profileData.email}</span></div>
-                <div className="py-2.5 flex justify-between items-center"><span className="text-slate-500">Phone Number</span><span className="font-semibold text-slate-800">{profileData.phone}</span></div>
-                <div className="py-2.5 flex justify-between items-center"><span className="text-slate-500">Physical Address</span><span className="font-semibold text-slate-800">{profileData.physicalAddress}</span></div>
-                <div className="py-2.5 flex justify-between items-center"><span className="text-slate-500">ID Type</span><span className="font-semibold text-slate-800">{profileData.idType}</span></div>
-                <div className="py-2.5 flex justify-between items-center"><span className="text-slate-500">ID Number</span><span className="font-semibold text-slate-800">{profileData.idNumber}</span></div>
+                <div className="py-2.5 flex justify-between items-center">
+                  <span className="text-slate-500">Full Name</span>
+                  <span className="font-semibold text-slate-800">{profileData.fullName}</span>
+                </div>
+                <div className="py-2.5 flex justify-between items-center">
+                  <span className="text-slate-500">Email Address</span>
+                  <span className="font-semibold text-slate-800">{profileData.email}</span>
+                </div>
+                <div className="py-2.5 flex justify-between items-center">
+                  <span className="text-slate-500">Phone Number</span>
+                  <span className="font-semibold text-slate-800">{profileData.phone}</span>
+                </div>
+                <div className="py-2.5 flex justify-between items-center">
+                  <span className="text-slate-500">Physical Address</span>
+                  <span className="font-semibold text-slate-800">
+                    {profileData.physicalAddress}
+                  </span>
+                </div>
+                <div className="py-2.5 flex justify-between items-center">
+                  <span className="text-slate-500">ID Type</span>
+                  <span className="font-semibold text-slate-800">{profileData.idType}</span>
+                </div>
+                <div className="py-2.5 flex justify-between items-center">
+                  <span className="text-slate-500">ID Number</span>
+                  <span className="font-semibold text-slate-800">{profileData.idNumber}</span>
+                </div>
               </div>
             )}
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
-            <h3 className="text-[14px] font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Change Password</h3>
+            <h3 className="text-[14px] font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">
+              Change Password
+            </h3>
 
             <form onSubmit={handlePasswordUpdate} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
@@ -286,7 +342,9 @@ export default function MyProfile() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-semibold text-slate-600">Confirm New Password</label>
+                  <label className="text-[11px] font-semibold text-slate-600">
+                    Confirm New Password
+                  </label>
                   <input
                     type="password"
                     name="confirmPassword"

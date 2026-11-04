@@ -1,20 +1,19 @@
 <?php
-// ============================================
-// KindReach - Get All Donation Requests (Admin)
-// ============================================
 
-require_once '../db_connect.php';
+// Admin ke liye donation requests
+require_once "../db_connect.php";
 
-$currentUser = require_login(['Admin']);
+$currentUser = require_login(["Admin"]);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Only GET method is allowed"]);
-    exit();
+if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+  http_response_code(405);
+  echo json_encode(["status" => "error", "message" => "Only GET method is allowed"]);
+  exit();
 }
 
+// Database ka kaam
 try {
-    $stmt = $pdo->prepare("
+  $stmt = $pdo->prepare("
         SELECT 
             dr.RequestID,
             dr.Status,
@@ -33,17 +32,16 @@ try {
         LEFT JOIN user needy_user ON np.UserID = needy_user.UserID
         ORDER BY dr.RequestID ASC
     ");
-    $stmt->execute();
-    $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt->execute();
+  $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "All requests fetched successfully",
-        "data" => $requests
-    ]);
-
+  http_response_code(200);
+  echo json_encode([
+    "status" => "success",
+    "message" => "All requests fetched successfully",
+    "data" => $requests,
+  ]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["status" => "error", "message" => "Failed: " . $e->getMessage()]);
 }

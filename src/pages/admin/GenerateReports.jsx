@@ -3,6 +3,7 @@ import { generateReport } from "../../services/adminService";
 import { FileText, ChevronDown, Download } from "lucide-react";
 
 export default function GenerateReports() {
+  // Page ki states
   const [reportType, setReportType] = useState("");
   const [fromDate, setFromDate] = useState("2024-01-01");
   const [toDate, setToDate] = useState("2026-12-31");
@@ -10,6 +11,7 @@ export default function GenerateReports() {
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Page ke action handlers
   const handleGenerate = async () => {
     if (!reportType) {
       alert("Please select a report type!");
@@ -36,9 +38,7 @@ export default function GenerateReports() {
   return (
     <div className="w-full px-8 py-6 flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
-          Generate Reports
-        </h1>
+        <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Generate Reports</h1>
         <p className="text-[13px] text-slate-500">
           Generate the three reports defined in the project requirements
         </p>
@@ -47,9 +47,7 @@ export default function GenerateReports() {
       <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col gap-3">
         <div className="grid grid-cols-12 gap-4 items-end">
           <div className="col-span-4 flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-slate-700">
-              Report type
-            </label>
+            <label className="text-[12px] font-semibold text-slate-700">Report type</label>
             <div className="relative">
               <select
                 value={reportType}
@@ -59,18 +57,14 @@ export default function GenerateReports() {
                 <option value="">Select...</option>
                 <option value="Total Donations">Total Donations</option>
                 <option value="Active Donors">Active Donors</option>
-                <option value="Completed Charity Requests">
-                  Completed Charity Requests
-                </option>
+                <option value="Completed Charity Requests">Completed Charity Requests</option>
               </select>
               <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
 
           <div className="col-span-3 flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-slate-700">
-              From date
-            </label>
+            <label className="text-[12px] font-semibold text-slate-700">From date</label>
             <input
               type="date"
               value={fromDate}
@@ -80,9 +74,7 @@ export default function GenerateReports() {
           </div>
 
           <div className="col-span-3 flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-slate-700">
-              To date
-            </label>
+            <label className="text-[12px] font-semibold text-slate-700">To date</label>
             <input
               type="date"
               value={toDate}
@@ -105,8 +97,7 @@ export default function GenerateReports() {
         </div>
 
         <p className="text-[12px] text-slate-400 mt-1">
-          Available reports: total donations, active donors, and completed
-          charity requests.
+          Available reports: total donations, active donors, and completed charity requests.
         </p>
       </div>
 
@@ -123,9 +114,7 @@ export default function GenerateReports() {
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/40">
             <div className="flex flex-col gap-0.5">
-              <h3 className="text-[14px] font-bold text-slate-900">
-                {reportType} Report
-              </h3>
+              <h3 className="text-[14px] font-bold text-slate-900">{reportType} Report</h3>
               <p className="text-[12px] text-slate-500">
                 Showing results from {fromDate} to {toDate}
               </p>
@@ -154,22 +143,14 @@ export default function GenerateReports() {
               <tbody className="divide-y divide-slate-100 text-[13px]">
                 {reportData.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-8 text-center text-slate-400 text-[13px]"
-                    >
+                    <td colSpan={5} className="py-8 text-center text-slate-400 text-[13px]">
                       No records found for this range.
                     </td>
                   </tr>
                 )}
                 {reportData.map((item, index) => (
-                  <tr
-                    key={item.id || index}
-                    className="hover:bg-slate-50/60 transition-colors"
-                  >
-                    <td className="py-4 px-6 text-slate-500 font-medium">
-                      #{index + 1}
-                    </td>
+                  <tr key={item.id || index} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-4 px-6 text-slate-500 font-medium">#{index + 1}</td>
                     <td className="py-4 px-4 font-semibold text-slate-900">
                       {item.title || item.name || "—"}
                     </td>
@@ -177,13 +158,9 @@ export default function GenerateReports() {
                       {item.donor ||
                         item.requester ||
                         item.email ||
-                        (item.totalDonations != null
-                          ? `${item.totalDonations} donations`
-                          : "—")}
+                        (item.totalDonations != null ? `${item.totalDonations} donations` : "—")}
                     </td>
-                    <td className="py-4 px-4 text-slate-500">
-                      {item.date || "N/A"}
-                    </td>
+                    <td className="py-4 px-4 text-slate-500">{item.date || "N/A"}</td>
                     <td className="py-4 px-6">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>

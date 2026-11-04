@@ -3,16 +3,18 @@ import { Navigate } from "react-router-dom";
 import { getSession } from "../services/authService";
 
 export default function ProtectedRoute({ children, allow }) {
+  // Page ki states
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Page ka data load aur update karo.
   useEffect(() => {
     let active = true;
 
     const checkLogin = async () => {
       try {
-        // localStorage is only a display cache. PHP decides who is logged in.
+        // Login ka asal check PHP session se hota hai.
         const result = await getSession();
         if (active && result.status === "success") {
           localStorage.setItem("user", JSON.stringify(result.data));
@@ -32,7 +34,9 @@ export default function ProtectedRoute({ children, allow }) {
     };
 
     checkLogin();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   if (loading) return <p>Checking login...</p>;

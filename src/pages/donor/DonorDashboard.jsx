@@ -24,7 +24,7 @@ export default function DonorDashboard() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // KPI counts
+  // Dashboard ke counts
   const [stats, setStats] = useState({
     donations: 0,
     pendingRequests: 0,
@@ -32,12 +32,12 @@ export default function DonorDashboard() {
     peopleHelped: 0,
   });
 
-  // Lists for boxes
+  // Dashboard ki lists
   const [recentDonations, setRecentDonations] = useState([]);
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load donations + requests from API
+  // API se donations aur requests lao.
   useEffect(() => {
     const load = async () => {
       if (!user.donorID) {
@@ -49,18 +49,12 @@ export default function DonorDashboard() {
         const donRes = await getMyDonations(user.donorID);
         const reqRes = await getDonationRequests(user.donorID);
 
-        const donations =
-          donRes.status === "success" ? donRes.data || [] : [];
-        const requests =
-          reqRes.status === "success" ? reqRes.data || [] : [];
+        const donations = donRes.status === "success" ? donRes.data || [] : [];
+        const requests = reqRes.status === "success" ? reqRes.data || [] : [];
 
         const pending = requests.filter((r) => r.Status === "Pending");
-        const accepted = requests.filter(
-          (r) => r.Status === "Accepted" || r.Status === "Approved"
-        );
-        const delivered = donations.filter(
-          (d) => d.Status === "Delivered"
-        ).length;
+        const accepted = requests.filter((r) => r.Status === "Accepted" || r.Status === "Approved");
+        const delivered = donations.filter((d) => d.Status === "Delivered").length;
 
         setStats({
           donations: donations.length,
@@ -69,9 +63,9 @@ export default function DonorDashboard() {
           peopleHelped: accepted.length,
         });
 
-        // Latest 3 donations
+        // Aakhri teen donations
         setRecentDonations(donations.slice(0, 3));
-        // Latest 2 pending requests for quick actions
+        // Aakhri do pending requests
         setIncomingRequests(pending.slice(0, 2));
       } catch (err) {
         console.error(err);
@@ -83,14 +77,12 @@ export default function DonorDashboard() {
     load();
   }, []);
 
-  // Accept from dashboard → refresh list
+  // Request accept karke list update karo.
   const handleAccept = async (requestID) => {
     try {
       const result = await acceptRequest(requestID);
       if (result.status === "success") {
-        setIncomingRequests((prev) =>
-          prev.filter((r) => r.RequestID !== requestID)
-        );
+        setIncomingRequests((prev) => prev.filter((r) => r.RequestID !== requestID));
         setStats((s) => ({
           ...s,
           pendingRequests: Math.max(0, s.pendingRequests - 1),
@@ -104,14 +96,12 @@ export default function DonorDashboard() {
     }
   };
 
-  // Decline from dashboard
+  // Dashboard se request reject karo.
   const handleDecline = async (requestID) => {
     try {
       const result = await declineRequest(requestID);
       if (result.status === "success") {
-        setIncomingRequests((prev) =>
-          prev.filter((r) => r.RequestID !== requestID)
-        );
+        setIncomingRequests((prev) => prev.filter((r) => r.RequestID !== requestID));
         setStats((s) => ({
           ...s,
           pendingRequests: Math.max(0, s.pendingRequests - 1),
@@ -135,15 +125,11 @@ export default function DonorDashboard() {
   return (
     <div className="w-full px-8 py-4 flex flex-col gap-6">
       <div className="flex flex-col">
-        <h1 className="text-[20px] font-bold text-slate-900 tracking-tight">
-          Donor Dashboard
-        </h1>
-        <p className="text-[14px] text-text-muted">
-          Welcome back, {user.name || "Donor"}
-        </p>
+        <h1 className="text-[20px] font-bold text-slate-900 tracking-tight">Donor Dashboard</h1>
+        <p className="text-[14px] text-text-muted">Welcome back, {user.name || "Donor"}</p>
       </div>
 
-      {/* KPI cards */}
+      {/* Summary ke cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white px-5 py-4 rounded-2xl border border-border-subtle shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
@@ -158,9 +144,7 @@ export default function DonorDashboard() {
             <h2 className="text-[26px] font-bold text-slate-900 leading-none">
               {loading ? "…" : stats.donations}
             </h2>
-            <span className="text-[11px] font-medium text-[#94A3B8] mt-1">
-              - All time
-            </span>
+            <span className="text-[11px] font-medium text-[#94A3B8] mt-1">- All time</span>
           </div>
         </div>
 
@@ -197,9 +181,7 @@ export default function DonorDashboard() {
             <h2 className="text-[26px] font-bold text-slate-900 leading-none">
               {loading ? "…" : stats.delivered}
             </h2>
-            <span className="text-[11px] font-medium text-[#94A3B8] mt-1">
-              - All the time
-            </span>
+            <span className="text-[11px] font-medium text-[#94A3B8] mt-1">- All the time</span>
           </div>
         </div>
 
@@ -216,21 +198,17 @@ export default function DonorDashboard() {
             <h2 className="text-[26px] font-bold text-slate-900 leading-none">
               {loading ? "…" : stats.peopleHelped}
             </h2>
-            <span className="text-[11px] font-medium text-[#94A3B8] mt-1">
-              - Accepted requests
-            </span>
+            <span className="text-[11px] font-medium text-[#94A3B8] mt-1">- Accepted requests</span>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-2">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* Recent Donations — live top 3 */}
+          {/* Recent donations */}
           <div className="bg-white rounded-2xl border border-border-subtle shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-[15px] font-bold text-slate-900">
-                Recent Donations
-              </h3>
+              <h3 className="text-[15px] font-bold text-slate-900">Recent Donations</h3>
               <Link
                 to="/donor/my-donations"
                 className="flex items-center gap-1 text-[13px] font-semibold text-[#009689] hover:text-[#007b70] cursor-pointer"
@@ -251,22 +229,17 @@ export default function DonorDashboard() {
                 const title = item.Title || "Donation";
                 const qty = item.Quantity || "";
                 const location = item.Location || "";
-                const date = item.CreatedAt
-                  ? String(item.CreatedAt).split(" ")[0]
-                  : "";
+                const date = item.CreatedAt ? String(item.CreatedAt).split(" ")[0] : "";
                 const status = item.Status || "Available";
                 const { icon, wrap } = getTypeIcon();
 
-                const isAvailable =
-                  status === "Available" || status === "Approved";
+                const isAvailable = status === "Available" || status === "Approved";
 
                 return (
                   <div
                     key={item.DonationID || index}
                     className={`px-6 py-3.5 flex items-center justify-between ${
-                      index < recentDonations.length - 1
-                        ? "border-b border-slate-100"
-                        : ""
+                      index < recentDonations.length - 1 ? "border-b border-slate-100" : ""
                     }`}
                   >
                     <div className="flex items-center gap-3.5">
@@ -276,9 +249,7 @@ export default function DonorDashboard() {
                         {icon}
                       </div>
                       <div className="flex flex-col gap-0.5">
-                        <h4 className="text-[14px] font-bold text-slate-900">
-                          {title}
-                        </h4>
+                        <h4 className="text-[14px] font-bold text-slate-900">{title}</h4>
                         <p className="text-[12px] text-text-muted">
                           {[qty, location, date].filter(Boolean).join(" · ")}
                         </p>
@@ -310,12 +281,10 @@ export default function DonorDashboard() {
             </div>
           </div>
 
-          {/* Incoming Requests — live top 2 pending */}
+          {/* Recent pending requests */}
           <div className="bg-white rounded-2xl border border-border-subtle shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-[15px] font-bold text-slate-900">
-                Incoming Requests
-              </h3>
+              <h3 className="text-[15px] font-bold text-slate-900">Incoming Requests</h3>
               <Link
                 to="/donor/donation-requests"
                 className="flex items-center gap-1 text-[13px] font-semibold text-[#009689] hover:text-[#007b70] cursor-pointer"
@@ -334,34 +303,22 @@ export default function DonorDashboard() {
 
               {incomingRequests.map((item, index) => {
                 const needy = item.NeedyName || "Needy";
-                const donation =
-                  item.DonationTitle || item.Title || "Donation";
-                const date = item.RequestDate
-                  ? String(item.RequestDate).split(" ")[0]
-                  : "";
+                const donation = item.DonationTitle || item.Title || "Donation";
+                const date = item.RequestDate ? String(item.RequestDate).split(" ")[0] : "";
 
                 return (
                   <div
                     key={item.RequestID || index}
                     className={`px-6 py-4 flex items-center justify-between ${
-                      index < incomingRequests.length - 1
-                        ? "border-b border-slate-100"
-                        : ""
+                      index < incomingRequests.length - 1 ? "border-b border-slate-100" : ""
                     }`}
                   >
                     <div className="flex flex-col gap-0.5">
                       <p className="text-[14px] text-slate-800">
-                        <span className="font-bold text-slate-900">
-                          {needy}
-                        </span>{" "}
-                        is requesting{" "}
-                        <span className="font-semibold text-[#009689]">
-                          {donation}
-                        </span>
+                        <span className="font-bold text-slate-900">{needy}</span> is requesting{" "}
+                        <span className="font-semibold text-[#009689]">{donation}</span>
                       </p>
-                      <span className="text-[12px] text-slate-400">
-                        {date}
-                      </span>
+                      <span className="text-[12px] text-slate-400">{date}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -388,11 +345,9 @@ export default function DonorDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Jaldi kholne wale links */}
         <div className="bg-white rounded-2xl border border-border-subtle shadow-sm p-5 flex flex-col gap-3 h-fit">
-          <h3 className="text-[15px] font-bold text-slate-900 mb-1">
-            Quick Actions
-          </h3>
+          <h3 className="text-[15px] font-bold text-slate-900 mb-1">Quick Actions</h3>
           <Link
             to="/donor/add-donation"
             className="w-full px-4 py-3 bg-[#009689] hover:bg-[#007b70] text-white text-[14px] font-semibold rounded-xl flex items-center justify-between shadow-sm"
