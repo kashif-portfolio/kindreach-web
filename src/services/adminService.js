@@ -129,3 +129,9 @@ export const updateDonationType = async (item) => (await api.post('/admin/update
 export const registerNeedyByAdmin = async (data) => (await api.post('/admin/register_needy.php', data)).data;
 
 export const getDashboard = async () => (await api.get('/admin/get_dashboard.php')).data;
+
+// Admin donor registration uses its own API.
+export const registerDonorByAdmin = async (data) => {
+  const response = await api.post('/admin/register_donor.php', data);
+  return response.data;
+};

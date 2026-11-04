@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getAllDonors, approveDonor, blockDonor, updateDonor, deleteDonor } from "../../services/adminService";
+import { getAllDonors, registerDonorByAdmin, approveDonor, blockDonor, updateDonor, deleteDonor } from "../../services/adminService";
+import RegisterDonorModal from "../../components/admin/RegisterDonorModal";
 import BlockDonorModal from "../../components/admin/BlockDonorModal";
 import ApproveDonorModal from "../../components/admin/ApproveDonorModal";
 import UnblockDonorModal from "../../components/admin/UnblockDonorModal";
@@ -8,6 +9,7 @@ import EditDonorModal from "../../components/admin/EditDonorModal";
 import DeleteDonorModal from "../../components/admin/DeleteDonorModal";
 import {
     Search,
+    Plus,
     Phone,
     Ban,
     Check,
@@ -29,6 +31,9 @@ export default function ManageDonors() {
     // Donors list from backend
     const [donors, setDonors] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [refreshNumber, setRefreshNumber] = useState(0);
 
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,7 +99,19 @@ export default function ManageDonors() {
         };
 
         fetchDonors();
-    }, []);
+    }, [refreshNumber]);
+
+    // Pehle API save karegi, phir donors ki list dobara load hogi.
+    const handleRegister = async (formData) => {
+        const result = await registerDonorByAdmin(formData);
+        if (result.status !== "success") {
+            throw new Error(result.message || "Could not register donor");
+        }
+        setSearchTerm("");
+        setStatusFilter("All");
+        setCurrentPage(1);
+        setRefreshNumber((number) => number + 1);
+    };
 
     // Filter by search text and status
     const filteredDonors = donors.filter((donor) => {
@@ -184,13 +201,20 @@ export default function ManageDonors() {
     return (
         <div className="w-full px-8 py-6 flex flex-col gap-6">
             {/* Page Header */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
                 <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
                     Manage Donors
                 </h1>
                 <p className="text-[13px] text-slate-500">
                     {donors.length} registered donors
                 </p>
+                </div>
+                <button onClick={() => setIsRegisterModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-[#009689] hover:bg-[#007f73] text-white rounded-xl text-[13px] font-semibold transition-colors shadow-xs cursor-pointer">
+                    <Plus className="w-4 h-4" />
+                    Register Donor
+                </button>
             </div>
 
             {/* Filters Bar */}
@@ -411,6 +435,12 @@ export default function ManageDonors() {
             </div>
 
             {/* Modals */}
+            {isRegisterModalOpen && (
+                <RegisterDonorModal
+                    onClose={() => setIsRegisterModalOpen(false)}
+                    onRegister={handleRegister}
+                />
+            )}
             <BlockDonorModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

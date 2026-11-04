@@ -20,14 +20,29 @@ const RegisterNeedyModal = ({ isOpen, onClose, onRegister }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (saving) return;
-    setSaving(true); setError('');
+    if (saving) {
+      return;
+    }
+    setSaving(true);
+    setError('');
     try {
-    await onRegister(formData);
-    setFormData({ name: '', email: '', phone: '', location: '', reason: '', householdSize: '', cnic: '', password: '' });
-    onClose();
-    } catch (err) { setError(err.response?.data?.message || err.message || 'Could not save'); }
-    finally { setSaving(false); }
+      await onRegister(formData);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        location: '',
+        reason: '',
+        householdSize: '',
+        cnic: '',
+        password: '',
+      });
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Could not save');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
