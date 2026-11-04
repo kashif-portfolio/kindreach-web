@@ -314,7 +314,7 @@ export default function ScheduleDelivery() {
                                 {s.Status === 'Scheduled' && (
                                     <button type="button" disabled={completingID !== null}
                                         onClick={() => handleComplete(s.ScheduleID)}
-                                        className="mt-2 px-3 py-2 rounded-lg bg-[#009689] text-white text-xs disabled:opacity-50 cursor-pointer">
+                                        className="mt-2 px-3 py-2 rounded-lg bg-[#009689 c ] text-white text-xs disabled:opacity-50 cursor-pointer">
                                         {completingID === s.ScheduleID ? 'Saving...' : 'Mark as Delivered'}
                                     </button>
                                 )}
