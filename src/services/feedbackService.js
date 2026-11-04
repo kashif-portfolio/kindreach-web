@@ -9,3 +9,8 @@ export const getFeedbackList = async () => {
   const response = await api.get('/feedback/get_feedback.php');
   return response.data;
 };
+// Backend uses the logged-in user to find completed requests.
+export const getCompletedRequests = async () => {
+  const response = await api.get('/feedback/get_completed_requests.php');
+  return response.data;
+};

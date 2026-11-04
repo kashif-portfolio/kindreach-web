@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { submitFeedback, getFeedbackList } from "../../services/feedbackService";
+import { submitFeedback, getFeedbackList, getCompletedRequests } from "../../services/feedbackService";
 import {
     Monitor,
     Package,
@@ -19,6 +19,27 @@ export default function Feedback() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [recentReviews, setRecentReviews] = useState([]);
+    const [completedRequests, setCompletedRequests] = useState([]);
+    const [selectedRequestID, setSelectedRequestID] = useState("");
+    const [requestsLoading, setRequestsLoading] = useState(true);
+
+    // Sirf apni delivered aur abhi tak review na ki hui requests load karein.
+    useEffect(() => {
+        const loadCompletedRequests = async () => {
+            try {
+                const result = await getCompletedRequests();
+                if (result.status !== "success") {
+                    throw new Error(result.message || "Could not load completed donations");
+                }
+                setCompletedRequests(result.data || []);
+            } catch (err) {
+                setError(err.response?.data?.message || err.message || "Could not load completed donations");
+            } finally {
+                setRequestsLoading(false);
+            }
+        };
+        loadCompletedRequests();
+    }, []);
 
     const categories = [
         { name: "Platform Experience", icon: Monitor },
@@ -29,7 +50,14 @@ export default function Feedback() {
     ];
 
     const handleSubmit = async () => {
+        if (loading) {
+            return;
+        }
         setError("");
+        if (!selectedRequestID) {
+            setError("Please select a completed donation");
+            return;
+        }
 
         if (rating < 1) {
             setError("Please select a rating");
@@ -56,13 +84,17 @@ export default function Feedback() {
                 userID: user.userID,
                 rating: rating,
                 comments: commentsText,
-                requestID: null,
+                requestID: Number(selectedRequestID),
             });
 
             if (result.status === "success") {
                 alert("Feedback submitted successfully!");
                 setRating(0);
                 setMessage("");
+                setCompletedRequests((previous) => previous.filter((item) =>
+                    String(item.RequestID) !== String(selectedRequestID)
+                ));
+                setSelectedRequestID("");
 
                 // List refresh
                 const list = await getFeedbackList();
@@ -129,6 +161,30 @@ export default function Feedback() {
                 {/* Left Side: Feedback Form (Takes 2 columns) */}
                 <div className="lg:col-span-2 flex flex-col gap-6">
 
+                    {/* Completed Donation Selection */}
+                    <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col gap-3">
+                        <label htmlFor="feedback-request" className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Completed Donation</label>
+                        <select
+                            id="feedback-request"
+                            value={selectedRequestID}
+                            onChange={(e) => setSelectedRequestID(e.target.value)}
+                            disabled={requestsLoading || loading || completedRequests.length === 0}
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] text-slate-700 focus:outline-none focus:border-[#009689] disabled:bg-slate-50"
+                        >
+                            <option value="">Select a completed donation</option>
+                            {completedRequests.map((item) => (
+                                <option key={item.RequestID} value={item.RequestID}>
+                                    #{item.RequestID} — {item.Title}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-slate-500">
+                            {requestsLoading ? "Loading completed donations..." : completedRequests.length === 0
+                                ? "No completed donations awaiting feedback. Feedback is available after delivery."
+                                : "Choose the delivered donation you want to review. You can review each request once."}
+                        </p>
+                    </div>
+
                     {/* Overall Rating Card */}
                     <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
                         <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
@@ -138,6 +194,7 @@ export default function Feedback() {
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <button
                                     key={star}
+                                    aria-label={`Rate ${star} stars`}
                                     type="button"
                                     onClick={() => setRating(star)}
                                     className="focus:outline-none transition-transform hover:scale-110 cursor-pointer"
@@ -215,7 +272,7 @@ export default function Feedback() {
                             <button
                                 type="button"
                                 onClick={handleSubmit}
-                                disabled={loading}
+                                disabled={loading || requestsLoading || !selectedRequestID}
                                 className="w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#009689] text-[13px] font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 <Send className="w-4 h-4" />
