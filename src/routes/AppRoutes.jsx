@@ -8,6 +8,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import AuthLayout from "../layouts/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout";
 import ProtectedRoute from "../components/ProtectedRoute";
+import Home from "../pages/Home";
 
 import Login from "../pages/auth/Login";
 import ForgotPassword from "../pages/auth/ForgotPassword";
@@ -51,7 +52,9 @@ import AdminProfileSettings from "../pages/admin/AdminProfileSettings";
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Public home / landing */}
+      <Route path="/" element={<Home />} />
+
 
       {/* Login aur signup ke routes */}
       <Route element={<AuthLayout />}>
